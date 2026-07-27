@@ -223,6 +223,21 @@ const TRACKS = {
       0, null, 4, 7, 9, null, 7, 4, 2, null, 0, null, null, null, null, null,
     ],
   },
+  // Ondo: the capital. Same warmth as Okobo, wider intervals, slower — a town
+  // that used to be grander and knows it.
+  ondo: {
+    bpm: 88, type: 'triangle', gain: 0.07, detune: 9, legato: 2.1, bass: true,
+    steps: [
+      -5, null, 0, 2, 3, null, 2, 0, -2, null, 3, 7, 5, null, 3, 2,
+      -5, null, 0, 3, 7, null, 10, 12, 10, null, 7, 3, 2, null, 0, null,
+      -7, null, -2, 2, 5, null, 3, -2, 0, null, 5, 9, 7, null, 5, 2,
+      -5, null, 0, 2, 3, null, 0, -2, -5, null, null, null, null, null, null, null,
+    ],
+  },
+  // Kestrel Works: cold, mechanically dead, one held tone and a hum.
+  kestrel: { drones: [{ freq: 43.7, gain: 0.055, type: 'sine' },
+                      { freq: 87.9, gain: 0.02, type: 'triangle' },
+                      { freq: 131.2, gain: 0.008, type: 'sine' }] },
   // Battle: upbeat and cheerful against whatever is being revealed.
   battle: {
     bpm: 168, type: 'square', gain: 0.05, detune: 4, legato: 1.2, bass: true,

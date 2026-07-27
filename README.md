@@ -36,15 +36,16 @@ one long walk out.
 | [16 — Combat Math](docs/16-combat-math.md) | Enemy stat derivation, damage formula, measured difficulty |
 | [17 — Economy](docs/17-economy.md) | Shops, prices, and the per-act ledger |
 | [18 — Vertical Slice](docs/18-vertical-slice.md) | What to build first, and how to know it worked |
-| [19 — The Playable Build](docs/19-build.md) | What 0.2.1 contains, and where it deviates |
+| [19 — The Playable Build](docs/19-build.md) | What 0.3.0 contains, and where it deviates |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
 
 ## Play it
 
-**0.2.1 is playable.** `game/overgrowth.html` is the vertical slice — title screen, the bedroom,
-the Gallery, Okobo, the Sunken Orchard, and the first boss — in one self-contained file with no
-assets and no dependencies. Every sprite is drawn pixel by pixel at runtime, every tile texture is
-procedural, the font is a 5x7 bitmap defined inline, and all the audio is WebAudio synthesis.
+**0.3.0 is playable — Acts 0 through 2.** `game/overgrowth.html` is the title screen, the bedroom,
+the Gallery, Okobo, the Sunken Orchard, the road, Ondo, Kestrel Works, and both bosses through
+**The Memorial** — in one self-contained file with no assets and no dependencies. Twenty-seven
+rooms. Every sprite is drawn pixel by pixel at runtime, every tile texture is procedural, the font
+is a 5x7 bitmap defined inline, and all the audio is WebAudio synthesis.
 
 ```
 python3 tools/gen_sprites.py    # shape primitives -> the pixel art
@@ -66,7 +67,7 @@ progression curve, move lists, enemy roster, boss table, items and equipment, wo
 Four tools keep the design honest, each checking a claim the documents make.
 
 ```
-python3 tools/validate.py       # 572 checks: do the data, docs and build agree?
+python3 tools/validate.py       # 576 checks: do the data, docs and build agree?
 python3 tools/simulate.py       # 57 matchups x 2000 trials: do fights feel right?
 python3 tools/economy.py        # per-act ledger: can the player afford them?
 python3 tools/curve.py          # levelling walk: does the player reach the levels
@@ -83,7 +84,7 @@ learned, that every boss shows `??` and no regular enemy does, that the Root is 
 band the player outclasses, that every act from 2 to 4 offers a trade-off item in both equipment
 slots, that the family's names are never rendered anywhere, that the scope table in
 [00](docs/00-overview.md) still matches the rosters, and that no doc links to a file that isn't
-there — 572 checks in total, including that the checked-in build is not stale.
+there — 576 checks in total, including that the checked-in build is not stale.
 
 **Run both after changing any number.** The validator caught four real inconsistencies on its first
 run, including two arithmetic errors in the EXP table and a boss the player could have fled from.
@@ -106,6 +107,13 @@ in the simulator but had never been built into the game**, so the sim was valida
 build did not have. The simulator now counts turns where the player has *no affordable move* and
 fails on any, and the validator checks both that the trickle reaches the build and that it is at
 least as large as the cheapest attack's cost. See [19](docs/19-build.md).
+
+Building Act 2 turned up the same class of problem four more times, and the browser playtest is the
+only tool that can see it: **content that exists and cannot be reached.** A lore note written but
+never placed in a room, a light switch attached to the wrong object, a sidequest that could be
+accepted and never finished, an NPC meant to be seen once who could be talked to forever. None of
+those are *inconsistent*, so none of the checkers had anything to compare. `playtest.py` now walks
+every one of them.
 
 The levelling walk closed the last unverified assumption. Every other tool takes the
 `player_expected` range at each boss on faith; `curve.py` derives it instead, and found two ranges a
@@ -137,7 +145,9 @@ Sunken Orchard *sad* rather than *scary*.
 
 ## Status
 
-Pre-production. This repo is the design bible only — no engine code yet.
+The design bible is complete through the endgame. **The build runs Acts 0 through 2** — roughly the
+first four hours, ending on Main Boss 1 — and everything past Kestrel Works is documented but not
+yet built. The next thing to add is equipment, which is the first system Act 2 is missing.
 
 Numbers in the systems docs (damage values, PP/SP costs, level curve, prices, enemy levels) are
 **first-pass and meant to be tuned**, not final. They're written down so balance discussions have

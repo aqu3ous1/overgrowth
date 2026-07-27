@@ -281,6 +281,157 @@ def make_tree(w, h, canopy_r, trunk_w):
     return s.rows()
 
 
+# --- band 3: the road to Ondo -------------------------------------------
+def make_milepost():
+    s = Spr(10, 16)
+    s.rect(3, 3, 4, 13, "1")
+    s.rect(3, 3, 1, 13, "2")
+    s.ellipse(5, 3, 3.0, 2.6, "1")
+    s.ellipse(4, 2, 1.8, 1.4, "2", only={"1"})
+    s.rect(4, 2, 3, 1, "3")             # a number nobody reads any more
+    s.rect(4, 4, 3, 1, "3")
+    s.outline("4")
+    return s.rows()
+
+
+def make_ration_tin():
+    s = Spr(12, 13)
+    s.rect(2, 3, 8, 9, "1")
+    s.ellipse(6, 3, 4.0, 1.8, "1")
+    s.rect(2, 3, 2, 9, "2")             # lit side
+    s.rect(3, 6, 6, 3, "3")             # label
+    s.rect(4, 7, 4, 1, "4")
+    s.ellipse(6, 12, 4.0, 1.4, "5")
+    s.outline("5")
+    return s.rows()
+
+
+def make_bicycle():
+    s = Spr(18, 13)
+    for wx in (4, 13):
+        s.ellipse(wx, 8, 4.0, 4.0, "1")
+        s.ellipse(wx, 8, 2.6, 2.6, ".")   # hollow rims
+    s.rect(4, 4, 10, 1, "2")            # frame
+    s.rect(8, 4, 1, 5, "2")
+    s.rect(12, 2, 1, 3, "2")
+    s.rect(11, 2, 4, 1, "3")            # handlebars
+    s.rect(3, 3, 3, 1, "3")             # saddle
+    s.outline("4")
+    return s.rows()
+
+
+def make_weather():
+    s = Spr(18, 14)
+    s.ellipse(6, 5, 5.0, 3.4, "1")
+    s.ellipse(12, 5, 4.4, 3.0, "1")
+    s.ellipse(9, 4, 5.2, 3.2, "1")
+    s.ellipse(6, 4, 3.4, 2.2, "2", only={"1"})
+    for rx, ry in ((3, 9), (7, 10), (11, 9), (15, 10), (5, 12), (13, 12)):
+        s.rect(rx, ry, 1, 3, "3")       # rain, always the same rain
+    s.outline("4", targets={"1", "2"})
+    return s.rows()
+
+
+def make_shrine():
+    s = Spr(14, 16)
+    s.rect(3, 5, 8, 9, "1")
+    s.rect(3, 5, 2, 9, "2")
+    s.tri(7, 0, 12, 5, 2, 5, "1")       # little roof
+    s.rect(5, 8, 4, 5, "3")             # the alcove, empty
+    s.rect(6, 10, 2, 2, "4")            # something left in it
+    s.rect(2, 14, 10, 2, "1")
+    s.outline("5")
+    return s.rows()
+
+
+# --- band 4: Kestrel Works ----------------------------------------------
+def make_glove():
+    s = Spr(12, 14)
+    s.rect(3, 5, 6, 8, "1")             # palm
+    s.rect(3, 5, 2, 8, "2")
+    for fx in (3, 5, 7):                # fingers
+        s.rect(fx, 1, 2, 5, "1")
+    s.rect(9, 6, 2, 4, "1")             # thumb
+    for i in range(9):                  # frost
+        s.rect(3 + (i * 5) % 6, 6 + (i * 3) % 7, 1, 1, "3")
+    s.outline("4")
+    return s.rows()
+
+
+def make_coil():
+    s = Spr(14, 14)
+    for i, ry in enumerate(range(1, 13, 3)):
+        s.ellipse(7, ry + 1, 5.4, 1.7, "1")
+        s.ellipse(6, ry + 1, 3.0, 1.0, "2", only={"1"})
+    s.rect(11, 0, 2, 4, "3")            # loose end, sparking
+    s.outline("4")
+    return s.rows()
+
+
+def make_conveyor():
+    s = Spr(20, 12)
+    s.rect(1, 4, 18, 5, "1")
+    s.rect(1, 4, 18, 1, "2")
+    for rx in range(2, 19, 4):          # rollers, still turning
+        s.ellipse(rx, 6, 1.6, 1.6, "3")
+    s.rect(0, 9, 20, 2, "4")
+    s.outline("5")
+    return s.rows()
+
+
+def make_yard_light():
+    s = Spr(12, 18)
+    s.rect(5, 6, 2, 12, "1")            # pole
+    s.rect(3, 17, 6, 1, "1")
+    s.tri(6, 1, 11, 6, 1, 6, "2")       # shade
+    s.rect(4, 5, 5, 2, "3")             # the bulb, still on
+    s.rect(5, 4, 3, 1, "3")
+    s.outline("4")
+    return s.rows()
+
+
+def make_worker():
+    """Second Shift. A person, clocking in, in a factory that closed."""
+    s = Spr(12, 17)
+    head(s, 5.5, 5.4, 4.0, 3.8, "1", "2", "3")
+    for ex in (3, 6):
+        s.rect(ex, 4, 2, 2, "4")
+        s.rect(ex, 5, 1, 1, "5")
+    s.rect(1, 2, 10, 2, "6")            # hard hat
+    s.rect(3, 1, 6, 2, "6")
+    s.rect(3, 10, 6, 5, "7")            # overalls
+    s.rect(3, 10, 2, 5, "8")
+    s.rect(2, 11, 1, 3, "7")
+    s.rect(9, 11, 1, 3, "7")
+    s.rect(2, 13, 1, 2, "1")
+    s.rect(9, 13, 1, 2, "1")
+    s.rect(4, 15, 2, 2, "9")
+    s.rect(7, 15, 2, 2, "9")
+    s.outline("8", targets={"7"})
+    s.outline("3", targets={"1", "2"})
+    return s.rows()
+
+
+def make_memorial():
+    """Main Boss 1. A war memorial: tall, vertical, and it comes apart in tiers."""
+    s = Spr(20, 34)
+    s.rect(6, 0, 8, 12, "1")            # top tier
+    s.rect(6, 0, 3, 12, "2")
+    s.rect(5, 11, 10, 2, "3")
+    s.rect(5, 13, 10, 10, "1")          # middle tier
+    s.rect(5, 13, 3, 10, "2")
+    s.rect(4, 22, 12, 2, "3")
+    s.rect(4, 24, 12, 8, "1")           # base tier
+    s.rect(4, 24, 4, 8, "2")
+    s.rect(2, 31, 16, 3, "3")
+    for ly in range(2, 10, 2):          # the list of names
+        s.rect(8, ly, 4, 1, "4")
+    for ly in range(15, 22, 2):
+        s.rect(7, ly, 6, 1, "4")
+    s.outline("5")
+    return s.rows()
+
+
 SPRITES["player_down"] = make_player("down")
 SPRITES["player_up"] = make_player("up")
 SPRITES["player_side"] = make_player("side")
@@ -329,7 +480,41 @@ PALETTES = {
                  5: "#9a7448", 6: "#24421c"},
     "fruiting": {1: "#c05a6a", 2: "#dd8090", 3: "#7a4a34", 4: "#f0d070",
                  5: "#9a6448", 6: "#4a1f27"},
+    # Same tree shape, no leaves and no fruit. Nothing on the winter road is
+    # in season, and a green orchard tree standing in snow reads as a mistake.
+    "winter":   {1: "#57545c", 2: "#6e6b74", 3: "#4a4048", 4: "#7c7982",
+                 5: "#5e5158", 6: "#2b2830"},
 }
+
+
+SPRITES["milepost"] = make_milepost()
+SPRITES["ration_tin"] = make_ration_tin()
+SPRITES["bicycle"] = make_bicycle()
+SPRITES["weather"] = make_weather()
+SPRITES["shrine"] = make_shrine()
+SPRITES["glove"] = make_glove()
+SPRITES["coil"] = make_coil()
+SPRITES["conveyor"] = make_conveyor()
+SPRITES["yard_light"] = make_yard_light()
+SPRITES["worker"] = make_worker()
+SPRITES["memorial"] = make_memorial()
+
+PALETTES.update({
+    "milepost":   {1: "#8d8d84", 2: "#adada2", 3: "#4c4c46", 4: "#2a2a26"},
+    "ration_tin": {1: "#9aa2a8", 2: "#bcc4ca", 3: "#8a5a3a", 4: "#d8cba0", 5: "#3a3f44"},
+    "bicycle":    {1: "#5c6068", 2: "#8d3f3a", 3: "#3f434a", 4: "#1e2126"},
+    "weather":    {1: "#6a7280", 2: "#8e97a6", 3: "#9fc4d8", 4: "#31363f"},
+    "shrine":     {1: "#8a8276", 2: "#a8a094", 3: "#2c2822", 4: "#c8a24a", 5: "#3a352c"},
+    "glove":      {1: "#6a5a4a", 2: "#8a7864", 3: "#cfe4ee", 4: "#2e2720"},
+    "coil":       {1: "#7a7f88", 2: "#9ea4ae", 3: "#d8c060", 4: "#2a2d33"},
+    "conveyor":   {1: "#5f6168", 2: "#82858e", 3: "#3a3d43", 4: "#44474d", 5: "#212328"},
+    "yard_light": {1: "#5a5d64", 2: "#7a7e86", 3: "#f0e0a0", 4: "#26282d"},
+    "worker":     {1: "#c98b6a", 2: "#e2ab89", 3: "#6f4630", 4: "#f2f4f8", 5: "#12121a",
+                   6: "#d8a838", 7: "#4a6a8a", 8: "#2b3f52", 9: "#2a2a30"},
+    "memorial":   {1: "#8d8d84", 2: "#a9a99f", 3: "#6d6d66", 4: "#5a5a54", 5: "#2a2a26"},
+})
+
+
 
 
 def main():

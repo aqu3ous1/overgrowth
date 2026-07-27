@@ -34,10 +34,16 @@ const Battle = {
       restoresOnce: opts.restoresOnce || 0,
       restored: false,
       phase: 1, phases: opts.phases || 1,
+      tiers: opts.tiers || null, tier: 1, baseAtk: 0, baseDef: 0,
     };
   },
 
   start(enemy, entityRef, onEnd) {
+    if (enemy.tiers) {
+      enemy.baseAtk = enemy.atk; enemy.baseDef = enemy.def;
+      enemy.atk = enemy.baseAtk * enemy.tiers.atk_multiplier[0];
+      enemy.def = enemy.baseDef * enemy.tiers.def_multiplier[0];
+    }
     this.active = true; this.enemy = enemy; this.entityRef = entityRef || null;
     this.state = 'intro'; this.log = []; this.cursor = 0; this.sub = null;
     this.subCursor = 0; this.subScroll = 0; this.turn = 0;
@@ -198,6 +204,25 @@ const Battle = {
     if (this.quiet > 0) this.quiet--;
     const e = this.enemy;
     if (e.hp <= 0) { this.victory(); return; }
+
+    // Tiered boss: each tier lost drops its guard and raises its urgency.
+    if (e.tiers) {
+      const t = e.tiers;
+      const tier = Math.min(t.count, 1 + Math.floor((1 - e.hp / e.maxHp) * t.count));
+      if (tier > e.tier) {
+        e.tier = tier;
+        e.def = e.baseDef * t.def_multiplier[tier - 1];
+        e.atk = e.baseAtk * t.atk_multiplier[tier - 1];
+        this.shake = 0.4;
+        Audio_.sfx('hit');
+        this.push(tier >= t.count
+          ? `${e.name} has nothing left to stand on.`
+          : `A tier comes away from ${e.name}.`);
+        this.state = 'message';
+        this.after = () => this.enemyTurn();
+        return;
+      }
+    }
 
     if (Math.random() < e.inaction || !e.dealsDamage) {
       if (e.inflicts === 'Homesick' && !this.homesick) {

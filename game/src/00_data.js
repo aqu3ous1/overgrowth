@@ -554,7 +554,21 @@ const DATA = {
    "role": "wall",
    "hp_multiplier": 1.78,
    "atk_multiplier": 1.17,
-   "phases": 3
+   "phases": 3,
+   "tiers": {
+    "count": 3,
+    "why": "Fully defensive in tier 1, mixed in tier 2, desperate in tier 3. Absolute multipliers on the base stats, indexed by tier - not compounding, so the fight trades guard for urgency rather than simply getting harder.",
+    "def_multiplier": [
+     1.9,
+     1.15,
+     0.7
+    ],
+    "atk_multiplier": [
+     0.45,
+     0.85,
+     1.2
+    ]
+   }
   },
   "Line Supervisor": {
    "role": "standard",

@@ -14,9 +14,63 @@ const NOTES = {
     title: 'TIED TO A BRANCH',
     pages: ['If the water goes down, this is where the good tree was.'],
   },
+  water_board: {
+    title: 'WATER BOARD NOTICE',
+    pages: ['The board has reviewed the drainage petition and finds no fault in the current arrangement.',
+            'The board thanks the petitioners for their continued patience.'],
+  },
+  work_order: {
+    title: 'MUNICIPAL WORK ORDER',
+    pages: ['Fountain, central park. Valve closed for the duration of rationing.',
+            'Reopen at the direction of the parks office.',
+            'No reopening order is attached.'],
+  },
+  ledger: {
+    title: 'BOARDING HOUSE LEDGER',
+    pages: ['Room 3 - paid. Room 5 - paid.',
+            'Room 7 - no answer. Room 7 - no answer.',
+            'Room 7 - took the sheets, left the key.'],
+  },
+  // The Kestrel sequence, found floor by floor going up.
+  notice_year_one: {
+    title: 'KESTREL NOTICE, YEAR ONE',
+    pages: ['Owing to the reduced order book, third shift will be consolidated into second.',
+            'No positions are affected.'],
+  },
+  notice_year_four: {
+    title: 'KESTREL NOTICE, YEAR FOUR',
+    pages: ['Effective the 14th, second shift is suspended.',
+            'Affected staff should collect final pay from the yard office.',
+            'We thank you for eleven years.'],
+  },
+  shift_schedule: {
+    title: 'SHIFT SCHEDULE',
+    pages: ['A duty roster for a week in winter. Eleven names.',
+            'Four are crossed out in pen.',
+            'One is crossed out and then written back in underneath, in different handwriting.'],
+  },
+  in_a_locker: {
+    title: 'IN A LOCKER',
+    pages: ['Ma - they say through spring at the latest.',
+            'I will come see you either way. Do not do the stairs.'],
+  },
+  safety_inspection: {
+    title: 'SAFETY INSPECTION',
+    pages: ['Items 1 to 14: satisfactory.',
+            'Item 15: heating, north floor - unsatisfactory.',
+            'Item 15: heating, north floor - unsatisfactory.',
+            'Item 15: heating, north floor - unsatisfactory.'],
+  },
+  last_one_out: {
+    title: 'ON THE DOOR',
+    pages: ["Whoever is last out, the yard lights are on the panel by the gate.",
+            'Nobody is coming to do it.'],
+  },
 };
 
 const SHOP_STOCK = ['Spray', 'Clean Rag'];
+const ONDO_STOCK = ['Spray', 'Spray II', 'Chalk Tablet', 'Bitter Tonic',
+                    'Clean Rag', 'Knuckle Wrap', 'Cold Compress', 'Dropped Call'];
 
 // --- NPC lines ---------------------------------------------------------
 // Limpo villagers attach a redundant location to statements about time.
@@ -87,6 +141,96 @@ const NPCS = {
             'He went off. Later-on, up in the spring. That was some springs ago now.',
             '(Got a letter.)'];
   },
+  ondo_clerk: () => {
+    if (Player.flags.fountainDone) return ['It is still closed. I know.'];
+    Player.flags.fountainQuest = true;
+    return ['You are looking at the fountain. Everyone looks at the fountain.',
+            'It has not run since the rationing, back-when.',
+            'The valve is closed. I know where the valve is.',
+            'Nobody is in charge of opening it. That is the whole of it.'];
+  },
+  ondo_baker: () => ([
+    'Do not buy from the grocer. I will say no more than that.',
+    'Well - I will say one more thing. He knows what he did.',
+    'Later-on, up in the summer, I might let it go.',
+  ]),
+  ondo_bench: () => {
+    if (Player.flags.benchDone) {
+      return ['Sit any time. I am generally here.'];
+    }
+    Player.flags.benchDone = true;
+    Player.money += 250;
+    return ['Sit down a minute, if you are not busy.',
+            'My brother was at Kestrel. Eleven years, they said, when they let him go.',
+            'Eleven years is a strange thing to thank somebody for.',
+            'He went north after. Everyone goes north after.',
+            'Anyway. That is all it was. Thank you for sitting.',
+            '(Got 250 Rell.)'];
+  },
+  ondo_courier: () => {
+    if (Player.flags.deliveryDone) return ['All three arrived. That is rare.'];
+    if (Player.flags.deliveryQuest) return ['Northside. Past the winter road. It is a walk.'];
+    Player.flags.deliveryQuest = true;
+    return ['You are going out that way? Take these.',
+            'Three parcels, Northside. Nobody has gone out there since the works closed.',
+            'Pay is good because the walk is bad.'];
+  },
+  ondo_shopkeeper: () => (['Whole market row, and it is mostly me now.']),
+  ondo_innkeeper: () => (['Bed is upstairs. Sign the book if you like. Nobody reads it.']),
+  // Sidequest 6. Three overdue rents. Two pay. One has left.
+  landlady: () => {
+    if (Player.flags.ledgerDone) {
+      return ['Rooms 3 and 5 are square. Room 7 I will leave in the book.',
+              'It looks better with a name in it, back-when.'];
+    }
+    if (Player.flags.ledgerQuest) {
+      const got = ['rent3', 'rent5', 'roomSeven'].filter(f => Player.flags[f]).length;
+      if (got < 3) return ['Three rooms owing. 3, 5, and 7.',
+                           'Knock. They are all in. Two of them, anyway.'];
+      Player.flags.ledgerDone = true;
+      Player.money += 400;
+      Player.addItem('Chalk Tablet', 2);
+      return ['Two paid and one is gone. That is the usual ratio now.',
+              'Room 7. He said he was going inside. I said inside where.',
+              'He did not answer that, and I did not ask twice.',
+              '(Got 400 Rell and Chalk Tablet x2.)'];
+    }
+    Player.flags.ledgerQuest = true;
+    return ['Rooms by the week. I have three owing and bad knees.',
+            'Rooms 3, 5 and 7. Collect for me and I will make it worth it.',
+            'Room 7 is free, if you are staying. It has been free a while.'];
+  },
+  tenant_three: () => {
+    if (Player.flags.rent3) return ['Paid up. Do not look at me like that.'];
+    if (!Player.flags.ledgerQuest) return ['I know what I owe. She knows what I owe.'];
+    Player.flags.rent3 = true;
+    return ['She sent a child. That is low, even for her.',
+            'Here. It is all there. Count it in front of her, not me.'];
+  },
+  tenant_five: () => {
+    if (Player.flags.rent5) return ['Tell her I paid the same day I was asked.'];
+    if (!Player.flags.ledgerQuest) return ['Cold in the hall, is it not.'];
+    Player.flags.rent5 = true;
+    return ['Oh - the rent. Yes. I had it ready and then I forgot I had it ready.',
+            'That happens more since the works closed. Here.'];
+  },
+  // Seen once. He is not in the hall the next time the player comes through,
+  // and nothing in the game mentions that he was.
+  boarder: () => {
+    Player.flags.boarderSeen = true;
+    return ['You are new. I was new.',
+            'There was a man in room 7. Went inside and got better.',
+            'That is how he put it. Went inside. Got better.',
+            'I have been thinking about the order of those two things.'];
+  },
+  records_clerk: () => {
+    if (Player.flags.recordsDone) return ['Filed. Properly, this time.'];
+    if (Player.flags.recordsQuest) return ['It is in here. That is all I can tell you.'];
+    Player.flags.recordsQuest = true;
+    return ['I need a file and I cannot find it.',
+            'It is misfiled. Everything in here is filed correctly except the one thing.',
+            'Read the labels. That is the whole trick, back-when.'];
+  },
 };
 
 // --- interactions ------------------------------------------------------
@@ -101,8 +245,10 @@ function interact() {
 
   if (target.kind === 'npc') {
     if (target.shop) {
-      Dialogue.say(NPCS.shopkeeper().map(t => ({ text: t, speaker: 'npc' })), () => {
-        Shop.start(SHOP_STOCK); Game.mode = 'shop';
+      const stock = target.shop === 'ondo' ? ONDO_STOCK : SHOP_STOCK;
+      const lines = target.shop === 'ondo' ? NPCS.ondo_shopkeeper() : NPCS.shopkeeper();
+      Dialogue.say(lines.map(t => ({ text: t, speaker: 'npc' })), () => {
+        Shop.start(stock, target.shop === 'ondo' ? 'ONDO' : 'OKOBO'); Game.mode = 'shop';
       });
       return;
     }
@@ -163,6 +309,105 @@ function interact() {
       Dialogue.say([{ text: 'A list of names, cut into stone.', speaker: 'system' },
                     { text: 'It is a long list for a village this size.', speaker: 'system' }]);
       return;
+    case 'fountain':
+      if (Player.flags.fountainQuest && !Player.flags.fountainDone) {
+        Player.flags.fountainDone = true;
+        Player.money += 350;
+        Dialogue.say([
+          { text: 'The valve is behind a panel at the base. It is closed.', speaker: 'system' },
+          { text: 'It is not stuck, or broken, or missing. Someone closed it during the rationing.', speaker: 'system' },
+          { text: 'It opens easily.', speaker: 'system' },
+          { text: '(Got 350 Rell.)', speaker: 'system' },
+        ]);
+        return;
+      }
+      Dialogue.say([{ text: Player.flags.fountainDone
+        ? 'The fountain is running. Nobody has come to look at it.'
+        : 'A dry fountain. Leaves in the basin.', speaker: 'system' }]);
+      return;
+    case 'billboard':
+      Dialogue.say([
+        { text: 'VIXTRY CO. - online co-living.', speaker: 'vixtry' },
+        { text: 'Why commute? Why queue? Why wait?', speaker: 'vixtry' },
+        { text: 'Ask about family plans.', speaker: 'vixtry' },
+      ]);
+      return;
+    case 'milepost':
+      Dialogue.say([{ text: 'A milepost. The number has worn off.', speaker: 'system' }]);
+      return;
+    case 'shrine':
+      Dialogue.say([{ text: 'A roadside shrine. Someone has left a coin in it.', speaker: 'system' },
+                    { text: 'It is a very old coin.', speaker: 'system' }]);
+      return;
+    case 'memorial_stone':
+      Dialogue.say([{ text: 'A war memorial, in the yard of a factory that closed.', speaker: 'system' },
+                    { text: 'The names are the same names as the shift roster inside.', speaker: 'system' },
+                    { text: 'Not most of them. All of them.', speaker: 'system' }],
+                   () => Story.memorialFight());
+      return;
+    case 'machine':
+      Dialogue.say([{ text: 'A machine, stopped mid-cycle. Cold all the way through.', speaker: 'system' }]);
+      return;
+    case 'door7':
+      if (Player.flags.roomSeven) {
+        Dialogue.say([{ text: 'Room 7. Still open. Still nothing in it.', speaker: 'system' }]);
+        return;
+      }
+      Player.flags.roomSeven = true;
+      Audio_.sfx('door');
+      Dialogue.say([{ text: 'Room 7. The door is not locked.', speaker: 'system' },
+                    { text: 'Bed stripped, window shut, nothing on the floor.', speaker: 'system' },
+                    { text: 'Nobody is going to be paying rent on this one.', speaker: 'system' }]);
+      return;
+    // Sidequest 8. Three parcels, three addresses, and no houses on the road.
+    case 'parcel': {
+      const key = 'parcel' + target.n;
+      if (Player.flags[key]) {
+        Dialogue.say([{ text: 'Delivered. The box has not been opened since.', speaker: 'system' }]);
+        return;
+      }
+      if (!Player.flags.deliveryQuest) {
+        Dialogue.say([{ text: 'A postbox. There is no house behind it.', speaker: 'system' }]);
+        return;
+      }
+      Player.flags[key] = true;
+      const left = [1, 2, 3].filter(n => !Player.flags['parcel' + n]).length;
+      const lines = [{ text: 'A postbox. There is no house behind it.', speaker: 'system' },
+                     { text: 'The address matches. He posts the parcel.', speaker: 'system' }];
+      if (left === 0) {
+        Player.flags.deliveryDone = true;
+        Player.money += 500;
+        lines.push({ text: 'That is all three. Northside is three postboxes.', speaker: 'system' });
+        lines.push({ text: '(Got 500 Rell.)', speaker: 'system' });
+      } else {
+        lines.push({ text: left === 1 ? 'One more address, further out.'
+                                      : 'Two more addresses, further out.', speaker: 'system' });
+      }
+      Dialogue.say(lines);
+      return;
+    }
+    case 'locker':
+      Dialogue.say([{ text: 'The lockers are open and empty.', speaker: 'system' },
+                    { text: 'Every one of them. Nobody left anything behind.', speaker: 'system' }]);
+      return;
+    // Sidequest 13. No giver, no money, nobody to tell. The note asks; that is all.
+    case 'panel':
+      if (Player.flags.kestrelDark) {
+        Dialogue.say([{ text: 'The breaker is off. It stays off.', speaker: 'system' }]);
+        return;
+      }
+      if (!Player.notes.includes('last_one_out')) {
+        Dialogue.say([{ text: 'A breaker panel by the gate. The yard lights run off it.', speaker: 'system' },
+                      { text: 'They are somebody\'s to turn off. Not his.', speaker: 'system' }]);
+        return;
+      }
+      Player.flags.yardLights = true;
+      Audio_.sfx('door');
+      Dialogue.say([
+        { text: 'A breaker panel by the gate. Nobody is coming to do it.', speaker: 'system' },
+        { text: 'He shuts the yard lights off.', speaker: 'system' },
+      ], () => { Player.flags.kestrelDark = true; });
+      return;
     case 'foundation':
       if (Player.flags.letterQuest && !Player.flags.letterDone) {
         Player.flags.letterDelivered = true;
@@ -185,6 +430,10 @@ function interact() {
       return;
     }
     case 'note': {
+      if (o.note === 'work_order' && Player.flags.recordsQuest && !Player.flags.recordsDone) {
+        Player.flags.recordsDone = true;
+        Player.money += 450;
+      }
       const n = NOTES[o.note];
       if (!Player.notes.includes(o.note)) Player.notes.push(o.note);
       Audio_.sfx('found');
@@ -196,7 +445,12 @@ function interact() {
       Player.collectibles++;
       World.entities = World.entities.filter(e => e !== o);
       Audio_.sfx('found');
-      Dialogue.say([{ text: 'A marble. Cloudy, with a green thread in it.', speaker: 'system' },
+      const found = {
+        marble: 'A marble. Cloudy, with a green thread in it.',
+        poster_corner: 'A torn corner of a poster. Blue, with part of a word on it.',
+        loose_key: 'A loose key. It does not go to anything here.',
+      }[o.which] || 'Something small. It does not belong here.';
+      Dialogue.say([{ text: found, speaker: 'system' },
                     { text: `FOUND ${Player.collectibles} OF 10.`, speaker: 'system' }]);
       return;
     }
@@ -266,6 +520,59 @@ const Story = {
     World.entities.push({ kind: 'custodian', x, y, t: 2.4 });
   },
 
+  // Second sighting: standing in a room the player has already cleared, on the
+  // way back out. Gone if they leave and come back.
+  maybeCustodian2() {
+    if (Player.flags.sawCustodian2) return;
+    if (World.id !== 'kestrel_f2') return;
+    if (!Player.notes.includes('shift_schedule')) return;
+    Player.flags.sawCustodian2 = true;
+    const x = Math.max(20, Math.min(World.w * TS - 20, Player.x + 88));
+    World.entities.push({ kind: 'custodian', x, y: Player.y - 30, t: 2.8 });
+  },
+
+  // The Memorial. Fought in the yard, beneath the war memorial, in snow.
+  memorialFight() {
+    if (Player.flags.beatMemorial || Player.flags.memorialStarting) return;
+    if (World.id !== 'kestrel_yard') return;
+    // Gated on reaching the bottom of the factory, not on the lights - sidequest
+    // 13 is optional and gating the act's boss behind it would make it a lie.
+    if (!Player.notes.includes('last_one_out')) return;
+    Player.flags.memorialStarting = true;
+    Dialogue.say([
+      Player.flags.kestrelDark
+        ? { text: 'With the lights off, the yard is much larger than it was.', speaker: 'system' }
+        : { text: 'The yard lights hum. Under them, the yard is very quiet.', speaker: 'system' },
+      { text: 'The memorial is still there. It is standing closer than it was.', speaker: 'system' },
+    ], () => {
+      const bd = DATA.bosses['The Memorial'];
+      const enc = DATA.bossEncounters['The Memorial'];
+      const e = Battle.makeEnemy('The Memorial', {
+        name: 'THE MEMORIAL', level: enc.internal_level, boss: true,
+        hpMul: bd.hp_multiplier, atkMul: bd.atk_multiplier,
+        phases: bd.phases, exp: enc.exp, scale: 3, tiers: bd.tiers,
+      });
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.memorialStarting = false;
+        if (result === 'won') {
+          Player.flags.beatMemorial = true;
+          Player.addItem('Second Wind', 1);
+          Game.mode = 'field';
+          Audio_.play('kestrel');
+          Dialogue.say([
+            { text: 'The last tier comes away and the yard is only a yard.', speaker: 'system' },
+            { text: 'The names are still cut into it. They are not going anywhere.', speaker: 'system' },
+            { text: '(Got Second Wind.)', speaker: 'system' },
+          ], () => { Game.mode = 'cutscene'; Cutscene.play('slice_end'); });
+        } else {
+          Game.mode = 'field';
+          Game.onDefeat();
+        }
+      });
+    });
+  },
+
   bossRoom() {
     if (Player.flags.beatBoss) return;
     if (World.id !== 'clearing') return;
@@ -293,7 +600,8 @@ const Story = {
           Dialogue.say([
             { text: 'The tree came apart. The water is very still.', speaker: 'system' },
             { text: '(Got Spray II x3.)', speaker: 'system' },
-          ], () => { Game.mode = 'cutscene'; Cutscene.play('slice_end'); });
+            { text: 'The far side of the orchard is open. There is a road out there.', speaker: 'system' },
+          ]);
         } else {
           Game.mode = 'field';
           Game.onDefeat();
@@ -331,7 +639,7 @@ const Cutscene = {
         }
         break;
       case 'slice_end':
-        if (this.t > 6.5 || (skip && this.t > 1.2)) { this.name = null; Game.mode = 'end'; }
+        if (this.t > 7.5 || (skip && this.t > 1.2)) { this.name = null; Game.mode = 'end'; }
         break;
     }
   },
@@ -370,8 +678,8 @@ const Cutscene = {
         const a = Math.min(1, this.t / 1.2);
         cx.globalAlpha = a;
         textCentered('OVERGROWTH', W / 2, 52, '#e8e4da', 3);
-        textCentered('0.1.0  -  vertical slice ends here', W / 2, 72, '#6a6a76');
-        textCentered('Limpo Kingdom continues in a later build.', W / 2, 92, '#4a4a56');
+        textCentered('END OF ACT TWO', W / 2, 72, '#6a6a76');
+        textCentered('Yettallia, and Vixtry Co., in a later build.', W / 2, 92, '#4a4a56');
         cx.globalAlpha = Math.max(0, Math.min(1, (this.t - 2.4) / 1.2));
         textCentered(`${Player.name}  -  Lv ${Player.level}  -  ${Player.collectibles}/10 found`,
                      W / 2, 116, '#8a8a94');
@@ -445,6 +753,7 @@ const Game = {
       }
     }
     Story.maybeCustodian();
+    Story.maybeCustodian2();
     Story.bossRoom();
 
     if (Input.hit('ok')) interact();
@@ -497,6 +806,10 @@ const Game = {
     let light = r.light !== undefined ? r.light : 0.4;
     let lx = Player.x - World.camX, ly = Player.y - World.camY;
     let radius = r.dark ? 62 : 128;
+    if (World.id === 'kestrel_yard' && Player.flags.kestrelDark) {
+      // Sidequest 13's only reward: the place gets darker and stays that way.
+      light = 1.05; radius = 74;
+    }
     if (World.id === 'bedroom') {
       if (Player.flags.roomLight) { light = 0.35; radius = 150; }
       else if (Player.flags.hallLight === false) { light = 1.15; radius = 46; }
@@ -533,6 +846,11 @@ const Hud = {
 };
 
 const ROOM_LABEL = {
+  road_ondo: 'THE ROAD TO ONDO', ondo: 'ONDO', ondo_shop: 'ONDO - MARKET ROW',
+  ondo_inn: 'ONDO - INN', boarding_house: 'ONDO - BOARDING HOUSE',
+  records_room: 'ONDO - RECORDS', winter_road: 'THE WINTER ROAD',
+  kestrel_yard: 'KESTREL WORKS - YARD', kestrel_f1: 'KESTREL WORKS',
+  kestrel_f2: 'KESTREL WORKS', kestrel_f3: 'KESTREL WORKS - LOCKERS',
   bedroom: '', void: '', gallery_ext: '', gallery_hall: '', gallery_room: '',
   gallery_corridor: '', arrival: 'LIMPO KINGDOM', okobo: 'OKOBO VILLAGE',
   shop: 'OKOBO - SHOP', inn: 'OKOBO - INN', house: 'OKOBO - HOUSE',

@@ -111,6 +111,9 @@ def fight(level, enemy, heal_items, homesick=False, boss=None, max_turns=60):
     Attrition is HP lost plus HP restored mid-fight, over max HP — what the
     encounter actually cost, rather than where the bar happened to end up.
     """
+    # Copy: run() reuses one enemy dict across every trial, and the tier rule
+    # mutates ATK and DEF. Without this, trial 2 starts where trial 1 finished.
+    enemy = dict(enemy)
     ps = player_stats(level)
     hp_max = ps["HP"]
     hp, pp, sp = hp_max, ps["PP"], ps["SP"]
@@ -118,6 +121,12 @@ def fight(level, enemy, heal_items, homesick=False, boss=None, max_turns=60):
     mend = [m for m in spec if m.get("heal_fraction")]
     quiet_room = any(m["name"] == "Quiet Room" for m in spec)
     ehp = enemy["HP"]
+    tier = 0
+    base_atk, base_def = enemy["ATK"], enemy["DEF"]
+    if boss and boss.get("tiers"):
+        tier = 1
+        enemy["DEF"] = base_def * boss["tiers"]["def_multiplier"][0]
+        enemy["ATK"] = base_atk * boss["tiers"]["atk_multiplier"][0]
     healed = 0.0
     stuck = 0            # turns with no affordable damaging move at all
     restored = False
@@ -186,6 +195,16 @@ def fight(level, enemy, heal_items, homesick=False, boss=None, max_turns=60):
                 restored = True
             else:
                 return True, turns, (hp_max - hp + healed) / hp_max, stuck
+
+        # A tiered boss trades guard for urgency as tiers come off. Multipliers
+        # are absolute on the base stats, so it never simply compounds upward.
+        if boss and boss.get("tiers"):
+            t = boss["tiers"]
+            now = min(t["count"], 1 + int((1 - ehp / enemy["HP"]) * t["count"]))
+            if now != tier:
+                tier = now
+                enemy["DEF"] = base_def * t["def_multiplier"][tier - 1]
+                enemy["ATK"] = base_atk * t["atk_multiplier"][tier - 1]
 
         # --- enemy acts
         falloff = 1.0

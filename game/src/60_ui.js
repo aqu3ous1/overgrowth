@@ -289,7 +289,7 @@ const Menu = {
 // --- shop --------------------------------------------------------------
 const Shop = {
   open: false, cursor: 0, rep: {}, stock: [],
-  start(stock) { this.open = true; this.stock = stock; this.cursor = 0; },
+  start(stock, title) { this.open = true; this.stock = stock; this.cursor = 0; this.title = title || 'SHOP'; },
   update(dt) {
     if (Input.hit('no') || Input.hit('menu')) { this.open = false; Audio_.sfx('cancel'); return; }
     if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + this.stock.length) % this.stock.length; Audio_.sfx('blip'); }
@@ -305,7 +305,7 @@ const Shop = {
   },
   draw() {
     rect(0, 0, W, H, 'rgba(4,4,8,0.9)');
-    text('OKOBO', 14, 10, '#f0ece2');
+    text(this.title || 'SHOP', 14, 10, '#f0ece2');
     text('RELL ' + Player.money, W - textWidth('RELL ' + Player.money) - 12, 10, '#e8d24a');
     rect(8, 22, W - 16, 1, '#3a3a44');
     for (let i = 0; i < this.stock.length; i++) {

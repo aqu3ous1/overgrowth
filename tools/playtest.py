@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Drive the built game in a real browser and report errors.
 
-Loads game/overgrowth.html, plays a scripted run through the vertical slice,
-and fails on any uncaught exception or console error. Screenshots land in
-game/shots/ so the art can be looked at without launching anything.
+Loads game/overgrowth.html, plays a scripted run through Acts 0 to 2 - the
+bedroom to The Memorial - and fails on any uncaught exception, console error,
+unreachable room, unfinishable errand, or fight that will not end. Screenshots
+land in game/shots/ so the art can be looked at without launching anything.
 
     python3 tools/playtest.py            # scripted run
     python3 tools/playtest.py --shots    # also write screenshots
@@ -39,6 +40,25 @@ def hold(page, key, ms):
     page.wait_for_timeout(60)
 
 
+def walk(page, key, ms, dest, tries=3):
+    """Hold a direction until the player reaches `dest`, fighting anything met.
+
+    Enemies wander, so a walk across a room is not deterministic - without this
+    a transition check fails whenever something happens to be in the way, which
+    is a flaky test rather than a bug in the game.
+    """
+    for _ in range(tries):
+        hold(page, key, ms)
+        if until(page, f"World.id === '{dest}'", 2500):
+            return True
+        if page.evaluate("() => Battle.active"):
+            fight(page)
+            page.wait_for_timeout(400)
+            advance(page)
+            idle(page)
+    return page.evaluate(f"() => World.id === '{dest}'")
+
+
 def put(page, room, tx, ty, face="down"):
     page.evaluate("""([room, tx, ty, face]) => {
       if (World.id !== room) World.load(room);
@@ -69,14 +89,112 @@ def advance(page, n=40):
     page.wait_for_timeout(80)
 
 
-def fight(page, max_presses=400):
-    """Press through a battle until it ends. Battles use their own log, not Dialogue."""
+def fight(page, max_presses=400, max_heals=4):
+    """Play a battle to its end, through the real menus, until it ends.
+
+    Battles use their own log, not Dialogue, so `advance()` does not apply.
+
+    This plays badly on purpose but not *stupidly*: mashing Z picks the first
+    physical move, which is Punch forever, and a boss tuned against the moves
+    the player actually has cannot be beaten with it. That made this check fail
+    at random, which is worse than not having it. So: strongest affordable
+    physical move, and a capped number of sprays when low. Whether the numbers
+    are *fair* is simulate.py's job, not this one's.
+
+    The heal budget is capped because an unbounded one turns a fight the player
+    cannot out-damage into a stalemate that reads as a hang.
+    """
+    heals = max_heals
     for _ in range(max_presses):
-        if not page.evaluate("() => Battle.active"):
+        st = page.evaluate("() => Battle.active && ({s: Battle.state, sub: Battle.sub, "
+                           "hp: Player.hp / Player.maxHp})")
+        if not st:
             return True
+        if st["s"] == "menu":
+            # Always aim the 2x2 cursor rather than assuming where it is. It
+            # persists across turns, so a turn spent in the bag otherwise leaves
+            # every later Z re-opening the bag.
+            if heals and st["hp"] < 0.45 and _use_a_spray(page):
+                heals -= 1
+            else:
+                _command(page, 0)             # PHYSICAL
+            continue
+        if st["s"] == "sub" and st["sub"] == "physical" and _pick_best_move(page):
+            continue
         page.keyboard.press("z")
         page.wait_for_timeout(70)
+    # Out of budget. Say where it stalled - "never ended" on its own is useless,
+    # and the two real stalls so far were both the harness parked in a menu.
+    f0 = page.evaluate("() => Time.frame")
+    page.wait_for_timeout(300)
+    print("  fight stalled:", page.evaluate(
+        "(f0) => ({mode: Game.mode, frames: Time.frame - f0, state: Battle.state,"
+        " menu: Battle.cursor, sub: Battle.sub, row: Battle.subCursor,"
+        " list: Battle.subList().map(m => m.name), pp: Player.pp, hp: Player.hp,"
+        " enemy: Battle.enemy && Battle.enemy.hp, log: (Battle.log || []).slice(-2)})", f0))
     return False
+
+
+def _pick_best_move(page):
+    """From an open PHYSICAL list, choose the strongest move the player can pay for."""
+    idx = page.evaluate(
+        "() => { const l = Battle.subList();"
+        "  let best = -1, p = -1;"
+        "  l.forEach((m, i) => { if (m.cost <= Player.pp && (m.power || 0) > p)"
+        "    { p = m.power || 0; best = i; } });"
+        "  return best; }")
+    if idx is None or idx < 0:
+        return False
+    for _ in range(idx):
+        page.keyboard.press("ArrowDown")
+        page.wait_for_timeout(50)
+    page.keyboard.press("z")
+    page.wait_for_timeout(90)
+    return True
+
+
+def _command(page, want):
+    """Move the battle's 2x2 command cursor to `want` and confirm.
+
+    PHYSICAL 0  SPECIAL 1 / BAG 2  RUN 3 - left/right flips bit 0, up/down flips
+    bit 1, which is how the game itself moves it.
+    """
+    at = page.evaluate("() => Battle.cursor")
+    if at is None:
+        return False
+    if (at ^ want) & 1:
+        page.keyboard.press("ArrowRight")
+        page.wait_for_timeout(60)
+    if (at ^ want) & 2:
+        page.keyboard.press("ArrowDown")
+        page.wait_for_timeout(60)
+    page.keyboard.press("z")
+    page.wait_for_timeout(90)
+    return True
+
+
+def _use_a_spray(page):
+    """Open BAG and use the first healing item, through the real menu.
+
+    Deliberately drives the UI rather than calling into Battle, so a broken bag
+    submenu fails this check instead of hiding behind a back door.
+    """
+    idx = page.evaluate(
+        "() => Object.keys(Player.bag).filter(n => DATA.items[n] && DATA.items[n].battle)"
+        "  .findIndex(n => /restore \\d+ HP|restore all HP/.test(DATA.items[n].effect || ''))")
+    if idx is None or idx < 0:
+        return False
+    _command(page, 2)                         # BAG
+    if page.evaluate("() => Battle.sub") != "bag":
+        page.keyboard.press("x")
+        page.wait_for_timeout(60)
+        return False
+    for _ in range(idx):
+        page.keyboard.press("ArrowDown")
+        page.wait_for_timeout(60)
+    page.keyboard.press("z")
+    page.wait_for_timeout(140)
+    return True
 
 
 def idle(page, ms=6000):
@@ -295,12 +413,172 @@ def main():
         if not page.evaluate("() => !!Player.flags.beatBoss"):
             errors.append("the boss was never beaten")
 
+        # --- ACT 2: the road, the capital, the works, the Memorial
+        page.evaluate("() => { Player.flags.beatBoss = true; Player.level = 12; "
+                      "Player.exp = Player.expToReach(12); Player.restore(); }")
+        idle(page)
+        put(page, "clearing", 13, 3, "right")
+        walk(page, "ArrowRight", 700, "road_ondo")
+        if not page.evaluate("() => World.id === 'road_ondo'"):
+            errors.append("the orchard does not open onto the road after the boss")
+        shot("20-road")
+
+        put(page, "road_ondo", 22, 5, "right")
+        walk(page, "ArrowRight", 700, "ondo")
+        if not page.evaluate("() => World.id === 'ondo'"):
+            errors.append("the road does not reach Ondo")
+        shot("21-ondo")
+
+        # every Ondo NPC must speak
+        for key, tx, ty, face in [("ondo_clerk", 8, 7, "up"), ("ondo_baker", 20, 10, "up"),
+                                  ("ondo_bench", 12, 14, "up"), ("ondo_courier", 25, 7, "up")]:
+            idle(page)
+            put(page, "ondo", tx, ty, face)
+            press(page, "z")
+            page.wait_for_timeout(280)
+            if not page.evaluate("() => Dialogue.active"):
+                errors.append(f"{key} said nothing")
+            advance(page)
+
+        # the billboard is the first Vixtry sighting and must speak in its own voice
+        idle(page)
+        put(page, "ondo", 22, 7, "up")
+        press(page, "z")
+        page.wait_for_timeout(280)
+        speaker = page.evaluate("() => Dialogue.page && Dialogue.page.speaker")
+        if speaker != "vixtry":
+            errors.append(f"the billboard speaks as {speaker!r}, not in the Vixtry voice")
+        shot("22-billboard")
+        advance(page)
+
+        # the dry fountain errand pays out
+        before = page.evaluate("() => Player.money")
+        idle(page); put(page, "ondo", 15, 8, "up"); press(page, "z"); advance(page)
+        if page.evaluate("() => Player.money") <= before:
+            errors.append("the dry fountain errand paid nothing")
+
+        # the boarding-house man, seen once
+        for room, tx, ty in [("boarding_house", 23, 5), ("records_room", 8, 13)]:
+            idle(page); put(page, "ondo", tx, ty, "up")
+            hold(page, "ArrowUp", 700)
+            if not until(page, f"World.id === '{room}'", 4000):
+                errors.append(f"could not enter {room}")
+            put(page, "ondo", 4, 8)
+        idle(page); put(page, "boarding_house", 3, 4, "up"); press(page, "z"); advance(page)
+        if not page.evaluate("() => !!Player.flags.boarderSeen"):
+            errors.append("the boarding-house man never speaks")
+        shot("23-boarder")
+        # ...and is gone the next time through. Nothing says so.
+        page.evaluate("() => World.load('ondo')"); page.wait_for_timeout(200)
+        page.evaluate("() => World.load('boarding_house')"); page.wait_for_timeout(200)
+        if page.evaluate("() => World.entities.some(e => e.key === 'boarder')"):
+            errors.append("the boarding-house man is still there the second time")
+
+        # sidequest 6: two tenants pay, room 7 has left
+        before = page.evaluate("() => Player.money")
+        for tx, ty, face in [(7, 5, "up"), (2, 6, "up"), (9, 4, "up"),
+                             (5, 2, "up"), (7, 5, "up")]:
+            idle(page); put(page, "boarding_house", tx, ty, face)
+            press(page, "z"); advance(page)
+        if not page.evaluate("() => !!Player.flags.ledgerDone"):
+            errors.append("the boarding-house ledger cannot be settled")
+        if page.evaluate("() => Player.money") <= before:
+            errors.append("the boarding-house ledger paid nothing")
+
+        # the records collectible
+        idle(page); put(page, "records_room", 10, 6, "up"); press(page, "z"); advance(page)
+        if page.evaluate("() => Player.collectibles") < 1:
+            errors.append("the records collectible cannot be picked up")
+
+        # into the winter and the works
+        idle(page); put(page, "ondo", 27, 13, "down")
+        walk(page, "ArrowDown", 900, "winter_road")
+        if not page.evaluate("() => World.id === 'winter_road'"):
+            errors.append("Ondo does not lead to the winter road")
+        shot("24-winter")
+
+        # sidequest 8: three parcels, three addresses, no houses
+        before = page.evaluate("() => Player.money")
+        for tx, ty in [(5, 3), (11, 8), (17, 3)]:
+            idle(page); put(page, "winter_road", tx, ty, "up")
+            press(page, "z"); advance(page)
+        if not page.evaluate("() => !!Player.flags.deliveryDone"):
+            errors.append("the Northside delivery cannot be completed")
+        if page.evaluate("() => Player.money") <= before:
+            errors.append("the Northside delivery paid nothing")
+
+        idle(page); put(page, "winter_road", 20, 5, "right")
+        walk(page, "ArrowRight", 700, "kestrel_yard")
+        if not page.evaluate("() => World.id === 'kestrel_yard'"):
+            errors.append("the winter road does not reach Kestrel Works")
+        shot("25-kestrel-yard")
+
+        idle(page); put(page, "kestrel_yard", 12, 6, "up")
+        walk(page, "ArrowUp", 700, "kestrel_f1")
+        if not page.evaluate("() => World.id === 'kestrel_f1'"):
+            errors.append("the factory door does not open")
+        shot("26-kestrel")
+
+        # every layoff note must be readable, in order
+        notes = [("kestrel_f1", 4, 5, "notice_year_one"),
+                 ("kestrel_f2", 6, 5, "notice_year_four"),
+                 ("kestrel_f2", 14, 8, "shift_schedule"),
+                 ("kestrel_f3", 5, 5, "in_a_locker"),
+                 ("kestrel_f3", 11, 5, "safety_inspection"),
+                 ("kestrel_f3", 17, 5, "last_one_out")]
+        for room, tx, ty, note in notes:
+            idle(page); put(page, room, tx, ty, "up")
+            press(page, "z"); page.wait_for_timeout(250)
+            if not page.evaluate("() => Dialogue.active"):
+                errors.append(f"lore note {note} is unreachable")
+            advance(page)
+        if page.evaluate("() => Player.notes.length") < 6:
+            errors.append("the Kestrel layoff sequence did not register")
+        shot("27-note")
+
+        # second Custodian sighting
+        page.evaluate("() => { Player.flags.sawCustodian2 = false; World.load('kestrel_f2'); }")
+        page.wait_for_timeout(700)
+        if not page.evaluate("() => World.entities.some(e => e.kind === 'custodian')"):
+            errors.append("the Custodian does not appear at Kestrel Works")
+        shot("28-custodian2")
+
+        # sidequest 13: the breaker by the gate, which nobody asks about and
+        # nobody thanks him for. Only readable after the last note.
+        idle(page); put(page, "kestrel_yard", 11, 7, "up"); press(page, "z"); advance(page)
+        if not page.evaluate("() => !!Player.flags.kestrelDark"):
+            errors.append("the yard lights cannot be switched off")
+
+        page.evaluate("() => { Player.level = 16; Player.exp = Player.expToReach(16); Player.restore(); }")
+        idle(page); put(page, "kestrel_yard", 18, 9, "up")
+        page.wait_for_timeout(400)
+        press(page, "z"); advance(page)
+        if not until(page, "Battle.active && Battle.enemy.boss", 6000):
+            errors.append("the yard does not start the Memorial fight")
+        else:
+            shot("29-memorial")
+            if page.evaluate("() => Battle.canFlee()"):
+                errors.append("the Memorial can be fled from")
+            if not fight(page):
+                errors.append("the Memorial fight never ended")
+        page.wait_for_timeout(500)
+        advance(page)
+        if not page.evaluate("() => !!Player.flags.beatMemorial"):
+            errors.append("the Memorial was never beaten")
+        shot("30-after-memorial")
+
         # --- every transition must be survivable in both directions
         # (the 0.1.0 bug: landing on the return path bounced you straight back)
         pairs = [("okobo", "north_road"), ("north_road", "orchard1"),
                  ("orchard1", "orchard2"), ("orchard2", "orchard3"),
                  ("orchard3", "clearing"), ("okobo", "arrival"),
-                 ("okobo", "shop"), ("okobo", "inn"), ("okobo", "house")]
+                 ("okobo", "shop"), ("okobo", "inn"), ("okobo", "house"),
+                 ("clearing", "road_ondo"), ("road_ondo", "ondo"),
+                 ("ondo", "ondo_shop"), ("ondo", "ondo_inn"),
+                 ("ondo", "boarding_house"), ("ondo", "records_room"),
+                 ("ondo", "winter_road"), ("winter_road", "kestrel_yard"),
+                 ("kestrel_yard", "kestrel_f1"), ("kestrel_f1", "kestrel_f2"),
+                 ("kestrel_f2", "kestrel_f3")]
         for a, b in pairs:
             for src, dst in ((a, b), (b, a)):
                 ok = page.evaluate("""([src, dst]) => {
@@ -312,6 +590,7 @@ def main():
                   Player.x = x.x*16 + ((x.w||1)*16)/2;
                   Player.y = x.y*16 + ((x.h||1)*16)/2;
                   World.exitArmed = true;
+                  Player.flags.beatBoss = true;   // unlock gated exits for the audit
                   const landing = x.at;
                   World.load(dst, landing);
                   // the landing tile must be walkable and must not be an exit

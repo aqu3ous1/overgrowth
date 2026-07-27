@@ -1,0 +1,160 @@
+{
+  "note": "Enemy stats derive from level and role rather than being authored per species. Tuned by tools/simulate.py against the encounter targets below; see docs/16-combat-math.md.",
+  "enemy_curve": {
+    "HP": {
+      "base": 14,
+      "per_level": 2.6,
+      "per_level_squared": 0.65
+    },
+    "ATK": {
+      "base": 3.36,
+      "per_level": 0.688
+    },
+    "DEF": {
+      "base": 2.8,
+      "per_level": 0.8
+    },
+    "SPD": {
+      "base": 4,
+      "per_level": 1.1
+    },
+    "attack_power": 20
+  },
+  "roles": {
+    "standard": {
+      "HP": 1.0,
+      "ATK": 1.0,
+      "DEF": 1.0,
+      "SPD": 1.0
+    },
+    "brute": {
+      "HP": 1.25,
+      "ATK": 1.25,
+      "DEF": 0.85,
+      "SPD": 0.7
+    },
+    "wall": {
+      "HP": 1.2,
+      "ATK": 0.7,
+      "DEF": 1.5,
+      "SPD": 0.75
+    },
+    "glass": {
+      "HP": 0.65,
+      "ATK": 1.2,
+      "DEF": 0.6,
+      "SPD": 1.45
+    },
+    "support": {
+      "HP": 0.85,
+      "ATK": 0.55,
+      "DEF": 1.0,
+      "SPD": 1.05
+    }
+  },
+  "bosses": {
+    "The Fruiting Tree": {
+      "role": "standard",
+      "hp_multiplier": 1.48,
+      "atk_multiplier": 0.98,
+      "phases": 1
+    },
+    "The Memorial": {
+      "role": "wall",
+      "hp_multiplier": 1.78,
+      "atk_multiplier": 1.17,
+      "phases": 3
+    },
+    "Line Supervisor": {
+      "role": "standard",
+      "hp_multiplier": 1.63,
+      "atk_multiplier": 1.3,
+      "phases": 1,
+      "self_buffs": 2
+    },
+    "Tenant": {
+      "role": "standard",
+      "hp_multiplier": 1.92,
+      "atk_multiplier": 1.23,
+      "phases": 3,
+      "splits": true
+    },
+    "Account Manager": {
+      "role": "support",
+      "hp_multiplier": 1.78,
+      "atk_multiplier": 1.36,
+      "phases": 1,
+      "inflicts": "Drained"
+    },
+    "The Custodian": {
+      "role": "standard",
+      "hp_multiplier": 2.07,
+      "atk_multiplier": 1.36,
+      "phases": 2,
+      "restores_once_to": 0.5,
+      "inflicts": "Homesick"
+    },
+    "Something Left Over": {
+      "role": "brute",
+      "hp_multiplier": 1.78,
+      "atk_multiplier": 1.3,
+      "phases": 1,
+      "inflicts": "Homesick"
+    },
+    "The Custodian, Unfinished": {
+      "role": "standard",
+      "hp_multiplier": 2.5,
+      "atk_multiplier": 1.41,
+      "phases": 4,
+      "inflicts": "Homesick",
+      "damage_falloff_per_phase": 0.12
+    }
+  },
+  "targets": {
+    "note": "What a fight should feel like. simulate.py fails if a matchup lands outside these. Turn counts and win rates are per species; attrition is judged on the band median, because a glass enemy dying fast and a wall grinding on are both correct.",
+    "regular_encounter": {
+      "turns": [
+        2,
+        8
+      ],
+      "win_rate": [
+        0.98,
+        1.0
+      ],
+      "band_median_attrition": [
+        0.08,
+        0.35
+      ],
+      "attrition_exempt_bands": [
+        10
+      ],
+      "exempt_reason": "The Root is the one band the player outclasses; cheap fights there are the payoff."
+    },
+    "mini_boss": {
+      "turns": [
+        6,
+        15
+      ],
+      "win_rate": [
+        0.8,
+        1.0
+      ]
+    },
+    "main_boss": {
+      "turns": [
+        9,
+        24
+      ],
+      "win_rate": [
+        0.7,
+        1.0
+      ]
+    }
+  },
+  "player_item_budget": {
+    "note": "Healing items the sim assumes a player brings into a fight. Deliberately modest — a boss should be clearable without a full bag.",
+    "regular_encounter": 0,
+    "mini_boss": 3,
+    "main_boss": 5
+  }
+}

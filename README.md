@@ -33,6 +33,7 @@ one long walk out.
 | [13 — Sidequests](docs/13-sidequests.md) | All twenty quests, givers, and rewards |
 | [14 — Script Samples](docs/14-script-samples.md) | Six scenes written in full, as tone reference |
 | [15 — Lore Notes](docs/15-lore-notes.md) | All thirty readable notes, written out |
+| [16 — Combat Math](docs/16-combat-math.md) | Enemy stat derivation, damage formula, measured difficulty |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
 
 ## The numbers
@@ -41,21 +42,31 @@ one long walk out.
 progression curve, move lists, enemy roster, boss table, items and equipment, world and quests.
 
 `tools/validate.py` checks that the data and the docs agree with each other, and that both follow
-the rules the design claims to follow:
+the rules the design claims to follow. `tools/simulate.py` fights every matchup in the game a few
+thousand times and checks the results against the targets in `data/statblocks.json`:
 
 ```
-python3 tools/validate.py     # stdlib only, no dependencies
+python3 tools/validate.py                 # 399 consistency checks
+python3 tools/simulate.py --verbose       # 57 matchups, 2000 trials each
 ```
+
+Both are stdlib only, no dependencies.
 
 It verifies the EXP curve against its own formula, that every move is castable at the level it's
 learned, that every boss shows `??` and no regular enemy does, that the Root is the only encounter
 band the player outclasses, that every act from 2 to 4 offers a trade-off item in both equipment
 slots, that the family's names are never rendered anywhere, that the scope table in
 [00](docs/00-overview.md) still matches the rosters, and that no doc links to a file that isn't
-there — 389 checks in total.
+there — 399 checks in total.
 
-**Run it after changing any number.** It caught four real inconsistencies the first time it ran,
-including two arithmetic errors in the EXP table and a boss the player could have fled from.
+**Run both after changing any number.** The validator caught four real inconsistencies on its first
+run, including two arithmetic errors in the EXP table and a boss the player could have fled from.
+
+The simulator caught something bigger: **player damage was outgrowing enemy HP by roughly 70×.**
+Move power and stats were both scaling, so they compounded — every late-game enemy died in one hit
+while the early bosses were unwinnable. Fixing it meant treating move power as a sidegrade axis
+rather than a scaling one, and giving enemy HP a quadratic term. Neither problem is visible from
+reading the tables. See [16](docs/16-combat-math.md).
 
 ## Two rules the validator enforces, not just documents
 

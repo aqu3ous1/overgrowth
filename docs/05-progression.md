@@ -93,13 +93,13 @@ learnset *is* the character arc.
 | Lv | Move | PP | Power | Notes |
 |---|---|---|---|---|
 | 1 | **Punch** | 2 | 20 | Baseline. Always affordable. |
-| 6 | **Multi-Jab** | 5 | 8 × 2–4 hits | Great vs. low DEF, poor vs. high DEF. Each hit rolls separately. |
-| 10 | **Wind-Up Punch** | 9 | 55 | Always acts **last** in the turn regardless of SPD. |
+| 6 | **Multi-Jab** | 5 | 9 × 2–4 hits | Great vs. low DEF, poor vs. high DEF. Each hit rolls separately. |
+| 10 | **Wind-Up Punch** | 9 | 34 | Always acts **last** in the turn regardless of SPD. |
 | 14 | **Counter Stance** | 6 | — | Halves Physical damage this turn; returns 50% of what was blocked. |
-| 18 | **Gut Check** | 8 | 40 | 40% chance to drop target ATK one stage. |
-| 24 | **Haymaker** | 14 | 80 | 80% accuracy. |
-| 30 | **Rush Down** | 12 | 45 × 2 | Always acts **first**. Second hit only lands if the first connects. |
-| 38 | **Last Word** | 20 | 60–140 | Power scales inversely with the player's remaining HP. Max power below 15%. |
+| 18 | **Gut Check** | 8 | 30 | 40% chance to drop target ATK one stage. |
+| 24 | **Haymaker** | 14 | 48 | 80% accuracy. |
+| 30 | **Rush Down** | 12 | 24 × 2 | Always acts **first**. Second hit only lands if the first connects. |
+| 38 | **Last Word** | 20 | 36–72 | Power scales inversely with the player's remaining HP. Max power below 15%. |
 
 ### Special (SP)
 
@@ -107,14 +107,14 @@ learnset *is* the character arc.
 |---|---|---|---|---|
 | 4 | **Telekinesis** | 3 | 22 | First special learned. Cheap chip damage. |
 | 9 | **Mend** | 6 | — | Restores 35% max HP. The only self-heal that isn't an item. |
-| 12 | **Health Steal** | 7 | 30 | Heals the player for 50% of damage dealt. |
+| 12 | **Health Steal** | 7 | 26 | Heals the player for 50% of damage dealt. |
 | 16 | **Mind Fog** | 5 | — | Inflicts **Fog**. |
 | 20 | **Static Pulse** | 6 | — | Inflicts **Static**; drops target SPD one stage. |
-| 26 | **Aura Barrage** | 13 | 30 × 3 | Hits all enemies. |
+| 26 | **Aura Barrage** | 13 | 17 × 3 | Hits all enemies. |
 | 31 | **Quiet Room** | 10 | — | Halves Special damage taken for 3 turns. Also clears **Homesick**. |
 | 34 | **Mend+** | 12 | — | Restores 70% max HP and cures one status. |
-| 40 | **Severance** | 18 | 95 | Ignores the target's SPDEF term entirely. |
-| 43 | **Wake Up** | 30 | 140 | Learned immediately before the final area. |
+| 40 | **Severance** | 18 | 56 | Ignores the target's SPDEF term entirely. |
+| 43 | **Wake Up** | 30 | 70 | Learned immediately before the final area. |
 
 `Wake Up` is the last thing he learns and it is the title of the ending. Whether the player uses it
 on the Custodian or not, the game should notice.

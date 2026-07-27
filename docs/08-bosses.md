@@ -83,7 +83,9 @@ attacked. Destroying a tier drops the boss's height, changes its moveset, and ra
 Fully defensive in tier 1, mixed in tier 2, desperate in tier 3.
 
 **Teaches:** that a fight can change shape mid-way, and that saving resources for a later phase
-matters. This is the first fight the player can lose.
+matters. It is not, despite an earlier draft saying so, a fight the player is likely to lose — it's
+a wall, it barely hits, and simulation clears it 100% of the time with no items at all
+([16](16-combat-math.md)). That's correct for what it is; the danger arrives later.
 
 **Drops:** Second Wind ×1, 900 EXP.
 
@@ -168,6 +170,18 @@ It is the only fight in the game with no correct strategy — it's a resource ch
 **Drops:** Full Spray ×3, 4,200 EXP.
 
 ---
+
+## Where the difficulty actually is
+
+Measured, not designed — see [16](16-combat-math.md) for the full table.
+
+The first five encounters are teaching fights that a competent player at the expected level will not
+lose. Then **both Custodian fights become hard resource checks**: 94% and 100% win with a stocked
+bag, 0% and 3% without one.
+
+That is the right shape for this game and it lands on the economy in the right direction. There are
+no sidequests in Act 5 and nobody left who needs anything from the boy ([13](13-sidequests.md)), so
+money is tightest exactly when items stop being optional.
 
 ## Boss design rules
 

@@ -36,7 +36,7 @@ one long walk out.
 | [16 — Combat Math](docs/16-combat-math.md) | Enemy stat derivation, damage formula, measured difficulty |
 | [17 — Economy](docs/17-economy.md) | Shops, prices, and the per-act ledger |
 | [18 — Vertical Slice](docs/18-vertical-slice.md) | What to build first, and how to know it worked |
-| [19 — The Playable Build](docs/19-build.md) | What 0.1.0 contains, and where it deviates |
+| [19 — The Playable Build](docs/19-build.md) | What 0.2.0 contains, and where it deviates |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
 
 ## Play it
@@ -66,7 +66,7 @@ progression curve, move lists, enemy roster, boss table, items and equipment, wo
 Four tools keep the design honest, each checking a claim the documents make.
 
 ```
-python3 tools/validate.py       # 567 checks: do the data, docs and build agree?
+python3 tools/validate.py       # 569 checks: do the data, docs and build agree?
 python3 tools/simulate.py       # 57 matchups x 2000 trials: do fights feel right?
 python3 tools/economy.py        # per-act ledger: can the player afford them?
 python3 tools/curve.py          # levelling walk: does the player reach the levels
@@ -83,7 +83,7 @@ learned, that every boss shows `??` and no regular enemy does, that the Root is 
 band the player outclasses, that every act from 2 to 4 offers a trade-off item in both equipment
 slots, that the family's names are never rendered anywhere, that the scope table in
 [00](docs/00-overview.md) still matches the rosters, and that no doc links to a file that isn't
-there — 567 checks in total, including that the checked-in build is not stale.
+there — 569 checks in total, including that the checked-in build is not stale.
 
 **Run both after changing any number.** The validator caught four real inconsistencies on its first
 run, including two arithmetic errors in the EXP table and a boss the player could have fled from.

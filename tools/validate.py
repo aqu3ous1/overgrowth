@@ -235,23 +235,43 @@ check(
     "Expected exactly 4 mini-bosses",
 )
 
-boss_levels = [e["level"] for e in encounters]
+boss_levels = [e["internal_level"] for e in encounters]
 check(
     boss_levels == sorted(boss_levels) and len(set(boss_levels)) == len(boss_levels),
-    f"Boss levels must strictly increase: {boss_levels}",
+    f"Boss internal levels must strictly increase: {boss_levels}",
 )
 
-for e in encounters:
-    check(e["no_flee"], f"{e['name']} must carry the no-flee flag")
+# Bosses show "??", never a number. That is what closes RUN, so it has to hold
+# for every one of them — including the secret encounter.
+for e in encounters + [bosses["secret_encounter"]]:
     check(
-        e["level"] > e["player_expected"][1],
-        f"{e['name']} is level {e['level']}, not above the player's expected "
-        f"{e['player_expected'][1]} — RUN would show a confusing reason",
+        e.get("display_level") == "??",
+        f"{e['name']} must display '??' rather than a level (04-battle-system.md)",
     )
-    check(e["level"] <= CAP, f"{e['name']} is above the level cap")
+    check(
+        "level" not in e and "no_flee" not in e,
+        f"{e['name']} still carries a plain level or a no-flee flag; '??' replaces both",
+    )
+
+for e in encounters:
+    check(
+        e["internal_level"] > e["player_expected"][1],
+        f"{e['name']} is internally level {e['internal_level']}, not above the player's "
+        f"expected {e['player_expected'][1]}",
+    )
 
 final = encounters[-1]
-check(final["level"] == CAP, "The final boss must sit at the level cap")
+check(
+    final["internal_level"] > CAP,
+    f"The final boss must sit above the player's cap of {CAP}, "
+    f"got {final['internal_level']}",
+)
+
+# No regular enemy may show "??" — the exception is what makes it mean anything.
+check(
+    all(isinstance(e["level"], int) for e in roster),
+    "Regular enemies must always show a real numeric level",
+)
 
 primitives = [e["primitive"] for e in encounters if e["kind"] == "main"]
 check(
@@ -369,9 +389,51 @@ check(10 <= lo and hi <= 17, f"Total pacing {lo}-{hi}h is outside the 10-15h tar
 warn(main_hi <= 14, f"Main-path estimate {main_hi}h is drifting past the 10-15h target")
 
 
+# --- naming ----------------------------------------------------------------
+
+# The family's names are never rendered anywhere, in any form. The protagonist
+# knows them; the player never finds out.
+naming = load("naming.json")
+all_md = {f: f.read_text() for f in [ROOT / "README.md"] + sorted(DOCS.glob("*.md"))}
+
+check(
+    naming["permitted_family_names"] == [],
+    "No family name may ever be permitted — surname, father's, or mother's",
+)
+check(
+    naming["player_name_entry"]["surname"] is False,
+    "The player must never be asked for a surname",
+)
+
+for site in naming["dodge_sites"]:
+    target = ROOT / site["doc"]
+    check(target.exists(), f"Naming dodge site {site['id']} points at a missing doc")
+    if target.exists():
+        check(
+            site["must_contain"] in target.read_text(),
+            f"Dodge site {site['id']} is not rendered as specified in {site['doc']}",
+        )
+
+for forbidden in naming["forbidden_renderings"]:
+    pattern = re.compile(forbidden["pattern"])
+    for f, text in all_md.items():
+        check(
+            not pattern.search(text),
+            f"{f.name} contains a forbidden family-name rendering "
+            f"({forbidden['pattern']}): {forbidden['why']}",
+        )
+
+for ref in naming["rule_must_be_referenced_from"]:
+    text = (ROOT / ref).read_text()
+    check(
+        re.search(r"never (?:be )?(?:revealed|rendered)", text) is not None,
+        f"{ref} must state the naming rule so a writer meets it from any entry point",
+    )
+
+
 # --- docs ------------------------------------------------------------------
 
-md_files = [ROOT / "README.md"] + sorted(DOCS.glob("*.md"))
+md_files = list(all_md)
 link = re.compile(r"\]\((?!https?:)([^)#]+\.md)\)")
 for f in md_files:
     for target in link.findall(f.read_text()):

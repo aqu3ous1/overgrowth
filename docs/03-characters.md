@@ -21,6 +21,10 @@ real world or the dream world, which is correct in both cases.
 assume about him, what the environment implies he grew up with, and what moves he learns. The move
 list is the arc: he starts with `Punch` and ends with `Wake Up`.
 
+**His family's names are never revealed** — surname, father, mother, none of them, anywhere in the
+game. He knows them; the player doesn't. The player supplies his first name and nothing else, and
+nobody ever asks for the rest. Hard rule with the three dodge sites in [15](15-lore-notes.md).
+
 ---
 
 ## The Custodian

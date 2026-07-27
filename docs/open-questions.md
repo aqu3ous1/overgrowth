@@ -45,6 +45,38 @@ than it returns.
 **Reversal cost:** trivial. One find-and-replace across [06](06-items-and-equipment.md),
 [11](11-pacing-and-systems.md) and [13](13-sidequests.md).
 
+## RESOLVED — 3b. Bosses display `??` instead of a level
+
+Regular enemies show a real number; **all eight bosses and the secret encounter show `??`.**
+
+This replaced an earlier arrangement where bosses had visible numeric levels plus a hidden no-flee
+flag — which meant the UI showed the player a number they could reason about while a rule they
+couldn't see overrode it. `??` resolves as *unknown, therefore not below yours*, so the ordinary
+flee rule closes RUN by itself and nothing is hidden that the player was ever shown.
+
+It also unbinds boss tuning from the level cap. Internal levels are balance figures that never
+reach the screen, so the final boss sits at 48 against a player cap of 45.
+
+**Reversal cost:** low mechanically, high thematically. `??` is now the game's only boss indicator —
+removing it means inventing a nameplate flourish or a music sting to replace it, both of which the
+audio direction ([01](01-art-and-audio.md)) rules out.
+
+## RESOLVED — 3c. The family's names are never revealed
+
+Not the surname, not the father's name, not the mother's — nowhere in the game, in any form or
+medium. The protagonist knows all three; the player never finds out.
+
+Parents are referred to by role only, no NPC ever addresses a parent directly (an NPC who did would
+have to use a name), and the player enters a first name only at file creation. The three places the
+name could structurally appear all dodge it — see [15](15-lore-notes.md).
+
+This was a proposal covering only the surname and has been promoted to a hard rule covering the
+whole family. The earlier draft printed the father's initial on a staff roster; it no longer does,
+and `tools/validate.py` guards against it coming back.
+
+**Reversal cost:** high. It's load-bearing for the name-entry system (a player-entered name can
+never match a printed surname) and for the prologue's block-glyph motif.
+
 ## RESOLVED — 4. The true form is larger; the secret encounter is not a "truer" version
 
 The tension was that Main Boss 4 is written as a *stronger* form while the secret encounter (*Spire*)

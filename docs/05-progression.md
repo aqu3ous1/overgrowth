@@ -35,8 +35,9 @@ on it.
 
 Cap is **45**. A player on the critical path arrives at the finale around level 40–43.
 
-**The final boss is level 45** — the cap itself, and the only encounter in the game the player can
-never out-level ([08](08-bosses.md)).
+**Bosses are not on this scale.** They display `??` rather than a number, so their internal levels
+are balance figures the player never sees and the cap does not constrain — the final boss sits at an
+internal 48, above anything the player can reach ([08](08-bosses.md)).
 
 EXP required to reach level *n*:
 

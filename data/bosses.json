@@ -1,50 +1,153 @@
 {
-  "note": "Every boss carries no_flee. Boss levels are also set above the top of the player's expected range so the UI reason shown is almost always the level.",
+  "note": "Bosses display '??' instead of a level. Internal levels are balance figures that are never shown and are not bound by the player's level cap. '??' resolves as 'unknown, therefore not below yours', so the existing flee rule closes RUN with no special case.",
   "encounters": [
     {
-      "order": 1, "kind": "mini", "name": "The Fruiting Tree", "act": 1, "level": 10,
-      "player_expected": [5, 9], "area": "The Sunken Orchard", "no_flee": true,
-      "drops": ["Spray II x3"], "exp": 300
+      "order": 1,
+      "kind": "mini",
+      "name": "The Fruiting Tree",
+      "act": 1,
+      "display_level": "??",
+      "internal_level": 10,
+      "player_expected": [
+        5,
+        9
+      ],
+      "area": "The Sunken Orchard",
+      "drops": [
+        "Spray II x3"
+      ],
+      "exp": 300
     },
     {
-      "order": 2, "kind": "main", "name": "The Memorial", "act": 2, "level": 16,
-      "player_expected": [12, 15], "area": "Kestrel Works", "primitive": "obelisk", "no_flee": true,
-      "drops": ["Second Wind x1"], "exp": 900
+      "order": 2,
+      "kind": "main",
+      "name": "The Memorial",
+      "act": 2,
+      "display_level": "??",
+      "internal_level": 16,
+      "player_expected": [
+        12,
+        15
+      ],
+      "area": "Kestrel Works",
+      "primitive": "obelisk",
+      "drops": [
+        "Second Wind x1"
+      ],
+      "exp": 900
     },
     {
-      "order": 3, "kind": "mini", "name": "Line Supervisor", "act": 3, "level": 20,
-      "player_expected": [16, 19], "area": "Sable City", "no_flee": true,
-      "drops": ["Work Jacket"], "exp": 1200
+      "order": 3,
+      "kind": "mini",
+      "name": "Line Supervisor",
+      "act": 3,
+      "display_level": "??",
+      "internal_level": 20,
+      "player_expected": [
+        16,
+        19
+      ],
+      "area": "Sable City",
+      "drops": [
+        "Work Jacket"
+      ],
+      "exp": 1200
     },
     {
-      "order": 4, "kind": "main", "name": "Tenant", "act": 3, "level": 26,
-      "player_expected": [21, 25], "area": "Bellhouse Commons", "primitive": "cube", "no_flee": true,
-      "drops": ["Signal Rod", "Full Spray x2"], "exp": 2400
+      "order": 4,
+      "kind": "main",
+      "name": "Tenant",
+      "act": 3,
+      "display_level": "??",
+      "internal_level": 26,
+      "player_expected": [
+        21,
+        25
+      ],
+      "area": "Bellhouse Commons",
+      "primitive": "cube",
+      "drops": [
+        "Signal Rod",
+        "Full Spray x2"
+      ],
+      "exp": 2400
     },
     {
-      "order": 5, "kind": "mini", "name": "Account Manager", "act": 4, "level": 32,
-      "player_expected": [27, 31], "area": "Vixtry Regional Campus", "no_flee": true,
-      "drops": ["Second Wind x2"], "exp": 2900
+      "order": 5,
+      "kind": "mini",
+      "name": "Account Manager",
+      "act": 4,
+      "display_level": "??",
+      "internal_level": 32,
+      "player_expected": [
+        27,
+        31
+      ],
+      "area": "Vixtry Regional Campus",
+      "drops": [
+        "Second Wind x2"
+      ],
+      "exp": 2900
     },
     {
-      "order": 6, "kind": "main", "name": "The Custodian", "act": 4, "level": 36,
-      "player_expected": [32, 35], "area": "The Long Hall", "primitive": "sphere", "no_flee": true,
-      "drops": ["Static Vest"], "exp": 4000
+      "order": 6,
+      "kind": "main",
+      "name": "The Custodian",
+      "act": 4,
+      "display_level": "??",
+      "internal_level": 36,
+      "player_expected": [
+        32,
+        35
+      ],
+      "area": "The Long Hall",
+      "primitive": "sphere",
+      "drops": [
+        "Static Vest"
+      ],
+      "exp": 4000
     },
     {
-      "order": 7, "kind": "mini", "name": "Something Left Over", "act": 5, "level": 40,
-      "player_expected": [37, 39], "area": "The Root", "no_flee": true,
-      "drops": ["Full Spray x3"], "exp": 4200
+      "order": 7,
+      "kind": "mini",
+      "name": "Something Left Over",
+      "act": 5,
+      "display_level": "??",
+      "internal_level": 40,
+      "player_expected": [
+        37,
+        39
+      ],
+      "area": "The Root",
+      "drops": [
+        "Full Spray x3"
+      ],
+      "exp": 4200
     },
     {
-      "order": 8, "kind": "main", "name": "The Custodian, Unfinished", "act": 5, "level": 45,
-      "player_expected": [40, 43], "area": "The Root", "primitive": "pyramid", "no_flee": true,
-      "drops": [], "exp": 0
+      "order": 8,
+      "kind": "main",
+      "name": "The Custodian, Unfinished",
+      "act": 5,
+      "display_level": "??",
+      "internal_level": 48,
+      "player_expected": [
+        40,
+        43
+      ],
+      "area": "The Root",
+      "primitive": "pyramid",
+      "drops": [],
+      "exp": 0
     }
   ],
   "secret_encounter": {
-    "name": "The Custodian, Unfinished (Spire)", "primitive": "spire",
-    "requires": "all 10 collectibles", "area": "The Root / the Gallery restored",
-    "attacks": false
+    "name": "The Custodian, Unfinished (Spire)",
+    "primitive": "spire",
+    "requires": "all 10 collectibles",
+    "area": "The Root / the Gallery restored",
+    "attacks": false,
+    "display_level": "??",
+    "internal_level": 44
   }
 }

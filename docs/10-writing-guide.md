@@ -15,6 +15,11 @@ not final script.
    world.
 5. **No winking.** No character is aware they're in a game, a simulation, or a horror story — with
    exactly one exception, at the very end, and even then only obliquely.
+6. **The family's names are never revealed.** Not the surname, not the father's name, not the
+   mother's. Parents are referred to by role only — "Mum," "Dad," "your father," "one of the
+   hardware guys" — and no NPC ever addresses a parent directly, because an NPC who did would have
+   to use a name. The protagonist knows all three; the player never finds out. Full rule and the
+   three places it's dodged: [15](15-lore-notes.md).
 
 ## Voice by faction
 

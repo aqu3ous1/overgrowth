@@ -185,7 +185,8 @@ of these documents thinks it is describing anything unusual.*
 **#26 — Hardware Team Roster**
 > A staff list, first initial and surname.
 > Fourteen names.
-> The eleventh reads: **D. ▓▓▓▓▓▓**
+> Thirteen of them are printed normally.
+> The eleventh reads: **▓. ▓▓▓▓▓▓**
 
 **#27 — Ethics Review**
 > The committee reviewed the involuntary cohort
@@ -221,22 +222,48 @@ is filed between a memo about parking and a memo about the vending machines.*
 
 ---
 
-## PROPOSAL — the family name is never rendered
+## RULE — the family's names are never revealed
 
-The game refuses to display the protagonist's surname anywhere, ever. It appears exactly three
-times, and all three are dodges:
+**The game never renders the family name, the father's name, or the mother's name. Not once, in any
+form, in any medium.** This is a hard rule, not a proposal, and it applies to dialogue, notes,
+signage, menus, save files, and credits.
+
+The protagonist knows all three, obviously. He's lived with them his whole life. The player simply
+never finds out — the game is told from close enough to him that the names never need saying, and
+far enough that they're never said.
+
+### The three dodges
+
+Every place the family name could appear, it doesn't:
 
 | Where | How |
 |---|---|
 | Act 0, the parents arguing | `▓▓▓ ▓▓▓▓` — the same block glyphs as everything else through that door. |
-| Act 3, the Vixtry grunt | *"Same last name as one of the hardware guys."* Spoken, never printed. |
-| Act 4, note #26 | `D. ▓▓▓▓▓▓` on a staff roster, in a document where thirteen other surnames render fine. |
+| Act 3, the Vixtry grunt | *"Same last name as one of the hardware guys."* Spoken about, never printed. |
+| Act 4, note #26 | `▓. ▓▓▓▓▓▓` on a staff roster where thirteen other names print fine. |
 
-This costs one glyph and one rule, it uses a motif the prologue already establishes, and it means
-the single most important word in the game is the one word it will not show you. The player enters
-a first name at file creation and is never asked for the rest.
+### How to write around it
 
-**It also quietly answers a production problem** — the player-entered name can't be made to match a
-surname on a document, so the document simply doesn't have one to match.
+- **Parents are referred to by role, never by name.** "Mum," "Dad," "your father," "one of the
+  hardware guys." Role nouns are fine and should be used freely — they're how a kid refers to his
+  parents anyway, so nothing has to be contorted.
+- **No NPC ever addresses a parent directly**, because an NPC who did would have to use a name.
+  This is a constraint on scene construction, not just on dialogue: the parents are never in a room
+  with anyone who would greet them.
+- **The player enters a first name only** at file creation and is never asked for a surname
+  ([11](11-pacing-and-systems.md)). NPCs use it constantly. Nobody ever asks for the rest of it.
+- **Where a document would structurally have to carry the name, it carries `▓` instead** — and the
+  surrounding document renders normally, so the redaction reads as the game refusing rather than the
+  document being damaged.
 
-The `D.` is the only thing about the father the game ever prints.
+### Why
+
+It costs one glyph and one rule, it uses a motif the prologue already establishes, and it means the
+words the whole story turns on are the words the game will not show you. A boy whose parents talk
+past him for the entire first scene is not going to be handed their names.
+
+**It also quietly solves a production problem.** A player-entered name can never be made to match a
+surname printed on a document — so the document simply doesn't have one to match, and the dodge
+that hides the family is the same dodge that makes the naming system work.
+
+Nothing about the father is ever printed. Not his surname, not his first name, not his initial.

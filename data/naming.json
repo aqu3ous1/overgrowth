@@ -1,0 +1,41 @@
+{
+  "rule": "The game never renders the family name, the father's name, or the mother's name, in any form or medium. The protagonist knows all three; the player never finds out.",
+  "doc": "docs/15-lore-notes.md",
+  "player_name_entry": { "first_name": true, "surname": false },
+  "permitted_family_names": [],
+  "redaction_glyph": "▓",
+  "dodge_sites": [
+    {
+      "id": "prologue-argument",
+      "where": "Act 0, the parents arguing through the door",
+      "method": "block glyphs",
+      "doc": "docs/14-script-samples.md",
+      "must_contain": "▓▓▓ ▓▓▓▓"
+    },
+    {
+      "id": "grunt-remark",
+      "where": "Act 3, a Vixtry grunt",
+      "method": "spoken about, never printed",
+      "doc": "docs/14-script-samples.md",
+      "must_contain": "Same last name as one of the hardware guys"
+    },
+    {
+      "id": "hardware-roster",
+      "where": "Act 4, lore note #26",
+      "method": "redacted line in an otherwise normal document",
+      "doc": "docs/15-lore-notes.md",
+      "must_contain": "▓. ▓▓▓▓▓▓"
+    }
+  ],
+  "forbidden_renderings": [
+    {
+      "pattern": "D\\. ▓",
+      "why": "An earlier draft printed the father's initial. Nothing about him is printed."
+    }
+  ],
+  "rule_must_be_referenced_from": [
+    "docs/03-characters.md",
+    "docs/10-writing-guide.md",
+    "docs/15-lore-notes.md"
+  ]
+}

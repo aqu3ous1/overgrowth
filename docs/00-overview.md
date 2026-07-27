@@ -100,6 +100,7 @@ grown" cutscene. Let the move list say it.
 - **No fail state outside battle.** Liminal zones are unsettling but not stealth or chase sequences.
   Dying in a fight is the only lose condition; see [11](11-pacing-and-systems.md) for the death
   penalty.
-- **Accessibility:** enemy level is always visible (a core rule, not an option), damage numbers
-  toggleable, a text-speed setting, and a "reduce flashing" toggle that specifically tames the
-  Custodian encounters and the Act 5 sequences.
+- **Accessibility:** enemy level is always visible (a core rule, not an option) — bosses being the
+  single exception, showing `??` instead, which is itself information. Damage numbers toggleable, a
+  text-speed setting, and a "reduce flashing" toggle that specifically tames the Custodian
+  encounters and the Act 5 sequences.

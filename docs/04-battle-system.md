@@ -43,21 +43,47 @@ Using an item takes the whole turn and resolves at the player's speed priority l
 
 ### RUN
 
-The rule, verbatim from the design brief and non-negotiable:
-
 | Condition | Outcome |
 |---|---|
 | Enemy level **>** player level | **Cannot flee.** The option is visible and greyed, with the enemy's level shown as the reason. |
 | Enemy level **≤** player level | **50% chance**, flat, regardless of the gap. |
+| Enemy level shown as **`??`** | **Cannot flee.** See below. |
 
 A failed flee consumes the turn and the enemy acts. The flat 50% is deliberate: it stops
 over-levelled players from treating the world as empty corridor, and keeps late-game tension
 identical to early-game tension. Do not add a speed modifier to it.
 
-**Enemy level is always displayed** next to the enemy's name in the battle UI. This is a core rule,
-not an accessibility option — the player must always be able to read "can I leave?" off the screen
-before committing. It is also the game's only difficulty signal, and it quietly does thematic work:
-every fight tells you upfront whether leaving is allowed.
+## Enemy level display
+
+**Every enemy's level is shown** next to its name in the battle UI. The player must always be able
+to read "can I leave?" off the screen before committing. It is the game's only difficulty signal,
+and it quietly does thematic work: every fight tells you upfront whether leaving is allowed.
+
+### `??`
+
+**Bosses do not show a number. They show `??`.**
+
+This is the one exception, and the exception is the signal. `??` resolves as *unknown, and therefore
+not below yours*, so the existing flee rule closes RUN without needing a special case bolted onto
+it — the UI and the mechanic finally say the same thing.
+
+What this buys:
+
+- **Bosses stop being tied to the level cap.** A boss's internal level is a balance number, never a
+  displayed one, so it can sit anywhere — including above 45, where the player can never reach it.
+  The final boss does exactly that.
+- **`??` is the boss indicator.** No nameplate flourish, no music sting, no "A CHALLENGER
+  APPROACHES." The player looks at the level readout, sees two question marks, and knows both that
+  this is not a normal fight and that they are not walking out of it. One UI element, doing all of
+  it.
+- **Nothing is hidden that the player was shown.** The alternative — a numeric boss level plus a
+  concealed no-flee flag overriding it — hands the player a figure to reason about and then quietly
+  ignores their reasoning. `??` tells the truth: you don't get to know, and that's the answer.
+
+`??` appears on all eight bosses and the secret encounter, and nowhere else. Regular enemies always
+show a real number — including the `Retention Specialist` ([12](12-bestiary.md)), who is the only
+*numbered* enemy in the game that cannot be fled, and who exists two encounters before the Custodian
+so that "some things don't let you leave" is established before it matters.
 
 ## Turn flow
 

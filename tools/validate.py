@@ -602,6 +602,59 @@ if moves_row:
     )
 
 
+# --- playable build --------------------------------------------------------
+
+# The build embeds the design tables. If it is stale, the game people play is
+# not the game these documents describe.
+blocks = load("statblocks.json")
+build = ROOT / "game" / "overgrowth.html"
+data_js = ROOT / "game" / "src" / "00_data.js"
+check(build.exists(), "game/overgrowth.html is missing — run tools/build_game.py")
+check(data_js.exists(), "game/src/00_data.js is missing — run tools/build_game.py")
+
+if data_js.exists():
+    embedded = json.loads(data_js.read_text().split("const DATA = ", 1)[1].rstrip().rstrip(";"))
+    check(
+        embedded["levelCap"] == CAP,
+        "the build's level cap disagrees with progression.json — rebuild",
+    )
+    check(
+        len(embedded["moves"]["physical"]) == len(moves["physical"])
+        and len(embedded["moves"]["special"]) == len(moves["special"]),
+        "the build's move lists disagree with moves.json — rebuild",
+    )
+    check(
+        len(embedded["enemies"]) == unique_species,
+        f"the build has {len(embedded['enemies'])} enemies against "
+        f"{unique_species} in the roster — rebuild",
+    )
+    check(
+        embedded["enemyCurve"] == {
+            "HP": {
+                "base": blocks["enemy_curve"]["HP"]["base"],
+                "per_level": blocks["enemy_curve"]["HP"]["per_level"],
+                "per_level_squared": blocks["enemy_curve"]["HP"].get("per_level_squared", 0),
+            },
+            "ATK": blocks["enemy_curve"]["ATK"],
+            "DEF": blocks["enemy_curve"]["DEF"],
+            "SPD": blocks["enemy_curve"]["SPD"],
+            "attack_power": blocks["enemy_curve"]["attack_power"],
+        },
+        "the build's enemy stat curve is stale — rebuild",
+    )
+    for name, spec in embedded["bosses"].items():
+        check(
+            spec == blocks["bosses"].get(name),
+            f"the build's stats for {name} are stale — rebuild",
+        )
+
+if build.exists():
+    html = build.read_text()
+    check("<!doctype" not in html.lower(), "the build must be a fragment, not a full document")
+    check("src=\"http" not in html and "href=\"http" not in html,
+          "the build must not reference anything external")
+
+
 # --- report ----------------------------------------------------------------
 
 for w in warnings:

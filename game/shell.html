@@ -1,0 +1,34 @@
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #08080a; color: #cfcfd6;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh; justify-content: center; gap: 14px; padding: 16px;
+  }
+  #wrap { position: relative; width: 100%; max-width: 1024px; }
+  canvas {
+    display: block; width: 100%; height: auto; image-rendering: pixelated;
+    background: #000; border-radius: 3px; box-shadow: 0 0 0 1px #26262c, 0 18px 50px -20px #000;
+    touch-action: none;
+  }
+  #hint { font-size: 12px; line-height: 1.7; color: #6d6d78; text-align: center; max-width: 640px; }
+  #hint b { color: #9a9aa6; font-weight: 600; }
+  #audio-note { font-size: 11px; color: #55555f; }
+  @media (prefers-color-scheme: light) {
+    body { background: #ececed; color: #33333a; }
+    #hint { color: #6d6d78; } #hint b { color: #26262c; }
+  }
+</style>
+
+<div id="wrap"><canvas id="screen" width="320" height="180"></canvas></div>
+<div id="hint">
+  <b>Arrows</b> / <b>WASD</b> move &nbsp;·&nbsp; <b>Z</b> or <b>Enter</b> confirm &nbsp;·&nbsp;
+  <b>X</b> or <b>Esc</b> cancel &nbsp;·&nbsp; <b>C</b> menu<br>
+  <span id="audio-note">Click the screen once to enable sound.</span>
+</div>
+
+<script>
+//<<<GAME>>>
+</script>

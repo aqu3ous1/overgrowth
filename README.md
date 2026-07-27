@@ -36,7 +36,26 @@ one long walk out.
 | [16 — Combat Math](docs/16-combat-math.md) | Enemy stat derivation, damage formula, measured difficulty |
 | [17 — Economy](docs/17-economy.md) | Shops, prices, and the per-act ledger |
 | [18 — Vertical Slice](docs/18-vertical-slice.md) | What to build first, and how to know it worked |
+| [19 — The Playable Build](docs/19-build.md) | What 0.1.0 contains, and where it deviates |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
+
+## Play it
+
+**0.1.0 is playable.** `game/overgrowth.html` is the vertical slice — title screen, the bedroom,
+the Gallery, Okobo, the Sunken Orchard, and the first boss — in one self-contained file with no
+assets and no dependencies. Every sprite is drawn pixel by pixel at runtime, every tile texture is
+procedural, the font is a 5x7 bitmap defined inline, and all the audio is WebAudio synthesis.
+
+```
+python3 tools/build_game.py     # game/src/*.js + data/*.json -> game/overgrowth.html
+python3 tools/playtest.py       # drives it in a real browser, fails on any error
+```
+
+**Arrows** move, **Z** confirms, **X** cancels, **C** opens the menu.
+
+The build's balance tables are *generated* from `data/*.json`, not copied, so the game people play
+cannot drift from the game these documents describe — and `validate.py` fails if the checked-in
+build is stale. See [19](docs/19-build.md) for what it contains and the deviations it makes.
 
 ## The numbers
 
@@ -46,21 +65,24 @@ progression curve, move lists, enemy roster, boss table, items and equipment, wo
 Four tools keep the design honest, each checking a claim the documents make.
 
 ```
-python3 tools/validate.py       # 533 checks: do the data and docs agree?
+python3 tools/validate.py       # 567 checks: do the data, docs and build agree?
 python3 tools/simulate.py       # 57 matchups x 2000 trials: do fights feel right?
 python3 tools/economy.py        # per-act ledger: can the player afford them?
 python3 tools/curve.py          # levelling walk: does the player reach the levels
                                 #   everything else assumes? also the combat/playtime split
+python3 tools/build_game.py     # build the playable slice
+python3 tools/playtest.py       # play it in a browser and fail on any error
 ```
 
-All stdlib only, no dependencies. Add `--verbose` to any of them.
+The four checkers are stdlib only. `playtest.py` needs `playwright`. Add `--verbose` to any of the
+checkers.
 
 It verifies the EXP curve against its own formula, that every move is castable at the level it's
 learned, that every boss shows `??` and no regular enemy does, that the Root is the only encounter
 band the player outclasses, that every act from 2 to 4 offers a trade-off item in both equipment
 slots, that the family's names are never rendered anywhere, that the scope table in
 [00](docs/00-overview.md) still matches the rosters, and that no doc links to a file that isn't
-there — 399 checks in total.
+there — 567 checks in total, including that the checked-in build is not stale.
 
 **Run both after changing any number.** The validator caught four real inconsistencies on its first
 run, including two arithmetic errors in the EXP table and a boss the player could have fled from.

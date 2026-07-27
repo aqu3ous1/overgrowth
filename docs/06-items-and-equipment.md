@@ -158,8 +158,15 @@ get to act before the thing that won't let you leave.
 
 ### Rules
 
-- Equipment is **never** a stat stick alone past Act 1 — every item from Act 2 onward should have at
-  least one number the player has to think about.
+- **Every act from 2 to 4 offers at least one trade-off item per slot.** The player is never in a
+  position where the only upgrade available is a flat one — there is always something with a number
+  they have to think about.
+- **Acts 2 and 4 pair a clean upgrade against a trade-off** (Magic Baton vs. Anvil-Laden Sword;
+  Static Vest vs. Lead Apron). Act 3 is the pinch, where everything costs something. Act 5 relaxes
+  and both endgame pieces are clean.
+
+  That curve is the point: the player learns the trade-off language in Act 2 while a safe option
+  still exists, gets forced to use it in Act 3, and is rewarded in Act 5 by not needing it.
 - Nothing is missable. Every equipment tier is purchasable in at least one shop, with the strongest
   version of each tier found in the world.
 - The **Overgrown Coat** is the only piece with no downside, it is found rather than bought, and it

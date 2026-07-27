@@ -32,7 +32,29 @@ one long walk out.
 | [12 — Bestiary](docs/12-bestiary.md) | 45 enemy species across ten encounter bands |
 | [13 — Sidequests](docs/13-sidequests.md) | All twenty quests, givers, and rewards |
 | [14 — Script Samples](docs/14-script-samples.md) | Six scenes written in full, as tone reference |
+| [15 — Lore Notes](docs/15-lore-notes.md) | All thirty readable notes, written out |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
+
+## The numbers
+
+`data/` holds the same balance figures as the systems docs, in a form something can read —
+progression curve, move lists, enemy roster, boss table, items and equipment, world and quests.
+
+`tools/validate.py` checks that the data and the docs agree with each other, and that both follow
+the rules the design claims to follow:
+
+```
+python3 tools/validate.py     # stdlib only, no dependencies
+```
+
+It verifies the EXP curve against its own formula, that every move is castable at the level it's
+learned, that no boss can be fled from, that the Root is the only encounter band the player
+outclasses, that every act from 2 to 4 offers a trade-off item in both equipment slots, that the
+scope table in [00](docs/00-overview.md) still matches the rosters, and that no doc links to a file
+that isn't there — 343 checks in total.
+
+**Run it after changing any number.** It caught four real inconsistencies the first time it ran,
+including two arithmetic errors in the EXP table and a boss the player could have fled from.
 
 ## Reading order for a new collaborator
 

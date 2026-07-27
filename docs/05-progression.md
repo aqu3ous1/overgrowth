@@ -33,7 +33,10 @@ on it.
 
 ## Level curve
 
-Cap is **45**. The final boss is level 42; a player on the critical path arrives around 40–43.
+Cap is **45**. A player on the critical path arrives at the finale around level 40–43.
+
+**The final boss is level 45** — the cap itself, and the only encounter in the game the player can
+never out-level ([08](08-bosses.md)).
 
 EXP required to reach level *n*:
 
@@ -44,12 +47,13 @@ exp_to_reach(n) = round(1.2 * n^3)
 | Level | Cumulative EXP | Roughly when |
 |---|---|---|
 | 5 | 150 | Sunken Orchard |
-| 10 | 1,200 | Main Boss 1 |
+| 10 | 1,200 | Mini-Boss 1 |
+| 15 | 4,050 | Main Boss 1 |
 | 16 | 4,915 | Entering Yettallia |
-| 22 | 12,777 | Main Boss 2 |
+| 22 | 12,778 | Main Boss 2 |
 | 30 | 32,400 | Vixtry Campus |
-| 36 | 55,987 | Main Boss 3 |
-| 42 | 88,905 | Main Boss 4 |
+| 35 | 51,450 | Main Boss 3 |
+| 43 | 95,408 | Main Boss 4 |
 | 45 | 109,350 | Cap |
 
 Deliberately generous early — EarthBound's forgiving curve is the model, and a player should never

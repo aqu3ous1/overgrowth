@@ -81,7 +81,7 @@ grown" cutscene. Let the move list say it.
 | Liminal dungeons | 5 |
 | Main bosses | 4 |
 | Mini-bosses | 4 |
-| Player moves | 8 Physical, 9 Special |
+| Player moves | 8 Physical, 10 Special |
 | Enemy species | 45 ([12](12-bestiary.md)) |
 | Sidequests | 20 ([13](13-sidequests.md)) |
 | Level cap | 45 |

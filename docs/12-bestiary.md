@@ -1,6 +1,8 @@
 # 12 — Bestiary
 
-45 enemy species across ten encounter bands. Bosses are in [08](08-bosses.md).
+**45 unique enemy species across ten encounter bands, 49 roster entries in total** — the Root's band
+reuses four earlier species at new levels and new colours, which is the point of it. Bosses are in
+[08](08-bosses.md).
 
 ## Design rules
 
@@ -31,11 +33,17 @@
 | 7 | Bellhouse Commons | 21–26 | 21–25 |
 | 8 | Vixtry Campus | 27–32 | 27–31 |
 | 9 | The Long Hall | 31–36 | 32–35 |
-| 10 | The Root | 36–42 | 37–42 |
+| 10 | The Root | 36–42 | 37–43 |
 
 Enemy level sits at or just above the player's expected level in every band — which, under the flee
 rule, means **the world is roughly a coin flip to walk away from and never free.** That's the
 intended texture and it should not be softened.
+
+**Band 10 is the sole exception, and it's the payoff.** The Root's enemies top out at 42 against a
+player who is 37–43 by then, so for the first and only time in the game he is stronger than the
+place he's in. Every fight there becomes fleeable. He does not have to take any of them. That is
+what Act 5 is *for*, and it costs nothing to build because the flee rule was already doing the work
+— the numbers simply cross over.
 
 The Gallery (Act 0.5) has no enemies at all.
 
@@ -116,7 +124,6 @@ Short band — this is travel, not a dungeon. Four species is enough for the cro
 | **Commuter** | 17 | Running late. High SPD, disengages after three turns regardless of HP. |
 | **Kiosk** | 18 | Sells to the player mid-fight, then attacks. |
 | **Neon Sign** | 19 | Inflicts Fog. High SPATK, paper DEF. |
-| **Rail Ticket** | 20 | Low HP, high EXP, always flees turn 2. |
 | **Vixtry Canvasser** | 21 | **First Vixtry enemy.** Spends turn 1 delivering a sales line. Genuinely polite. |
 
 `Vixtry Canvasser` is the tonal hinge of the mid-game: the first fight where the enemy is friendly,

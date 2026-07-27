@@ -1,0 +1,31 @@
+{
+  "physical": [
+    { "name": "Punch",          "level": 1,  "cost": 2,  "power": 20,  "hits": 1,     "notes": "Baseline. Always affordable." },
+    { "name": "Multi-Jab",      "level": 6,  "cost": 5,  "power": 8,   "hits": [2,4], "notes": "Each hit rolls separately. Poor into high DEF." },
+    { "name": "Wind-Up Punch",  "level": 10, "cost": 9,  "power": 55,  "hits": 1,     "priority": "last", "notes": "Always acts last regardless of SPD." },
+    { "name": "Counter Stance", "level": 14, "cost": 6,  "power": 0,   "hits": 0,     "notes": "Halves physical damage this turn; returns 50% of what was blocked." },
+    { "name": "Gut Check",      "level": 18, "cost": 8,  "power": 40,  "hits": 1,     "notes": "40% chance to drop target ATK one stage." },
+    { "name": "Haymaker",       "level": 24, "cost": 14, "power": 80,  "hits": 1,     "accuracy": 0.8 },
+    { "name": "Rush Down",      "level": 30, "cost": 12, "power": 45,  "hits": 2,     "priority": "first", "notes": "Second hit only lands if the first connects." },
+    { "name": "Last Word",      "level": 38, "cost": 20, "power": [60,140], "hits": 1, "notes": "Power scales inversely with remaining HP. Max below 15%." }
+  ],
+  "special": [
+    { "name": "Telekinesis",  "level": 4,  "cost": 3,  "power": 22, "hits": 1, "notes": "First special learned." },
+    { "name": "Mend",         "level": 9,  "cost": 6,  "power": 0,  "hits": 0, "heal_fraction": 0.35, "notes": "Only self-heal that is not an item." },
+    { "name": "Health Steal", "level": 12, "cost": 7,  "power": 30, "hits": 1, "drain_fraction": 0.5 },
+    { "name": "Mind Fog",     "level": 16, "cost": 5,  "power": 0,  "hits": 0, "inflicts": "Fog" },
+    { "name": "Static Pulse", "level": 20, "cost": 6,  "power": 0,  "hits": 0, "inflicts": "Static", "notes": "Also drops target SPD one stage." },
+    { "name": "Aura Barrage", "level": 26, "cost": 13, "power": 30, "hits": 3, "target": "all" },
+    { "name": "Quiet Room",   "level": 31, "cost": 10, "power": 0,  "hits": 0, "notes": "Halves special damage for 3 turns. The only cure for Homesick." },
+    { "name": "Mend+",        "level": 34, "cost": 12, "power": 0,  "hits": 0, "heal_fraction": 0.7, "notes": "Also cures one status." },
+    { "name": "Severance",    "level": 40, "cost": 18, "power": 95, "hits": 1, "notes": "Ignores the target's SPDEF term entirely." },
+    { "name": "Wake Up",      "level": 43, "cost": 30, "power": 140, "hits": 1, "notes": "Learned immediately before the final area." }
+  ],
+  "statuses": [
+    { "name": "Static",   "effect": "25% chance to lose the turn",       "duration": 3, "item_curable": true },
+    { "name": "Fog",      "effect": "-40% accuracy",                     "duration": 4, "item_curable": true },
+    { "name": "Drained",  "effect": "PP/SP regen suppressed, SP costs +50%", "duration": 4, "item_curable": true },
+    { "name": "Numb",     "effect": "DEF and SPDEF halved",              "duration": 3, "item_curable": true },
+    { "name": "Homesick", "effect": "lose 5% max HP at end of turn",     "duration": null, "item_curable": false }
+  ]
+}

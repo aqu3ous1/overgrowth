@@ -1,0 +1,74 @@
+{
+  "bands": [
+    { "band": 1,  "area": "Okobo & surrounds",    "enemy_levels": [2, 6],   "player_expected": [1, 6] },
+    { "band": 2,  "area": "The Sunken Orchard",   "enemy_levels": [5, 9],   "player_expected": [5, 9] },
+    { "band": 3,  "area": "Road to Ondo",         "enemy_levels": [9, 13],  "player_expected": [9, 12] },
+    { "band": 4,  "area": "Kestrel Works",        "enemy_levels": [11, 15], "player_expected": [12, 15] },
+    { "band": 5,  "area": "Border country",       "enemy_levels": [15, 19], "player_expected": [15, 18] },
+    { "band": 6,  "area": "Sable City",           "enemy_levels": [17, 21], "player_expected": [17, 21] },
+    { "band": 7,  "area": "Bellhouse Commons",    "enemy_levels": [21, 26], "player_expected": [21, 25] },
+    { "band": 8,  "area": "Vixtry Regional Campus","enemy_levels": [27, 32],"player_expected": [27, 31] },
+    { "band": 9,  "area": "The Long Hall",        "enemy_levels": [31, 36], "player_expected": [32, 35] },
+    { "band": 10, "area": "The Root",             "enemy_levels": [36, 42], "player_expected": [37, 43], "player_outclasses": true }
+  ],
+  "roster": [
+    { "name": "Yard Dog",             "band": 1,  "level": 2 },
+    { "name": "Postbox",              "band": 1,  "level": 3 },
+    { "name": "Sunned Melon",         "band": 1,  "level": 3 },
+    { "name": "Little Cousin",        "band": 1,  "level": 5 },
+    { "name": "Fence Post",           "band": 1,  "level": 6 },
+
+    { "name": "Windfall",             "band": 2,  "level": 5 },
+    { "name": "Drowned Ladder",       "band": 2,  "level": 6 },
+    { "name": "Same Tree",            "band": 2,  "level": 7, "ambush": true },
+    { "name": "Wader",                "band": 2,  "level": 8, "inflicts": "Homesick" },
+    { "name": "Orchard Keeper",       "band": 2,  "level": 9 },
+
+    { "name": "Milepost",             "band": 3,  "level": 9 },
+    { "name": "Ration Tin",           "band": 3,  "level": 10, "drop_designed": true },
+    { "name": "Someone's Bicycle",    "band": 3,  "level": 11 },
+    { "name": "Bad Weather",          "band": 3,  "level": 12, "target": "all" },
+    { "name": "Roadside Shrine",      "band": 3,  "level": 13, "heals_allies": true },
+
+    { "name": "Frostbitten Glove",    "band": 4,  "level": 11, "inflicts": "Numb" },
+    { "name": "Coil",                 "band": 4,  "level": 13, "inflicts": "Static" },
+    { "name": "Conveyor",             "band": 4,  "level": 14 },
+    { "name": "Yard Light",           "band": 4,  "level": 14, "inflicts": "Fog" },
+    { "name": "Second Shift",         "band": 4,  "level": 15, "is_person": true },
+
+    { "name": "Checkpoint",           "band": 5,  "level": 15 },
+    { "name": "Frozen Hare",          "band": 5,  "level": 16 },
+    { "name": "Surplus Crate",        "band": 5,  "level": 18, "drop_designed": true },
+    { "name": "Long Coat",            "band": 5,  "level": 19, "is_person": true },
+
+    { "name": "Commuter",             "band": 6,  "level": 17, "is_person": true },
+    { "name": "Kiosk",                "band": 6,  "level": 18 },
+    { "name": "Neon Sign",            "band": 6,  "level": 19, "inflicts": "Fog" },
+    { "name": "Vixtry Canvasser",     "band": 6,  "level": 21, "is_person": true, "vixtry": true },
+
+    { "name": "Hall Mirror",          "band": 7,  "level": 21 },
+    { "name": "Tenant's Cat",         "band": 7,  "level": 22 },
+    { "name": "Unit 4C",              "band": 7,  "level": 24, "optional": true },
+    { "name": "Mural",                "band": 7,  "level": 25, "target": "all" },
+    { "name": "Building Super",       "band": 7,  "level": 26, "is_person": true },
+
+    { "name": "Intern",               "band": 8,  "level": 27, "is_person": true, "vixtry": true },
+    { "name": "Receptionist",         "band": 8,  "level": 28, "is_person": true, "vixtry": true, "inflicts": "Drained" },
+    { "name": "Demo Pod",             "band": 8,  "level": 30, "vixtry": true },
+    { "name": "Server Rack",          "band": 8,  "level": 31, "vixtry": true },
+    { "name": "Retention Specialist", "band": 8,  "level": 32, "is_person": true, "vixtry": true, "no_flee": true },
+
+    { "name": "Ceiling Tile",         "band": 9,  "level": 31 },
+    { "name": "Empty Frame",          "band": 9,  "level": 33 },
+    { "name": "Fluorescent",          "band": 9,  "level": 34 },
+    { "name": "Custodial Cart",       "band": 9,  "level": 36 },
+
+    { "name": "Yard Dog",             "band": 10, "level": 36, "recolour_of": "Yard Dog" },
+    { "name": "Second Shift",         "band": 10, "level": 37, "recolour_of": "Second Shift" },
+    { "name": "Commuter",             "band": 10, "level": 38, "recolour_of": "Commuter" },
+    { "name": "Little Cousin",        "band": 10, "level": 39, "recolour_of": "Little Cousin" },
+    { "name": "Dresser",              "band": 10, "level": 40 },
+    { "name": "Bedroom Door",         "band": 10, "level": 41 },
+    { "name": "The Argument",         "band": 10, "level": 42, "inflicts": "Homesick", "deals_damage": false }
+  ]
+}

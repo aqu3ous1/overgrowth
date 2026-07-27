@@ -1,0 +1,32 @@
+{
+  "level_cap": 45,
+  "exp_formula": "round(1.2 * n^3)",
+  "exp_milestones": {
+    "5": 150,
+    "10": 1200,
+    "15": 4050,
+    "16": 4915,
+    "22": 12778,
+    "30": 32400,
+    "35": 51450,
+    "43": 95408,
+    "45": 109350
+  },
+  "stat_curve": {
+    "1":  { "HP": 30,  "PP": 10, "SP": 8,  "ATK": 8,  "SPATK": 6,  "DEF": 7,  "SPDEF": 6,  "SPD": 9 },
+    "10": { "HP": 84,  "PP": 24, "SP": 22, "ATK": 20, "SPATK": 18, "DEF": 18, "SPDEF": 17, "SPD": 20 },
+    "22": { "HP": 172, "PP": 44, "SP": 45, "ATK": 37, "SPATK": 38, "DEF": 34, "SPDEF": 34, "SPD": 35 },
+    "36": { "HP": 296, "PP": 72, "SP": 78, "ATK": 61, "SPATK": 66, "DEF": 56, "SPDEF": 58, "SPD": 55 },
+    "45": { "HP": 380, "PP": 90, "SP": 95, "ATK": 75, "SPATK": 80, "DEF": 70, "SPDEF": 72, "SPD": 68 }
+  },
+  "resource_regen": { "PP": 1, "SP": 1, "HP": 0 },
+  "flee": {
+    "enemy_level_above_player": "impossible",
+    "enemy_level_at_or_below_player": 0.5,
+    "speed_affects_flee": false
+  },
+  "damage_formula": "max(1, ((ATK * POWER) / 12 - DEF / 2) * uniform(0.90, 1.10))",
+  "crit": { "base_chance": 0.04, "multiplier": 1.75, "ignores_defense_term": true },
+  "stat_stages": { "max": 3, "min": -3, "step": 0.25 },
+  "death_penalty": { "money_lost_fraction": 0.5, "items_lost": false, "progress_lost": false }
+}

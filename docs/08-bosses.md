@@ -22,26 +22,40 @@ the cube. It costs nothing to make it mean something.
 
 ## Encounter table
 
-| Order | Encounter | Act | Level | Narrative role |
-|---|---|---|---|---|
-| Mini-Boss 1 | **The Fruiting Tree** | 1 | 8 | Teaches boss-fight stakes before the first main boss. |
-| Main Boss 1 | **The Memorial** | 2 | 14 | First real threat. Limpo-themed. *(Obelisk)* |
-| Mini-Boss 2 | **Line Supervisor** | 3 | 19 | Yettallia industrial threat. First fight against a person. |
-| Main Boss 2 | **Tenant** | 3 | 25 | Yettallia's main threat / Vixtry muscle. *(Cube)* |
-| Mini-Boss 3 | **Account Manager** | 4 | 30 | Vixtry mid-tier enforcer. Knows exactly what he's doing. |
-| Main Boss 3 | **The Custodian** | 4 | 35 | The white figure, first form. *(Sphere)* |
-| Mini-Boss 4 | **Something Left Over** | 5 | 38 | Final obstacle before the climax. |
-| Main Boss 4 | **The Custodian, Unfinished** | 5 | 42 | True form. Climax. *(Pyramid)* |
+| Order | Encounter | Act | Level | Player expected | Narrative role |
+|---|---|---|---|---|---|
+| Mini-Boss 1 | **The Fruiting Tree** | 1 | 10 | 5–9 | Teaches boss-fight stakes before the first main boss. |
+| Main Boss 1 | **The Memorial** | 2 | 16 | 12–15 | First real threat. Limpo-themed. *(Obelisk)* |
+| Mini-Boss 2 | **Line Supervisor** | 3 | 20 | 16–19 | Yettallia industrial threat. First fight against a person. |
+| Main Boss 2 | **Tenant** | 3 | 26 | 21–25 | Yettallia's main threat / Vixtry muscle. *(Cube)* |
+| Mini-Boss 3 | **Account Manager** | 4 | 32 | 27–31 | Vixtry mid-tier enforcer. Knows exactly what he's doing. |
+| Main Boss 3 | **The Custodian** | 4 | 36 | 32–35 | The white figure, first form. *(Sphere)* |
+| Mini-Boss 4 | **Something Left Over** | 5 | 40 | 37–39 | Final obstacle before the climax. |
+| Main Boss 4 | **The Custodian, Unfinished** | 5 | 45 | 40–43 | True form. Climax. *(Pyramid)* |
 
-Every boss is at or above the player's expected level at that point, which means — per the flee
-rules in [04](04-battle-system.md) — **RUN is greyed out in every boss fight**, without the game
-ever needing a special case for it. The existing rule does the work.
+## You cannot leave a boss fight
+
+**Every boss carries an explicit no-flee flag.** RUN is greyed out in all eight encounters
+regardless of levels.
+
+The mechanic already exists in the game's vocabulary — the `Retention Specialist` on the Vixtry
+Campus ([12](12-bestiary.md)) prevents fleeing outright at any level, and is introduced two
+encounters before the Custodian specifically so the flag isn't new when it matters.
+
+Boss levels are *also* set above the top of the player's expected range at every point, so in
+practice the reason the UI displays is almost always the level, and the flag never has to announce
+itself. The two systems agree; the flag is there for the over-levelled player, and because a game
+about not being allowed to leave should not let you leave its most important rooms on a coin flip.
+
+**Main Boss 4 is level 45** — the player's cap. He is the only encounter in the game the player can
+never out-level, which is the correct shape for a final boss here and means the flee rule alone
+would have failed at exactly the moment it mattered most.
 
 ---
 
 ## Main bosses
 
-### Main Boss 1 — The Memorial *(Obelisk, Lv 14)*
+### Main Boss 1 — The Memorial *(Obelisk, Lv 16)*
 
 Fought in the yard at Kestrel Works, beneath the war memorial, in snow.
 
@@ -54,7 +68,7 @@ matters. This is the first fight the player can lose.
 
 **Drops:** Second Wind ×1, 900 EXP.
 
-### Main Boss 2 — Tenant *(Cube, Lv 25)*
+### Main Boss 2 — Tenant *(Cube, Lv 26)*
 
 Fought at the top of Bellhouse Commons, in a room that is a perfect cube and is bigger inside than
 the floor it's on.
@@ -66,7 +80,7 @@ thinking matter.
 
 **Drops:** Signal Rod, Full Spray ×2, 2,400 EXP.
 
-### Main Boss 3 — The Custodian *(Sphere, Lv 35)*
+### Main Boss 3 — The Custodian *(Sphere, Lv 36)*
 
 Fought at the end of the Long Hall.
 
@@ -80,7 +94,7 @@ His only dialogue during the fight is his one line, in the degrading box, at 100
 
 **Drops:** Static Vest, 4,000 EXP.
 
-### Main Boss 4 — The Custodian, Unfinished *(Pyramid, Lv 42)*
+### Main Boss 4 — The Custodian, Unfinished *(Pyramid, Lv 45)*
 
 The climax, in the Root.
 
@@ -98,7 +112,7 @@ wants rather than explaining why. See [03](03-characters.md).
 
 ## Mini-bosses
 
-### Mini-Boss 1 — The Fruiting Tree *(Lv 8)*
+### Mini-Boss 1 — The Fruiting Tree *(Lv 10)*
 
 At the centre of the Sunken Orchard, in the one clearing where the water is deep. The only tree that
 isn't the same tree.
@@ -107,7 +121,7 @@ The player's introduction to a fight they cannot leave. Low damage, high HP, no 
 purely to teach that the RUN option can be closed off, and to burn through the player's healing
 items right before the level 9 `Mend` unlock. **Drops:** Spray II ×3, 300 EXP.
 
-### Mini-Boss 2 — Line Supervisor *(Lv 19)*
+### Mini-Boss 2 — Line Supervisor *(Lv 20)*
 
 Sable City industrial district. The first boss who is a person, who has a job, and who talks to the
 player before and after in perfectly reasonable terms.
@@ -115,7 +129,7 @@ player before and after in perfectly reasonable terms.
 Buffs himself twice before attacking. Teaches debuff items and `Gut Check`. **Drops:** Work Jacket,
 1,200 EXP.
 
-### Mini-Boss 3 — Account Manager *(Lv 30)*
+### Mini-Boss 3 — Account Manager *(Lv 32)*
 
 Vixtry Regional Campus. Calm, friendly, and fully aware of what the company does and what the boy is
 for. He apologizes before the fight, sincerely.
@@ -123,7 +137,7 @@ for. He apologizes before the fight, sincerely.
 Heavy status pressure — inflicts **Drained** early to attack the player's SP economy directly, which
 is the first time the game punishes a pure-Special build. **Drops:** Second Wind ×2, 2,900 EXP.
 
-### Mini-Boss 4 — Something Left Over *(Lv 38)*
+### Mini-Boss 4 — Something Left Over *(Lv 40)*
 
 In the Root. A composite of enemy models from earlier areas, assembled wrong.
 

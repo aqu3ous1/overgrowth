@@ -141,9 +141,13 @@ function interact() {
       Dialogue.say([{ text: 'The second drawer sticks.', speaker: 'system' }]);
       return;
     case 'switch':
-      Dialogue.say([{ text: Player.flags.hallLight === false
-        ? 'The room light comes on.'
-        : 'Nothing happens.\nThe hall light is the only one on.', speaker: 'system' }]);
+      if (Player.flags.hallLight === false) {
+        Player.flags.roomLight = true;
+        Dialogue.say([{ text: 'The room light comes on.', speaker: 'system' }]);
+      } else {
+        Dialogue.say([{ text: 'Nothing happens. The hall light is the only one on.',
+                        speaker: 'system' }]);
+      }
       return;
     case 'well':
       if (Player.flags.wellQuest && !Player.flags.wellBucket && !Player.flags.wellDone) {
@@ -413,6 +417,7 @@ const Game = {
 
     if (this.mode === 'title') { Title.update(dt); return; }
     if (this.mode === 'name') { NameEntry.update(dt); return; }
+    if (this.mode === 'options') { Options.update(dt); return; }
     if (this.mode === 'cutscene') { Cutscene.update(dt); return; }
     if (this.mode === 'end') {
       if (Input.hit('ok')) { this.mode = 'title'; Title.enter(); }
@@ -444,7 +449,7 @@ const Game = {
 
     if (Input.hit('ok')) interact();
 
-    const exit = World.exitAt(Player.x, Player.y);
+    const exit = World.exitArmed ? World.exitAt(Player.x, Player.y) : null;
     if (exit && !Fade.busy) {
       if (exit.to === 'fall') { Story.fall(); return; }
       if (exit.sfx) Audio_.sfx(exit.sfx);
@@ -473,6 +478,7 @@ const Game = {
     cx.clearRect(0, 0, W, H);
     if (this.mode === 'title') { Title.draw(); Fade.draw(); return; }
     if (this.mode === 'name') { NameEntry.draw(); Fade.draw(); return; }
+    if (this.mode === 'options') { Options.draw(); Fade.draw(); return; }
     if (this.mode === 'cutscene' || this.mode === 'end') { Cutscene.draw(); Fade.draw(); return; }
     if (this.mode === 'battle') { Battle.draw(); Fade.draw(); return; }
 
@@ -488,8 +494,20 @@ const Game = {
     }
 
     const r = World.room;
-    const light = r.light !== undefined ? r.light : 0.4;
-    vignette(light, Player.x - World.camX, Player.y - World.camY, r.dark ? 62 : 128);
+    let light = r.light !== undefined ? r.light : 0.4;
+    let lx = Player.x - World.camX, ly = Player.y - World.camY;
+    let radius = r.dark ? 62 : 128;
+    if (World.id === 'bedroom') {
+      if (Player.flags.roomLight) { light = 0.35; radius = 150; }
+      else if (Player.flags.hallLight === false) { light = 1.15; radius = 46; }
+      else {
+        // Lit only by the strip under the door, from across the room.
+        lx = r.lightAt[0] * TS - World.camX + TS / 2;
+        ly = r.lightAt[1] * TS - World.camY;
+        radius = 108;
+      }
+    }
+    vignette(light, lx, ly, radius);
     if (r.bright) tintScreen('#ffe6b0', 0.05);
     grain(r.grain !== undefined ? r.grain : 0.04);
 
@@ -524,6 +542,7 @@ const ROOM_LABEL = {
 };
 
 // --- boot --------------------------------------------------------------
+Options.load();
 World.load('bedroom');
 Title.enter();
 Game.mode = 'title';

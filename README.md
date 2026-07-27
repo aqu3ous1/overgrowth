@@ -41,13 +41,14 @@ one long walk out.
 
 ## Play it
 
-**0.1.0 is playable.** `game/overgrowth.html` is the vertical slice — title screen, the bedroom,
+**0.2.0 is playable.** `game/overgrowth.html` is the vertical slice — title screen, the bedroom,
 the Gallery, Okobo, the Sunken Orchard, and the first boss — in one self-contained file with no
 assets and no dependencies. Every sprite is drawn pixel by pixel at runtime, every tile texture is
 procedural, the font is a 5x7 bitmap defined inline, and all the audio is WebAudio synthesis.
 
 ```
-python3 tools/build_game.py     # game/src/*.js + data/*.json -> game/overgrowth.html
+python3 tools/gen_sprites.py    # shape primitives -> the pixel art
+python3 tools/build_game.py     # src + data -> game/overgrowth.html
 python3 tools/playtest.py       # drives it in a real browser, fails on any error
 ```
 

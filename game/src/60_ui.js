@@ -35,17 +35,24 @@ const Save = {
 
 // --- title -------------------------------------------------------------
 const Title = {
-  cursor: 0, rep: {}, t: 0, hasSave: false,
-  enter() { this.hasSave = !!Save.read(); this.cursor = 0; this.t = 0; Audio_.play('void'); },
+  cursor: 0, rep: {}, t: 0, hasSave: false, opts: [],
+  enter() {
+    this.hasSave = !!Save.read();
+    this.opts = this.hasSave ? ['CONTINUE', 'NEW GAME', 'OPTIONS'] : ['NEW GAME', 'OPTIONS'];
+    this.cursor = 0; this.t = 0;
+    Audio_.play('void');
+  },
   update(dt) {
     this.t += dt;
-    const n = this.hasSave ? 2 : 1;
+    const n = this.opts.length;
     if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + n) % n; Audio_.sfx('blip'); }
     if (Input.repeat('down', this.rep)) { this.cursor = (this.cursor + 1) % n; Audio_.sfx('blip'); }
     if (Input.hit('ok')) {
       Audio_.sfx('ok');
-      if (this.hasSave && this.cursor === 1) { Save.apply(Save.read()); Game.mode = 'field'; }
-      else { Game.mode = 'name'; NameEntry.enter(); }
+      const pick = this.opts[this.cursor];
+      if (pick === 'CONTINUE') { Save.apply(Save.read()); Game.mode = 'field'; }
+      else if (pick === 'NEW GAME') { Game.mode = 'name'; NameEntry.enter(); }
+      else { Options.enter('title'); Game.mode = 'options'; }
     }
   },
   draw() {
@@ -69,17 +76,84 @@ const Title = {
 
     const flick = Math.sin(this.t * 1.3) * 0.5 + 0.5;
     textCentered('OVERGROWTH', W / 2, 26, `rgba(240,240,236,${0.72 + flick * 0.28})`, 3);
-    textCentered('a game about being left alone', W / 2, 40, '#5a5a66');
 
-    const opts = this.hasSave ? ['NEW GAME', 'CONTINUE'] : ['NEW GAME'];
-    for (let i = 0; i < opts.length; i++) {
-      const y = H - 38 + i * 12;
-      textCentered(opts[i], W / 2, y, this.cursor === i ? '#f0ece2' : '#70707c');
+    const top = H - 14 - this.opts.length * 12;
+    for (let i = 0; i < this.opts.length; i++) {
+      const y = top + i * 12;
+      textCentered(this.opts[i], W / 2, y, this.cursor === i ? '#f0ece2' : '#70707c');
       if (this.cursor === i && Math.sin(this.t * 5) > 0)
-        text('>', W / 2 - textWidth(opts[i]) / 2 - 10, y, '#e8d24a');
+        text('>', W / 2 - textWidth(this.opts[i]) / 2 - 10, y, '#e8d24a');
     }
-    textCentered('0.1.0  vertical slice', W / 2, H - 12, '#3c3c46');
     grain(0.05);
+  },
+};
+
+// --- options -----------------------------------------------------------
+const OPT_KEY = 'overgrowth.options.v1';
+const Options = {
+  cursor: 0, rep: {}, from: 'title',
+  values: { textSpeed: 1, volume: 2, flashing: 1, grain: 1 },
+  rows: [
+    { key: 'textSpeed', label: 'TEXT SPEED', opts: ['SLOW', 'NORMAL', 'FAST'] },
+    { key: 'volume',    label: 'VOLUME',     opts: ['OFF', 'LOW', 'NORMAL', 'LOUD'] },
+    { key: 'flashing',  label: 'FLASHING',   opts: ['REDUCED', 'NORMAL'] },
+    { key: 'grain',     label: 'FILM GRAIN', opts: ['OFF', 'ON'] },
+  ],
+
+  load() {
+    try {
+      const v = JSON.parse(localStorage.getItem(OPT_KEY) || 'null');
+      if (v) Object.assign(this.values, v);
+    } catch (e) {}
+    this.apply();
+  },
+  save() { try { localStorage.setItem(OPT_KEY, JSON.stringify(this.values)); } catch (e) {} },
+  apply() {
+    if (Audio_.master) Audio_.master.gain.value = [0, 0.16, 0.34, 0.55][this.values.volume];
+  },
+
+  enter(from) { this.from = from || 'title'; this.cursor = 0; },
+  update(dt) {
+    const n = this.rows.length + 1;                    // rows plus BACK
+    if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + n) % n; Audio_.sfx('blip'); }
+    if (Input.repeat('down', this.rep)) { this.cursor = (this.cursor + 1) % n; Audio_.sfx('blip'); }
+    const leave = () => {
+      this.save();
+      Audio_.sfx('cancel');
+      if (this.from === 'title') { Game.mode = 'title'; Title.enter(); }
+      else { Game.mode = 'field'; }
+    };
+    if (Input.hit('no')) { leave(); return; }
+    if (this.cursor === this.rows.length) {
+      if (Input.hit('ok')) leave();
+      return;
+    }
+    const row = this.rows[this.cursor];
+    const step = (d) => {
+      const len = row.opts.length;
+      this.values[row.key] = (this.values[row.key] + d + len) % len;
+      this.apply(); this.save(); Audio_.sfx('blip');
+    };
+    if (Input.repeat('left', this.rep)) step(-1);
+    if (Input.repeat('right', this.rep) || Input.hit('ok')) step(1);
+  },
+  draw() {
+    rect(0, 0, W, H, '#08080c');
+    textCentered('OPTIONS', W / 2, 18, '#f0ece2', 2);
+    rect(60, 30, W - 120, 1, '#2c2c36');
+    for (let i = 0; i < this.rows.length; i++) {
+      const r = this.rows[i], y = 44 + i * 16, sel = this.cursor === i;
+      text(r.label, 58, y, sel ? '#f0ece2' : '#8a8a94');
+      const v = r.opts[this.values[r.key]];
+      text('< ' + v + ' >', W - 58 - textWidth('< ' + v + ' >'), y, sel ? '#e8d24a' : '#70707c');
+      if (sel) text('>', 46, y, '#e8d24a');
+    }
+    const by = 44 + this.rows.length * 16 + 8;
+    const selBack = this.cursor === this.rows.length;
+    textCentered('BACK', W / 2, by, selBack ? '#f0ece2' : '#70707c');
+    if (selBack) text('>', W / 2 - textWidth('BACK') / 2 - 10, by, '#e8d24a');
+    textCentered('LEFT / RIGHT CHANGE    X BACK', W / 2, H - 14, '#4a4a56');
+    grain(0.04);
   },
 };
 
@@ -137,12 +211,15 @@ const NameEntry = {
 
 // --- pause menu --------------------------------------------------------
 const Menu = {
-  open: false, tab: 0, cursor: 0, rep: {}, tabs: ['STATUS', 'BAG', 'NOTES'],
+  open: false, tab: 0, cursor: 0, rep: {}, tabs: ['STATUS', 'BAG', 'NOTES', 'OPTIONS'],
   toggle() { this.open = !this.open; this.cursor = 0; Audio_.sfx(this.open ? 'ok' : 'cancel'); },
   update(dt) {
     if (Input.hit('menu') || Input.hit('no')) { this.toggle(); return; }
-    if (Input.repeat('left', this.rep)) { this.tab = (this.tab + 2) % 3; this.cursor = 0; Audio_.sfx('blip'); }
-    if (Input.repeat('right', this.rep)) { this.tab = (this.tab + 1) % 3; this.cursor = 0; Audio_.sfx('blip'); }
+    if (Input.repeat('left', this.rep)) { this.tab = (this.tab + 3) % 4; this.cursor = 0; Audio_.sfx('blip'); }
+    if (Input.repeat('right', this.rep)) { this.tab = (this.tab + 1) % 4; this.cursor = 0; Audio_.sfx('blip'); }
+    if (this.tab === 3 && Input.hit('ok')) {
+      this.open = false; Options.enter('field'); Game.mode = 'options'; Audio_.sfx('ok'); return;
+    }
     const list = this.list();
     if (list.length) {
       if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + list.length) % list.length; Audio_.sfx('blip'); }
@@ -162,9 +239,9 @@ const Menu = {
   },
   draw() {
     rect(0, 0, W, H, 'rgba(4,4,8,0.88)');
-    for (let i = 0; i < 3; i++) {
-      const x = 10 + i * 62;
-      if (i === this.tab) rect(x - 4, 8, 58, 12, '#1e2630');
+    for (let i = 0; i < 4; i++) {
+      const x = 10 + i * 76;
+      if (i === this.tab) rect(x - 4, 8, 70, 12, '#1e2630');
       text(this.tabs[i], x, 11, i === this.tab ? '#f0ece2' : '#70707c');
     }
     rect(8, 22, W - 16, 1, '#3a3a44');
@@ -186,6 +263,8 @@ const Menu = {
         text(rows[i][0], x, y, '#8a8a94');
         text(String(rows[i][1]), x + 52, y, '#e8e8ee');
       }
+    } else if (this.tab === 3) {
+      text('PRESS Z TO OPEN OPTIONS.', 14, 32, '#9a9aa4');
     } else {
       const list = this.list();
       if (!list.length) {

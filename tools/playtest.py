@@ -145,7 +145,7 @@ def main():
         shot("03-bedroom")
 
         # --- Act 0: the door, three times, then the slam and the bed
-        put(page, "bedroom", 6, 6, "down")
+        put(page, "bedroom", 6, 1, "up")
         for i in range(3):
             press(page, "z")
             advance(page)
@@ -155,7 +155,7 @@ def main():
         page.wait_for_timeout(900)
         shot("04-lights-out")
 
-        put(page, "bedroom", 2, 2, "up")
+        put(page, "bedroom", 2, 5, "down")
         press(page, "z")
         advance(page)
         if not until(page, "World.id === 'void'", 9000):
@@ -170,8 +170,8 @@ def main():
             errors.append("the gallery door did not open")
         shot("07-gallery-hall")
 
-        put(page, "gallery_hall", 7, 2, "up")
-        hold(page, "ArrowUp", 500)
+        put(page, "gallery_hall", 6, 2, "up")
+        hold(page, "ArrowUp", 700)
         if not until(page, "World.id === 'gallery_room'", 5000):
             errors.append("could not reach the gallery room")
         shot("08-gallery-room")
@@ -190,7 +190,7 @@ def main():
 
         # the corridor and the fall
         idle(page)
-        put(page, "gallery_room", 2, 3, "left")
+        put(page, "gallery_room", 2, 1, "left")
         hold(page, "ArrowLeft", 900)
         if not until(page, "World.id === 'gallery_corridor'", 5000):
             errors.append("the corridor is unreachable from the gallery")
@@ -295,8 +295,62 @@ def main():
         if not page.evaluate("() => !!Player.flags.beatBoss"):
             errors.append("the boss was never beaten")
 
+        # --- every transition must be survivable in both directions
+        # (the 0.1.0 bug: landing on the return path bounced you straight back)
+        pairs = [("okobo", "north_road"), ("north_road", "orchard1"),
+                 ("orchard1", "orchard2"), ("orchard2", "orchard3"),
+                 ("orchard3", "clearing"), ("okobo", "arrival"),
+                 ("okobo", "shop"), ("okobo", "inn"), ("okobo", "house")]
+        for a, b in pairs:
+            for src, dst in ((a, b), (b, a)):
+                ok = page.evaluate("""([src, dst]) => {
+                  const r = ROOMS[src];
+                  const x = (r.exits || []).find(e => e.to === dst);
+                  if (!x) return 'no exit ' + src + ' -> ' + dst;
+                  World.load(src);
+                  // stand on the exit and take it
+                  Player.x = x.x*16 + ((x.w||1)*16)/2;
+                  Player.y = x.y*16 + ((x.h||1)*16)/2;
+                  World.exitArmed = true;
+                  const landing = x.at;
+                  World.load(dst, landing);
+                  // the landing tile must be walkable and must not be an exit
+                  if (World.solidAt(Player.x, Player.y)) return 'lands inside a wall';
+                  if (World.exitArmed) return 'arrived already armed';
+                  const back = World.exitAt(Player.x, Player.y);
+                  World.updateExitArming();
+                  if (back && !World.exitArmed) return 'lands on an exit and stays there';
+                  return 'ok';
+                }""", [src, dst])
+                if ok != "ok":
+                    errors.append(f"{src} -> {dst}: {ok}")
+
+        # options must open from the title and hold a change
+        page.evaluate("() => { Game.mode = 'title'; Title.enter(); }")
+        page.wait_for_timeout(200)
+        page.evaluate("() => { Title.cursor = Title.opts.indexOf('OPTIONS'); }")
+        press(page, "z")
+        page.wait_for_timeout(300)
+        if page.evaluate("() => Game.mode") != "options":
+            errors.append("OPTIONS on the title screen does not open")
+        shot("19-options")
+        before = page.evaluate("() => Options.values.textSpeed")
+        press(page, "ArrowRight")
+        page.wait_for_timeout(200)
+        if page.evaluate("() => Options.values.textSpeed") == before:
+            errors.append("options do not change on left/right")
+        press(page, "x")
+        page.wait_for_timeout(300)
+        if page.evaluate("() => Game.mode") != "title":
+            errors.append("options does not return to the title")
+
+        # the title must not carry a tagline any more
+        opts = page.evaluate("() => Title.opts")
+        if "OPTIONS" not in opts or "NEW GAME" not in opts:
+            errors.append(f"title menu is wrong: {opts}")
+
         # --- menus
-        page.evaluate("() => { World.load('okobo'); Game.mode='field'; }")
+        page.evaluate("() => { Game.mode='field'; World.load('okobo'); }")
         page.wait_for_timeout(300)
         press(page, "c")
         page.wait_for_timeout(300)

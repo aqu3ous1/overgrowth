@@ -4,6 +4,7 @@
 
 const TS = 16;                       // tile size
 const SOLID = new Set(['#', 'T', ' ', '=']);
+const WALKWAY = new Set(['P', 'D']);
 
 // --- tile painting -----------------------------------------------------
 function paintGrass(x, y, tx, ty, dim) {
@@ -60,6 +61,25 @@ function paintCarpet(x, y, tx, ty, dim) {
     rect(x + ((h * TS) | 0), y + ((hash2(i * 3, tx - ty) * TS) | 0), 1, 1, shade('#332d3a', dim));
   }
 }
+function paintPath(x, y, tx, ty, dim, overWater) {
+  if (overWater) {
+    // stepping stones, so a way through the orchard reads as a way through
+    paintWater(x, y, tx, ty, dim);
+    for (let i = 0; i < 3; i++) {
+      const h = hash2(tx * 61 + i, ty * 47 + i);
+      const sx = x + 2 + ((h * 9) | 0), sy = y + 2 + ((hash2(i, tx + ty * 3) * 9) | 0);
+      rect(sx, sy, 5, 4, shade('#6e6a5e', dim));
+      rect(sx, sy, 5, 1, shade('#8a8578', dim));
+    }
+    return;
+  }
+  rect(x, y, TS, TS, shade('#6a5a42', dim));
+  for (let i = 0; i < 12; i++) {
+    const h = hash2(tx * 83 + i, ty * 59 + i);
+    rect(x + ((h * TS) | 0), y + ((hash2(i * 7, tx - ty * 2) * TS) | 0), 1, 1,
+         shade(h > 0.5 ? '#7d6c4f' : '#57492f', dim));
+  }
+}
 function paintVoid(x, y) { rect(x, y, TS, TS, '#000000'); }
 function paintDirt(x, y, tx, ty, dim) {
   rect(x, y, TS, TS, shade('#5a4a36', dim));
@@ -77,12 +97,16 @@ const FLOORS = {
 const WALLS = { brick: paintBrick, wood: paintWood, void: paintVoid, ceiling: paintCeiling };
 
 // --- rooms -------------------------------------------------------------
-// Maps: '.' floor, '#' wall, '~' water, 'T' tree, ' ' void, '=' furniture.
+// Maps: '.' floor, '#' wall, '~' water, 'T' tree, ' ' void, '=' furniture,
+// 'D' doorway, 'P' path.
+//
+// Exits are rectangles in tile space, and they always sit on a 'P' path or a
+// 'D' doorway — the tile itself is the signpost, the way an older Pokemon
+// route reads. Nothing floats or pulses.
 const ROOMS = {
 
   bedroom: {
-    floor: 'carpet', wall: 'wood', light: 0.95, lightAt: [null], music: 'bedroom',
-    grain: 0.03,
+    floor: 'carpet', wall: 'wood', light: 0.95, music: 'bedroom', grain: 0.03,
     map: [
       '#############',
       '#...........#',
@@ -94,30 +118,31 @@ const ROOMS = {
       '#############',
     ],
     objects: [
-      { x: 2, y: 1, t: 'bed',    label: 'bed' },
-      { x: 10, y: 1, t: 'dresser', label: 'dresser' },
-      { x: 6, y: 0, t: 'window', label: 'window' },
-      { x: 9, y: 0, t: 'poster', label: 'poster' },
-      { x: 1, y: 4, t: 'switch', label: 'light switch' },
-      { x: 6, y: 7, t: 'door',   label: 'door' },
+      { x: 6, y: 0, t: 'door', label: 'door' },
+      { x: 2, y: 0, t: 'window', label: 'window' },
+      { x: 10, y: 0, t: 'poster', label: 'poster' },
+      { x: 9, y: 0, t: 'switch', label: 'light switch' },
+      { x: 2, y: 6, t: 'bed', label: 'bed' },
+      { x: 10, y: 6, t: 'dresser', label: 'dresser' },
     ],
+    lightAt: [6, 1],
     start: [6, 4],
   },
 
   void: {
     floor: 'dirt', wall: 'void', light: 1.25, music: 'void', grain: 0.05, dark: true,
     map: [
-      '                        ',
-      '                        ',
-      '   ....................  ',
-      '   ....................  ',
-      '   ....................  ',
-      '   ....................  ',
-      '   ....................  ',
-      '   ....................  ',
-      '                        ',
+      '                         ',
+      '                         ',
+      '   ...................P  ',
+      '   ...................P  ',
+      '   ...................P  ',
+      '   ...................P  ',
+      '   ...................P  ',
+      '   ...................P  ',
+      '                         ',
     ],
-    exits: [{ x: 22, y: 5, to: 'gallery_ext', at: [3, 7] }],
+    exits: [{ x: 22, y: 2, w: 1, h: 6, to: 'gallery_ext', at: [3, 7] }],
     start: [5, 5],
   },
 
@@ -140,7 +165,7 @@ const ROOMS = {
   gallery_hall: {
     floor: 'grass', wall: 'brick', light: 0.6, music: 'gallery', grain: 0.06,
     map: [
-      '###############',
+      '######D########',
       '#.............#',
       '#.............#',
       '#.............#',
@@ -149,11 +174,11 @@ const ROOMS = {
       '#.............#',
       '######...######',
       '     #...#     ',
-      '     #...#     ',
+      '     #PPP#     ',
     ],
     exits: [
-      { x: 7, y: 1, to: 'gallery_room', at: [9, 6] },
-      { x: 7, y: 9, to: 'gallery_ext', at: [6, 6] },
+      { x: 6, y: 0, to: 'gallery_room', at: [10, 5], sfx: 'door' },
+      { x: 6, y: 9, w: 3, h: 1, to: 'gallery_ext', at: [6, 6] },
     ],
     start: [7, 8],
   },
@@ -162,13 +187,13 @@ const ROOMS = {
     floor: 'grass', wall: 'brick', light: 0.5, music: 'gallery', grain: 0.06,
     map: [
       '###################',
+      'D.................#',
       '#.................#',
       '#.................#',
       '#.................#',
       '#.................#',
       '#.................#',
-      '#.................#',
-      '#########...#######',
+      '#########PPP#######',
     ],
     objects: [
       { x: 2, y: 0, t: 'painting', shape: 'obelisk' },
@@ -178,22 +203,22 @@ const ROOMS = {
       { x: 16, y: 0, t: 'painting', shape: 'spire', small: true },
     ],
     exits: [
-      { x: 9, y: 7, to: 'gallery_hall', at: [7, 2] },
-      { x: 1, y: 3, to: 'gallery_corridor', at: [1, 2] },
+      { x: 9, y: 7, w: 3, h: 1, to: 'gallery_hall', at: [7, 2] },
+      { x: 0, y: 1, to: 'gallery_corridor', at: [2, 2], sfx: 'door' },
     ],
-    start: [9, 6],
+    start: [10, 5],
   },
 
   gallery_corridor: {
     floor: 'grass', wall: 'brick', light: 0.75, music: 'gallery', grain: 0.07,
     map: [
       '########################################',
-      '#......................................#',
-      '#......................................#',
-      '#......................................#',
+      '#......................................P',
+      '#......................................P',
+      '#......................................P',
       '########################################',
     ],
-    exits: [{ x: 38, y: 2, to: 'fall', at: [1, 1], sfx: 'door' }],
+    exits: [{ x: 39, y: 1, w: 1, h: 3, to: 'fall', at: [1, 1], sfx: 'door' }],
     start: [2, 2],
   },
 
@@ -203,13 +228,13 @@ const ROOMS = {
       '####################',
       '#..................#',
       '#..................#',
+      '#..............PPPPP',
+      '#..............PPPPP',
       '#..................#',
       '#..................#',
-      '#..................#',
-      '#................D.#',
       '####################',
     ],
-    exits: [{ x: 17, y: 6, to: 'okobo', at: [2, 12] }],
+    exits: [{ x: 19, y: 3, w: 1, h: 2, to: 'okobo', at: [2, 5] }],
     spawn: [{ name: 'Yard Dog', n: 2 }, { name: 'Sunned Melon', n: 1 }],
     start: [3, 3],
   },
@@ -222,32 +247,32 @@ const ROOMS = {
       '#..######..######......#',
       '#..######..######......#',
       '#..##D###..#####D......#',
-      '#......................#',
-      '#......................#',
+      'P......................#',
+      'P......................#',
       '#..............######..#',
       '#..............######..#',
       '#..............##D####.#',
       '#......................#',
-      '#......................#',
-      '#......................#',
+      '#.....................PP',
+      '#.....................PP',
       '########################',
     ],
     objects: [
-      { x: 8, y: 6, t: 'well',     label: 'well' },
+      { x: 8, y: 6, t: 'well', label: 'well' },
       { x: 18, y: 3, t: 'memorial', label: 'memorial' },
     ],
     npcs: [
-      { x: 5, y: 8,  pal: 'villager',  key: 'okobo_woman' },
-      { x: 12, y: 5, pal: 'villager2', key: 'okobo_man' },
+      { x: 5, y: 8, pal: 'villager', key: 'okobo_woman' },
+      { x: 12, y: 5, pal: 'villager2', key: 'okobo_man', spr: 'villager_hat' },
       { x: 16, y: 10, pal: 'villager3', key: 'okobo_child' },
-      { x: 20, y: 7, pal: 'villager',  key: 'okobo_elder' },
+      { x: 20, y: 7, pal: 'villager', key: 'okobo_elder', spr: 'villager_hat' },
     ],
     exits: [
-      { x: 5, y: 4,  to: 'shop', at: [4, 4], sfx: 'door' },
-      { x: 16, y: 4, to: 'inn',  at: [4, 4], sfx: 'door' },
+      { x: 5, y: 4, to: 'shop', at: [4, 4], sfx: 'door' },
+      { x: 16, y: 4, to: 'inn', at: [4, 4], sfx: 'door' },
       { x: 17, y: 9, to: 'house', at: [4, 4], sfx: 'door' },
-      { x: 1, y: 6, to: 'arrival', at: [16, 5] },
-      { x: 22, y: 12, to: 'north_road', at: [2, 6] },
+      { x: 0, y: 5, w: 1, h: 2, to: 'arrival', at: [17, 4] },
+      { x: 23, y: 11, w: 1, h: 2, to: 'north_road', at: [2, 5] },
     ],
     start: [4, 11],
   },
@@ -308,19 +333,19 @@ const ROOMS = {
       '####################',
       '#TTTT..........TTTT#',
       '#TT..............TT#',
-      '#..................#',
-      '#..................#',
-      '#..................#',
-      '#..................#',
+      '#.................PP',
+      '#.................PP',
+      'PP.................#',
+      'PP.................#',
       '#TT..............TT#',
       '#TTTT..........TTTT#',
       '####################',
     ],
-    spawn: [{ name: 'Little Cousin', n: 1 }, { name: 'Postbox', n: 1 }, { name: 'Fence Post', n: 1 }],
     objects: [{ x: 9, y: 7, t: 'foundation', label: 'foundation' }],
+    spawn: [{ name: 'Little Cousin', n: 1 }, { name: 'Postbox', n: 1 }, { name: 'Fence Post', n: 1 }],
     exits: [
-      { x: 2, y: 6, to: 'okobo', at: [21, 12] },
-      { x: 17, y: 3, to: 'orchard1', at: [2, 5] },
+      { x: 0, y: 5, w: 1, h: 2, to: 'okobo', at: [21, 11] },
+      { x: 19, y: 3, w: 1, h: 2, to: 'orchard1', at: [2, 4] },
     ],
     start: [3, 5],
   },
@@ -331,40 +356,40 @@ const ROOMS = {
       '####################',
       '#~~T~~~~T~~~~T~~~~~#',
       '#~~~~~~~~~~~~~~~~~~#',
-      '#~T~~~T~~~~T~~~T~~~#',
-      '#~~~~~~~~~~~~~~~~~~#',
-      '#~~~~~~~~~~~~~~~~~~#',
-      '#~T~~~T~~~~T~~~T~~~#',
+      '#~T~~~T~~~~T~~~T~~~P',
+      '#~~~~~~~~~~~~~~~~~~P',
+      'P~~~~~~~~~~~~~~~~~~#',
+      'P~T~~~T~~~~T~~~T~~~#',
       '#~~~~~~~~~~~~~~~~~~#',
       '####################',
     ],
     spawn: [{ name: 'Windfall', n: 2 }, { name: 'Drowned Ladder', n: 1 }],
     exits: [
-      { x: 2, y: 5, to: 'north_road', at: [16, 3] },
-      { x: 18, y: 4, to: 'orchard2', at: [2, 4] },
+      { x: 0, y: 5, w: 1, h: 2, to: 'north_road', at: [17, 3] },
+      { x: 19, y: 3, w: 1, h: 2, to: 'orchard2', at: [2, 5] },
     ],
-    start: [3, 4],
+    start: [3, 5],
   },
 
   orchard2: {
     floor: 'water', wall: 'brick', light: 0.65, music: 'orchard', grain: 0.05,
     map: [
       '####################',
-      '#~~~~T~~~~T~~~~T~~~#',
-      '#~~~~~~~~~~~~~~~~~~#',
+      '#~~~~T~~~~T~~~~T~~~P',
+      '#~~~~~~~~~~~~~~~~~~P',
       '#~T~~~~T~~~~T~~~~T~#',
       '#~~~~~~~~~~~~~~~~~~#',
-      '#~~T~~~~T~~~~T~~~~~#',
-      '#~~~~~~~~~~~~~~~~~~#',
+      'P~~T~~~~T~~~~T~~~~~#',
+      'P~~~~~~~~~~~~~~~~~~#',
       '####################',
     ],
     spawn: [{ name: 'Same Tree', n: 2 }, { name: 'Wader', n: 1 }],
     objects: [{ x: 15, y: 6, t: 'collectible', which: 'marble' }],
     exits: [
-      { x: 2, y: 4, to: 'orchard1', at: [17, 4] },
-      { x: 18, y: 2, to: 'orchard3', at: [2, 4] },
+      { x: 0, y: 5, w: 1, h: 2, to: 'orchard1', at: [17, 3] },
+      { x: 19, y: 1, w: 1, h: 2, to: 'orchard3', at: [2, 5] },
     ],
-    start: [3, 4],
+    start: [3, 5],
   },
 
   orchard3: {
@@ -373,18 +398,19 @@ const ROOMS = {
       '####################',
       '#~~T~~~~~~~~~~~T~~~#',
       '#~~~~~~~~~~~~~~~~~~#',
-      '#~~~~~~~~~~~~~~~~~~#',
-      '#~~~~~~~~~~~~~~~~~~#',
-      '#~~T~~~~~~~~~~~T~~~#',
+      '#~~~~~~~~~~~~~~~~~~P',
+      '#~~~~~~~~~~~~~~~~~~P',
+      'P~~T~~~~~~~~~~~T~~~#',
+      'P~~~~~~~~~~~~~~~~~~#',
       '####################',
     ],
     spawn: [{ name: 'Wader', n: 1 }, { name: 'Orchard Keeper', n: 1 }],
     objects: [{ x: 9, y: 3, t: 'note', note: 'tied_branch' }],
     exits: [
-      { x: 2, y: 4, to: 'orchard2', at: [17, 2] },
-      { x: 18, y: 3, to: 'clearing', at: [2, 4] },
+      { x: 0, y: 5, w: 1, h: 2, to: 'orchard2', at: [17, 1] },
+      { x: 19, y: 3, w: 1, h: 2, to: 'clearing', at: [2, 3] },
     ],
-    start: [3, 4],
+    start: [3, 5],
   },
 
   clearing: {
@@ -393,13 +419,13 @@ const ROOMS = {
       '###############',
       '#~~~~~~~~~~~~~#',
       '#~~~~~~~~~~~~~#',
-      '#~~~~~~~~~~~~~#',
-      '#~~~~~~~~~~~~~#',
+      'P~~~~~~~~~~~~~#',
+      'P~~~~~~~~~~~~~#',
       '#~~~~~~~~~~~~~#',
       '###############',
     ],
-    exits: [{ x: 1, y: 4, to: 'orchard3', at: [17, 3] }],
-    start: [2, 4],
+    exits: [{ x: 0, y: 3, w: 1, h: 2, to: 'orchard3', at: [17, 3] }],
+    start: [3, 4],
   },
 };
 
@@ -418,7 +444,7 @@ const World = {
     for (const n of r.npcs || []) {
       this.entities.push({
         kind: 'npc', x: n.x * TS + TS / 2, y: n.y * TS + TS / 2,
-        pal: n.pal, key: n.key, shop: n.shop, face: 'down', bob: Math.random() * 6,
+        pal: n.pal, key: n.key, shop: n.shop, spr: n.spr, face: 'down', bob: Math.random() * 6,
       });
     }
     // Wandering enemies, only those not already beaten out of this room.
@@ -441,6 +467,7 @@ const World = {
     const start = at || r.start;
     Player.x = start[0] * TS + TS / 2;
     Player.y = start[1] * TS + TS / 2;
+    this.exitArmed = false;
     Audio_.play(r.music || 'none');
     this.centerCamera();
   },
@@ -491,10 +518,20 @@ const World = {
 
   exitAt(px, py) {
     for (const x of this.room.exits || []) {
-      const ex = x.x * TS + TS / 2, ey = x.y * TS + TS / 2;
-      if (Math.abs(px - ex) < 9 && Math.abs(py - ey) < 9) return x;
+      const w = x.w || 1, h = x.h || 1;
+      if (px >= x.x * TS && px < (x.x + w) * TS &&
+          py >= x.y * TS && py < (x.y + h) * TS) return x;
     }
     return null;
+  },
+
+  // An exit cannot fire until the player has stood clear of every exit since
+  // arriving. Without this, landing on or beside a return path bounces you
+  // straight back, and every doorway in the game is one tile from being that
+  // bug.
+  updateExitArming() {
+    if (this.exitArmed) return;
+    if (!this.exitAt(Player.x, Player.y)) this.exitArmed = true;
   },
 
   update(dt) {
@@ -513,6 +550,7 @@ const World = {
       }
       this.move(e, e.vx * dt, e.vy * dt, 5, 4);
     }
+    this.updateExitArming();
     this.centerCamera();
   },
 
@@ -551,6 +589,15 @@ const World = {
         const t = this.tile(tx, ty);
         if (t === ' ') { paintVoid(px, py); continue; }
         if (t === '#') { wallFn(px, py, tx, ty, dim); continue; }
+        if (t === 'P') { paintPath(px, py, tx, ty, dim, r.floor === 'water'); continue; }
+        if (t === 'D') {
+          // a doorway punched through the wall it sits in
+          wallFn(px, py, tx, ty, dim - 14);
+          rect(px + 3, py + 2, TS - 6, TS - 2, shade('#3b3b42', dim));
+          rect(px + 4, py + 3, TS - 8, TS - 3, shade('#8a8a92', dim));
+          rect(px + TS - 6, py + 9, 1, 2, '#2a2a30');
+          continue;
+        }
         if (t === '~') { paintWater(px, py, tx, ty, dim); continue; }
         floorFn(px, py, tx, ty, dim);
         if (t === 'T') {
@@ -559,18 +606,7 @@ const World = {
                  r.floor === 'water' ? 'tree' : 'bigtree');
         }
         if (t === '=') rect(px + 1, py + 3, TS - 2, TS - 6, shade('#4a3a2a', dim));
-        if (t === 'D') { rect(px + 3, py + 1, TS - 6, TS - 2, '#8a8a92'); rect(px + TS - 6, py + 8, 1, 2, '#3a3a40'); }
       }
-    }
-
-    // Exits get a visible doorway so the player can read the room.
-    for (const x of r.exits || []) {
-      if (x.hidden) continue;
-      const px = x.x * TS - this.camX, py = x.y * TS - this.camY;
-      if (this.tile(x.x, x.y) === 'D') continue;
-      rect(px + 4, py + 4, TS - 8, TS - 8, 'rgba(255,255,255,0.05)');
-      const pulse = 0.12 + 0.06 * Math.sin(Time.t * 2.2);
-      rect(px + 6, py + 6, TS - 12, TS - 12, `rgba(255,255,255,${pulse})`);
     }
 
     // Everything that stands up, sorted by depth.
@@ -584,10 +620,11 @@ const World = {
     if (e.kind === 'player') { Player.draw(px, py); return; }
 
     if (e.kind === 'npc') {
-      const w = spriteWidth('villager'), h = spriteHeight('villager');
+      const nm = e.spr || 'villager';
+      const w = spriteWidth(nm), h = spriteHeight(nm);
       const bob = Math.sin(e.bob * 1.6) > 0.94 ? 1 : 0;
       rect(px - 4, py + 1, 9, 2, 'rgba(0,0,0,0.28)');
-      sprite('villager', px - w / 2, py - h + 3 - bob, e.pal);
+      sprite(e.spr || 'villager', px - w / 2, py - h + 3 - bob, e.pal);
       return;
     }
 
@@ -628,12 +665,27 @@ const World = {
       case 'switch':
         rect(px - 2, py - 8, 5, 7, '#c8c8c0'); rect(px - 1, py - 6, 3, 3, '#8a8a84');
         break;
-      case 'door':
-        rect(px - 7, py - 14, 15, 18, '#3a2a1e');
-        rect(px - 6, py - 13, 13, 16, '#5a4230');
-        rect(px + 3, py - 5, 2, 2, '#c8b46a');
-        if (Player.flags.hallLight !== false) rect(px - 6, py + 2, 13, 2, 'rgba(240,225,180,0.5)');
+      case 'door': {
+        rect(px - 7, py - 5, 15, 18, '#2a1e16');
+        rect(px - 6, py - 4, 13, 16, '#523d2c');
+        rect(px - 6, py - 4, 3, 16, '#634b36');
+        rect(px - 4, py - 1, 9, 6, '#412f22');
+        rect(px + 3, py + 6, 2, 2, '#c8b46a');
+        if (Player.flags.hallLight !== false) {
+          // The only light in the room, and it is not for him.
+          rect(px - 6, py + 12, 13, 1, '#ffeec2');
+          rect(px - 6, py + 13, 13, 1, 'rgba(255,232,176,0.75)');
+          const g = cx.createLinearGradient(0, py + 13, 0, py + 34);
+          g.addColorStop(0, 'rgba(255,226,160,0.30)');
+          g.addColorStop(1, 'rgba(255,226,160,0)');
+          cx.fillStyle = g;
+          cx.beginPath();
+          cx.moveTo(px - 7, py + 13); cx.lineTo(px + 8, py + 13);
+          cx.lineTo(px + 15, py + 34); cx.lineTo(px - 14, py + 34);
+          cx.closePath(); cx.fill();
+        }
         break;
+      }
       case 'well':
         rect(px - 8, py - 6, 17, 11, '#6a6a66');
         rect(px - 6, py - 4, 13, 7, '#14141a');

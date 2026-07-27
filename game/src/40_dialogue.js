@@ -39,7 +39,8 @@ const Dialogue = {
   update(dt) {
     if (!this.active || !this.page) return;
     const total = this.page.lines.join('').length;
-    const speed = this.page.speaker === 'custodian' ? 44 : 62;
+    const mult = [0.6, 1, 1.7][(typeof Options !== 'undefined' && Options.values.textSpeed) ?? 1] || 1;
+    const speed = (this.page.speaker === 'custodian' ? 44 : 62) * mult;
     if (!this.done) {
       const before = this.chars | 0;
       this.chars = Math.min(total, this.chars + speed * dt);

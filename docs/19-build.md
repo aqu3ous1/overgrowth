@@ -1,13 +1,45 @@
 # 19 — The Playable Build
 
-**0.1.0 — the vertical slice, playable.** Title screen through the first boss, in a browser, in one
+**0.2.0 — the vertical slice, playable.** Title screen through the first boss, in a browser, in one
 self-contained HTML file with no assets and no dependencies.
 
 ```
+python3 tools/gen_sprites.py    # shape primitives -> game/src/15_sprites.js
 python3 tools/build_game.py     # game/src/*.js + data/*.json -> game/overgrowth.html
 python3 tools/playtest.py       # drives it in a real browser, fails on any error
 python3 tools/playtest.py --shots
 ```
+
+## What changed in 0.2.0
+
+**Area transitions are paths, not spots.** Exits are rectangles sitting on a `P` path tile or a `D`
+doorway — a run of worn dirt through a gap in the wall outdoors, stepping stones through the
+orchard, a door punched into brick for interiors. The tile itself is the signpost, the way an older
+Pokemon route reads. The floating pulsing marker is gone.
+
+**And a transition can no longer bounce you back.** 0.1.0's Okobo→north road exit dropped the
+player exactly on the return path, so they were sent straight back; an audit found three more of
+those and thirteen more one tile away from it. Rather than nudge coordinates, exits are now
+*armed*: after arriving, no exit can fire until the player has stood clear of every exit in the
+room. The playtest checks all eighteen directions.
+
+**Sprites are generated, not typed.** `tools/gen_sprites.py` composes each sprite from shape
+primitives — a filled ellipse, a highlight pass clipped to it, an automatic dark outline — so
+everything shares a three-tone read, rows can't go ragged, and a silhouette is tuned by changing a
+radius. Palette indices are base36, so a sprite can carry more than ten tones.
+
+**The player faced the wrong way.** The side sprite was drawn facing left while the renderer
+mirrored it for left, so he walked backwards in both directions. The base sprite now faces right.
+
+**The bedroom door moved to the far wall**, and the strip of light under it is the room's only
+light source until the argument ends — the vignette is centred on the door, not on the boy. When
+the door slams the light goes out and the radius collapses to almost nothing.
+
+**Title screen** is the game's name, CONTINUE (when there's a save), NEW GAME, and OPTIONS. The
+tagline is gone, and so is the duplicated wordmark that sat above the canvas.
+
+**Options** — text speed, volume, flashing, film grain — reachable from the title and from the
+pause menu, stored in `localStorage`.
 
 ## What's in it
 
@@ -35,7 +67,8 @@ The slice specified in [18](18-vertical-slice.md), end to end:
 
 No image files, no audio files, no fonts.
 
-- **Sprites** are row strings with palette indices, drawn pixel by pixel.
+- **Sprites** are composed from shape primitives by `tools/gen_sprites.py` and emitted as row
+  strings with base36 palette indices, drawn pixel by pixel.
 - **Tiles** — brick, grass, water, wood, drop-ceiling, carpet — are procedural, seeded by tile
   coordinate so the texture never shimmers between frames.
 - **The font** is a 5×7 bitmap defined inline, including a solid block glyph for the one word the
@@ -44,7 +77,7 @@ No image files, no audio files, no fonts.
   noise for footsteps and hits, and sustained drones for the liminal rooms, which have no melody at
   all.
 
-The whole build is about 116 KB.
+The whole build is about 127 KB.
 
 ## The data is not copied, it is generated
 
@@ -72,6 +105,7 @@ Stated plainly, because 0.1.0 is a slice and not a demo of the finished thing.
 | Multi-enemy encounters | One enemy at a time | Same. |
 | Equipment | Not in the slice | The slice ends before the first meaningful choice ([18](18-vertical-slice.md)). |
 | Warp devices, collectible counter UI | Absent | Midpoint and later systems. |
+| Accessibility toggles | Present — text speed, volume, flashing, grain | Added in 0.2.0. |
 | Okobo's theme should be the prettiest music in the game | It is a detuned triangle-wave loop | It is a placeholder with the right shape. A composer replaces it. |
 
 ## The done criteria

@@ -91,7 +91,7 @@ const Audio_ = {
     this.sfxGain = this.ac.createGain(); this.sfxGain.gain.value = 0.9;
     this.sfxGain.connect(this.master);
     const note = document.getElementById('audio-note');
-    if (note) note.textContent = 'Sound on.';
+    if (note) { note.textContent = 'Sound on'; note.dataset.on = '1'; }
     if (this.pendingTrack) this.play(this.pendingTrack);
   },
 

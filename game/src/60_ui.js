@@ -51,12 +51,21 @@ const Title = {
   draw() {
     rect(0, 0, W, H, '#05050a');
     // The building, barely resolving out of the black.
-    const bx = W / 2 - 56, by = 50;
-    for (let y = 0; y < 3; y++) for (let x = 0; x < 7; x++) paintBrick(bx + x * TS, by + y * TS, x, y, -52);
-    rect(bx + 50, by + 22, 12, 26, '#4a4a52');
-    rect(bx + 51, by + 23, 10, 24, '#7a7a82');
-    for (let y = 0; y < 3; y++) for (let x = -4; x < W / TS + 4; x++) paintGrass(x * TS, by + 48 + y * TS, x, y, -52);
-    vignette(1.2, W / 2, by + 28, 108);
+    const bx = W / 2 - 56, by = 46;
+    for (let y = 0; y < 3; y++) for (let x = 0; x < 7; x++) paintBrick(bx + x * TS, by + y * TS, x, y, -64);
+    rect(bx + 50, by + 22, 12, 26, '#2e2e34');
+    rect(bx + 51, by + 23, 10, 24, '#53535a');
+    // Grass runs off the bottom of frame and dies into black, rather than
+    // sitting on screen as a slab with edges.
+    const gy = by + 48;
+    for (let y = 0; y * TS + gy < H; y++)
+      for (let x = -4; x < W / TS + 4; x++) paintGrass(x * TS, gy + y * TS, x, y, -78);
+    const fade = cx.createLinearGradient(0, gy - 4, 0, H);
+    fade.addColorStop(0, 'rgba(0,0,0,0.15)');
+    fade.addColorStop(0.45, 'rgba(0,0,0,0.72)');
+    fade.addColorStop(1, 'rgba(0,0,0,0.97)');
+    cx.fillStyle = fade; cx.fillRect(0, gy - 4, W, H - gy + 4);
+    vignette(1.25, W / 2, by + 26, 100);
 
     const flick = Math.sin(this.t * 1.3) * 0.5 + 0.5;
     textCentered('OVERGROWTH', W / 2, 26, `rgba(240,240,236,${0.72 + flick * 0.28})`, 3);
@@ -64,7 +73,7 @@ const Title = {
 
     const opts = this.hasSave ? ['NEW GAME', 'CONTINUE'] : ['NEW GAME'];
     for (let i = 0; i < opts.length; i++) {
-      const y = H - 42 + i * 12;
+      const y = H - 38 + i * 12;
       textCentered(opts[i], W / 2, y, this.cursor === i ? '#f0ece2' : '#70707c');
       if (this.cursor === i && Math.sin(this.t * 5) > 0)
         text('>', W / 2 - textWidth(opts[i]) / 2 - 10, y, '#e8d24a');

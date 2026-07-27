@@ -29,19 +29,27 @@ one long walk out.
 | [09 — Collectibles & Endings](docs/09-collectibles-and-endings.md) | The ten hidden items, both endings |
 | [10 — Writing Guide](docs/10-writing-guide.md) | Voice per faction, sample lines, dialogue rules |
 | [11 — Pacing & Systems](docs/11-pacing-and-systems.md) | Hour-by-hour pacing, saves, economy, difficulty |
-| [Open Questions](docs/open-questions.md) | Unresolved design decisions, ranked by urgency |
+| [12 — Bestiary](docs/12-bestiary.md) | 45 enemy species across ten encounter bands |
+| [13 — Sidequests](docs/13-sidequests.md) | All twenty quests, givers, and rewards |
+| [14 — Script Samples](docs/14-script-samples.md) | Six scenes written in full, as tone reference |
+| [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
 
 ## Reading order for a new collaborator
 
 00 → 02 → 04 → 07. That's the pitch, the story, how fights work, and where you go. Everything
-else is reference.
+else is reference. If you only read one page for tone, read [14](docs/14-script-samples.md).
 
 ## Status
 
-Pre-production. This repo is the design bible only — no engine code yet. Numbers in the systems
-docs (damage values, PP/SP costs, level curve, prices) are **first-pass and meant to be tuned**,
-not final. They're written down so balance discussions have something concrete to argue with.
+Pre-production. This repo is the design bible only — no engine code yet.
 
-Anything marked **PROPOSAL** is an addition beyond the original brief, flagged so it's easy to
-cut. Anything marked **OPEN** needs a decision before it can be built — see
-[open-questions.md](docs/open-questions.md).
+Numbers in the systems docs (damage values, PP/SP costs, level curve, prices, enemy levels) are
+**first-pass and meant to be tuned**, not final. They're written down so balance discussions have
+something concrete to argue with.
+
+Every design question raised in the first pass has been decided, so **nothing here blocks work.**
+The calls and their reasoning are in [Decisions](docs/open-questions.md), each with a reversal cost
+— two of them invalidate every number in the systems docs if overturned, and the rest are cheap.
+
+Anything marked **PROPOSAL** is an addition beyond the original brief, flagged so it stays easy to
+cut.

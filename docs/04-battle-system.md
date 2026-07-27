@@ -88,7 +88,9 @@ completely dry in a long fight is a lose-state with no counterplay. The trickle 
 it never replaces resting or items — it just guarantees `Punch` is always affordable. Full restore
 happens at save points and inns.
 
-**OPEN:** whether HP also trickles (recommend: no). See [open-questions.md](open-questions.md).
+**HP does not trickle** — decided, see [Decisions #2](open-questions.md). Passive HP regen would
+make attrition meaningless and defang **Homesick**, which is the one thing in this game the bag
+can't fix.
 
 ## Status effects
 

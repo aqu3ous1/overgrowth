@@ -58,7 +58,7 @@ optional to implement.
 
 ## Economy
 
-Currency: **Rell** (placeholder name — see [open-questions.md](open-questions.md)).
+Currency: **Rell** ([Decisions #3](open-questions.md)).
 
 | Source | Share of income |
 |---|---|
@@ -76,8 +76,9 @@ given shop tier. Never comfortable, never desperate.
 
 ## Sidequests
 
-~20 total, ~8 of them in Ondo. Deliberately mundane, EarthBound-style: errands, a lost pet, delivery
-jobs, a neighbour dispute, a small mystery that has a boring answer.
+20 total, 8 of them in Ondo — full list in [13](13-sidequests.md). Deliberately mundane,
+EarthBound-style: errands, a lost pet, delivery jobs, a neighbour dispute, a small mystery that has
+a boring answer.
 
 **Rules:**
 - Every sidequest giver has a name and one thing about them that isn't the quest.

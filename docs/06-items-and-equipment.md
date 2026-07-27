@@ -1,6 +1,7 @@
 # 06 — Items & Equipment
 
-Currency is **Rell** (placeholder name — flagged in [open-questions.md](open-questions.md)).
+Currency is **Rell** ([Decisions #3](open-questions.md) — settled, and cheap to change if it stops
+sounding right).
 
 ## Bag structure
 

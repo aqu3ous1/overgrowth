@@ -27,8 +27,8 @@ has nothing to scale off.
 
 The alternative reading is that PP and SP double as offensive scalars — but that makes spending
 resources actively weaken your damage, which is a punishing and unintuitive loop for a solo
-character. **Recommendation: keep ATK and SPATK as real stats.** Flagged in
-[open-questions.md](open-questions.md) as decision #1 since every balance number downstream depends
+character. **Decided: ATK and SPATK are real stats** ([Decisions #1](open-questions.md)). This is the one call
+in the document that can't be cheaply reversed — every balance number in the systems docs is built
 on it.
 
 ## Level curve

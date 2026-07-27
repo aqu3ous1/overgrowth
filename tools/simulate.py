@@ -119,6 +119,7 @@ def fight(level, enemy, heal_items, homesick=False, boss=None, max_turns=60):
     quiet_room = any(m["name"] == "Quiet Room" for m in spec)
     ehp = enemy["HP"]
     healed = 0.0
+    stuck = 0            # turns with no affordable damaging move at all
     restored = False
     afflicted = homesick and not quiet_room
     turns = 0
@@ -155,6 +156,8 @@ def fight(level, enemy, heal_items, homesick=False, boss=None, max_turns=60):
         if not acted:
             p_move = best_attack(phys, ps["ATK"], enemy["DEF"], pp)
             s_move = best_attack(spec, ps["SPATK"], enemy["DEF"], sp)
+            if p_move is None and s_move is None:
+                stuck += 1
             pick, stat, pool = None, None, None
             for m, st, pl in ((p_move, ps["ATK"], "pp"), (s_move, ps["SPATK"], "sp")):
                 if not m:
@@ -182,7 +185,7 @@ def fight(level, enemy, heal_items, homesick=False, boss=None, max_turns=60):
                 ehp = enemy["HP"] * boss["restores_once_to"]
                 restored = True
             else:
-                return True, turns, (hp_max - hp + healed) / hp_max
+                return True, turns, (hp_max - hp + healed) / hp_max, stuck
 
         # --- enemy acts
         falloff = 1.0
@@ -195,12 +198,12 @@ def fight(level, enemy, heal_items, homesick=False, boss=None, max_turns=60):
         if afflicted:
             hp -= hp_max * 0.05
         if hp <= 0:
-            return False, turns, 1.0
+            return False, turns, 1.0, stuck
 
         pp = min(ps["PP"], pp + REGEN["PP"])
         sp = min(ps["SP"], sp + REGEN["SP"])
 
-    return False, turns, (hp_max - hp + healed) / hp_max
+    return False, turns, (hp_max - hp + healed) / hp_max, stuck
 
 
 def run(matchups, trials):
@@ -225,6 +228,7 @@ def run(matchups, trials):
                 "win_rate": len(wins) / trials,
                 "median_turns": statistics.median([r[1] for r in wins]) if wins else None,
                 "median_attrition": statistics.median([r[2] for r in wins]) if wins else None,
+                "worst_stuck": max((r[3] for r in results), default=0),
                 "band": m.get("band"),
             }
         )
@@ -309,6 +313,16 @@ def main():
         if not wlo <= r["win_rate"] <= whi:
             failures.append(
                 f"{r['name']}: {r['win_rate']:.0%} win rate, target {wlo:.0%}-{whi:.0%}"
+            )
+
+    # A turn with no affordable move is the player standing there doing nothing.
+    # The 0.2.0 report was exactly this, and it happened because the +1/turn
+    # trickle lived in this simulator but had never been built into the game.
+    for r in rows:
+        if r["worst_stuck"] > 0:
+            failures.append(
+                f"{r['name']}: {r['worst_stuck']} turn(s) with no affordable move "
+                "- the player is stuck watching"
             )
 
     # Attrition is judged per band, not per species: a glass enemy that dies in

@@ -69,7 +69,15 @@ const Battle = {
   // --- player actions --------------------------------------------------
   useMove(kind, move) {
     const pool = kind === 'physical' ? 'pp' : 'sp';
-    if (Player[pool] < move.cost) { this.push('Not enough ' + pool.toUpperCase() + '.'); this.sub = null; return; }
+    if (Player[pool] < move.cost) {
+      // Not an action: the turn is not spent, and the menu goes back to the top
+      // rather than leaving a dead submenu behind.
+      Audio_.sfx('wrong');
+      this.push('Not enough ' + pool.toUpperCase() + '.');
+      this.state = 'message';
+      this.after = () => { this.sub = null; this.state = 'menu'; };
+      return;
+    }
     Player[pool] -= move.cost;
     this.sub = null;
     this.push(move.name.toUpperCase() + '!');
@@ -226,6 +234,12 @@ const Battle = {
 
   startTurn() {
     if (Player.hp <= 0) { this.defeat(); return; }
+    // The trickle. With Punch at 2 PP this is what guarantees there is never a
+    // state where the player has no move at all — see docs/05.
+    if (!this.drained) {
+      Player.pp = Math.min(Player.maxPp, Player.pp + DATA.regen.PP);
+      Player.sp = Math.min(Player.maxSp, Player.sp + DATA.regen.SP);
+    }
     if (this.homesick) {
       const chip = Math.max(1, Math.round(Player.maxHp * 0.05));
       Player.hp -= chip;

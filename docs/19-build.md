@@ -1,6 +1,6 @@
 # 19 — The Playable Build
 
-**0.2.0 — the vertical slice, playable.** Title screen through the first boss, in a browser, in one
+**0.2.1 — the vertical slice, playable.** Title screen through the first boss, in a browser, in one
 self-contained HTML file with no assets and no dependencies.
 
 ```
@@ -9,6 +9,32 @@ python3 tools/build_game.py     # game/src/*.js + data/*.json -> game/overgrowth
 python3 tools/playtest.py       # drives it in a real browser, fails on any error
 python3 tools/playtest.py --shots
 ```
+
+## 0.2.1 — the PP fix
+
+A player report: early fights left them with no PP and nothing to do. The cause was not balance.
+
+**The +1 PP/turn trickle existed in `data/progression.json` and in `tools/simulate.py`, but had
+never been built into the game.** The simulator was validating a mechanic the build did not have,
+so every matchup passed while the real game ran dry. `Fence Post` — a level 6 brute with 66 HP that
+can appear while the player is still level 1 — was the one that exposed it: two turns with no
+affordable move.
+
+Three changes:
+
+- The trickle is implemented, and `build_game.py` exports the figures so it comes from the data
+  rather than a constant in the battle code.
+- The trickle is **+2, not +1**. Its stated purpose is "Punch is always affordable"; Punch costs 2,
+  so +1 only ever bought it on alternate turns. The validator now fails if the trickle drops below
+  the cheapest attack's cost.
+- Starting PP 10 → 14 and SP 8 → 10, for slack in the first hour.
+
+Also fixed: choosing a move you could not afford left the submenu in a broken state showing the bag
+list. It now says so, costs no turn, and returns to the command menu.
+
+The simulator gained a check for **turns with no affordable move**, which fails any matchup with
+one. It caught the same problem in both Custodian fights immediately. That check is the useful
+part — it catches the symptom whatever the cause, which the old targets could not.
 
 ## What changed in 0.2.0
 

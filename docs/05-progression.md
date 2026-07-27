@@ -113,8 +113,8 @@ escalates.
 | Stat | Lv 1 | Lv 10 | Lv 22 | Lv 36 | Lv 45 |
 |---|---|---|---|---|---|
 | HP | 30 | 84 | 172 | 296 | 380 |
-| PP | 10 | 24 | 44 | 72 | 90 |
-| SP | 8 | 22 | 45 | 78 | 95 |
+| PP | 14 | 24 | 44 | 72 | 90 |
+| SP | 10 | 22 | 45 | 78 | 95 |
 | ATK | 8 | 20 | 37 | 61 | 75 |
 | SPATK | 6 | 18 | 38 | 66 | 80 |
 | DEF | 7 | 18 | 34 | 56 | 70 |
@@ -164,8 +164,12 @@ on the Custodian or not, the game should notice.
 
 ### Notes on the kit
 
-- **He can always afford `Punch`.** With PP regen at +1/turn and a cost of 2, there is no state in
-  which the player is fully out of options.
+- **He can always afford `Punch`.** The trickle is **+2 PP and +2 SP per turn**, which is not an
+  arbitrary number: it is the cost of the cheapest attack in the game. A trickle *below* that cost
+  does not deliver the promise — it lets the player act on alternating turns and stand there on the
+  others, which reads as a bug rather than as attrition. `tools/validate.py` fails if the trickle
+  ever drops below the cheapest move's cost, and `tools/simulate.py` fails any matchup where the
+  player has a turn with no affordable move at all.
 - **Sustain arrives at level 9.** Before `Mend`, healing is 100% items, which makes the Sunken
   Orchard and Kestrel Works genuinely tense on a first run. That's the intended difficulty shape and
   shops in Okobo and Ondo are priced with it in mind.

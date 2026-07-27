@@ -89,6 +89,16 @@ check(
     progression["resource_regen"]["PP"] > 0 and progression["resource_regen"]["SP"] > 0,
     "PP and SP must trickle so the player is never out of options",
 )
+# The trickle exists to guarantee the cheapest move is always affordable. If it
+# is smaller than that move's cost, the player alternates between acting and
+# standing there, which is worse than a hard wall because it looks like a bug.
+cheapest = min(m["cost"] for m in moves["physical"] + moves["special"] if m.get("power"))
+check(
+    progression["resource_regen"]["PP"] >= cheapest,
+    f"PP trickle is {progression['resource_regen']['PP']} but the cheapest attack "
+    f"costs {cheapest} — the player will be able to act only every other turn",
+)
+
 check(
     progression["flee"]["enemy_level_at_or_below_player"] == 0.5,
     "Flee chance at or below player level must be a flat 50%",
@@ -642,6 +652,21 @@ if data_js.exists():
         },
         "the build's enemy stat curve is stale — rebuild",
     )
+    # Rules the simulator reads must also reach the build. The 0.2.0 report was
+    # caused by resource_regen existing in the data and in the simulator, but
+    # never being exported to the game or referenced by the battle code.
+    check(
+        embedded.get("regen") == progression["resource_regen"],
+        "the build's resource regen disagrees with progression.json — rebuild",
+    )
+    battle_src = (ROOT / "game" / "src" / "50_battle.js")
+    if battle_src.exists():
+        check(
+            "DATA.regen" in battle_src.read_text(),
+            "the battle code never reads DATA.regen — the trickle would be "
+            "exported but not implemented",
+        )
+
     for name, spec in embedded["bosses"].items():
         check(
             spec == blocks["bosses"].get(name),

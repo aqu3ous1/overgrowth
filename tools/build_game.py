@@ -99,6 +99,7 @@ DATA_JS = {
     "bossEncounters": boss_encounters,
     "items": game_items,
     "damage": {"divisor": 12, "defCoeff": 0.5, "critChance": 0.04, "critMult": 1.75},
+    "regen": progression["resource_regen"],
     "shopStock": next(s["stock"] for s in shops["shops"] if s["act"] == 1),
     "currency": items["currency"],
 }

@@ -109,7 +109,7 @@ items at all. That claim now sits where it's true.
 
 ## What the simulator does and doesn't model
 
-**Models:** the damage formula and variance, crits, PP/SP costs and the +1/turn trickle, move
+**Models:** the damage formula and variance, crits, PP/SP costs and the +2/turn trickle, move
 selection by expected damage, healing via `Mend`/`Mend+` and items, `Homesick` chip damage and
 `Quiet Room` clearing it, boss HP restores, per-phase damage falloff, and enemy inaction (the
 species built around *not* attacking — `Fence Post`, `Unit 4C`, `Fluorescent` and friends carry an
@@ -129,6 +129,25 @@ at the top and were widened to match what the model produced.
 area, so it's simulated against a player nearer the top of their expected range rather than the band
 median. Fighting everything at the median made top-of-band enemies look like difficulty spikes when
 they're just later.
+
+## A caveat this simulator earned the hard way
+
+A player report in 0.2.0 said early fights left them unable to act. The cause was not balance: the
+**+1/turn trickle existed in this simulator and in `data/progression.json`, but had never been
+built into the game.** The simulator was validating a mechanic the build did not have, and every
+matchup passed while the real game ran dry.
+
+Two things changed as a result.
+
+`tools/build_game.py` now exports the regen figures into the build, and `tools/validate.py` fails
+if the build's copy disagrees with the data *or* if the battle code never references it — a rule
+the simulator relies on has to reach the game.
+
+And the simulator now counts **turns with no affordable move** and fails any matchup with one. That
+check is not about the trickle specifically; it catches the symptom whatever the cause, which is
+what the earlier targets could not do. It immediately found the same problem in the two Custodian
+fights, where a +1 trickle against a 2 PP move meant the player acted only on alternate turns once
+their pools ran dry.
 
 ## How these numbers were reached
 

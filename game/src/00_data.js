@@ -4,8 +4,8 @@ const DATA = {
  "statCurve": {
   "1": {
    "HP": 30,
-   "PP": 10,
-   "SP": 8,
+   "PP": 14,
+   "SP": 10,
    "ATK": 8,
    "SPATK": 6,
    "DEF": 7,
@@ -746,6 +746,12 @@ const DATA = {
   "defCoeff": 0.5,
   "critChance": 0.04,
   "critMult": 1.75
+ },
+ "regen": {
+  "PP": 2,
+  "SP": 2,
+  "HP": 0,
+  "why": "Must be >= the cheapest move's cost (Punch, 2 PP) or the player alternates between acting and standing still."
  },
  "shopStock": [
   "Spray",

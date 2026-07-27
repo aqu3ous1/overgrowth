@@ -107,7 +107,7 @@ ignore the target's DEF/SPDEF term entirely.
 
 ## Resource regeneration
 
-The player regenerates **+1 PP and +1 SP at the end of each turn**, capped at max.
+The player regenerates **+2 PP and +2 SP at the end of each turn**, capped at max — matching the cost of `Punch`, the cheapest attack, so it is always affordable *every* turn rather than every other one.
 
 This exists because a solo combatant with no party has no way to stall for resources, and running
 completely dry in a long fight is a lose-state with no counterplay. The trickle is small enough that

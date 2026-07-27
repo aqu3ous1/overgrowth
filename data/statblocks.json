@@ -181,6 +181,17 @@
     },
     "max_overshoot_levels": 4,
     "max_undershoot_levels": 3,
-    "encounters_per_band_source": "data/enemies.json bands[].encounters"
+    "encounters_per_band_source": "data/enemies.json bands[].encounters",
+    "time_budget": {
+      "note": "Share of the main path spent in battle. Deliberately low for the genre — see docs/11.",
+      "median_regular_turns": 3,
+      "measured_boss_turns": 100,
+      "seconds_per_turn": 7,
+      "seconds_per_boss_turn": 9,
+      "combat_share": [
+        0.1,
+        0.22
+      ]
+    }
   }
 }

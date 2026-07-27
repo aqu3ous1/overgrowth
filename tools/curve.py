@@ -155,6 +155,32 @@ def main():
                 f"{hi_lvl - target} above the target of {target}"
             )
 
+    # How much of the game is actually spent in battle. Overgrowth is a game
+    # about walking through empty places; if this creeps toward a normal JRPG's
+    # share, something has gone wrong with the encounter counts.
+    pacing = TARGETS["time_budget"]
+    regular_turns = sum(
+        b["encounters"] * pacing["median_regular_turns"] for b in BANDS
+    )
+    boss_turns = pacing["measured_boss_turns"]
+    combat_min = (
+        regular_turns * pacing["seconds_per_turn"]
+        + boss_turns * pacing["seconds_per_boss_turn"]
+    ) / 60
+    hours = world["pacing_hours"]
+    main_path_min = sum(v[1] for k, v in hours.items() if k != "optional") * 60
+    share = combat_min / main_path_min
+    print(
+        f"\ncombat is {combat_min:.0f} min of a {main_path_min / 60:.1f}h main path "
+        f"({share:.0%})"
+    )
+    lo, hi = pacing["combat_share"]
+    if not lo <= share <= hi:
+        failures.append(
+            f"combat is {share:.0%} of playtime, target {lo:.0%}-{hi:.0%} — "
+            "this is a game about walking through empty places"
+        )
+
     final_normal = results["normal"][0][-1][1]
     if final_normal >= CAP:
         warnings.append(

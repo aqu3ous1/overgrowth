@@ -14,6 +14,16 @@
 | Optional sidequests + collectible hunt | Fully optional | +2–3 hrs |
 | **Completionist total** | | **13–16.5 hrs** |
 
+### Combat is 13% of the game
+
+104 minutes of battle across a 13.6-hour main path — 255 encounters at a measured 3 turns each, plus
+100 turns of boss across all eight fights ([16](16-combat-math.md)).
+
+That is **low for the genre and correct for this one.** Overgrowth is about walking through empty
+places alone; combat is what interrupts that, not what the game is made of. `tools/curve.py` fails
+if the share drifts outside 10–22%, which is the guard against encounter counts creeping up during
+production.
+
 **Reconciliation note.** The original brief's pacing table put Main Boss 1 inside Act 1, while its
 act breakdown and boss table both put it at the end of Act 2. This document follows the boss table:
 **Mini-Boss 1 in Act 1, Main Boss 1 at the end of Act 2.** That spacing also gives Ondo — the

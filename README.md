@@ -35,6 +35,7 @@ one long walk out.
 | [15 — Lore Notes](docs/15-lore-notes.md) | All thirty readable notes, written out |
 | [16 — Combat Math](docs/16-combat-math.md) | Enemy stat derivation, damage formula, measured difficulty |
 | [17 — Economy](docs/17-economy.md) | Shops, prices, and the per-act ledger |
+| [18 — Vertical Slice](docs/18-vertical-slice.md) | What to build first, and how to know it worked |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
 
 ## The numbers
@@ -49,7 +50,7 @@ python3 tools/validate.py       # 533 checks: do the data and docs agree?
 python3 tools/simulate.py       # 57 matchups x 2000 trials: do fights feel right?
 python3 tools/economy.py        # per-act ledger: can the player afford them?
 python3 tools/curve.py          # levelling walk: does the player reach the levels
-                                #   everything else assumes?
+                                #   everything else assumes? also the combat/playtime split
 ```
 
 All stdlib only, no dependencies. Add `--verbose` to any of them.
@@ -99,6 +100,11 @@ a second sighting is ever added, or if a surname is printed after it.
 
 00 → 02 → 04 → 07. That's the pitch, the story, how fights work, and where you go. Everything
 else is reference. If you only read one page for tone, read [14](docs/14-script-samples.md).
+
+**If you are here to build something**, read [18](docs/18-vertical-slice.md) instead. It is the
+first 45 minutes of the game specified room by room, with an asset list, the systems to defer, and
+six done criteria — five of which are arithmetic and one of which is whether a playtester calls the
+Sunken Orchard *sad* rather than *scary*.
 
 ## Status
 

@@ -11,6 +11,7 @@ The balance numbers from the systems docs, in JSON. Same figures, readable by to
 | `items.json` | [06](../docs/06-items-and-equipment.md) | Battle items with prices, both equipment slots, warp devices |
 | `world.json` | [07](../docs/07-world-and-areas.md), [13](../docs/13-sidequests.md) | Areas, sidequests, lore-note distribution, pacing, economy |
 | `statblocks.json` | [16](../docs/16-combat-math.md) | Enemy stat curve, the five roles, boss multipliers, encounter targets, item budgets |
+| `shops.json` | [17](../docs/17-economy.md) | Shop stock by location, and which areas deliberately have none |
 | `naming.json` | [15](../docs/15-lore-notes.md) | The family-name rule, its three dodge sites, the one permitted initial, and renderings that must never appear |
 
 ## Rules
@@ -20,9 +21,9 @@ The balance numbers from the systems docs, in JSON. Same figures, readable by to
 - Every value here is **first-pass and meant to be tuned.** None of it has been playtested. It
   exists so balance discussions have something concrete to argue with, and so a change in one place
   can be checked against every place it touches.
-- Run `python3 tools/validate.py` **and** `python3 tools/simulate.py` after any edit. The first
-  checks internal consistency; the second checks that fights still feel the way
-  [16](../docs/16-combat-math.md) says they should.
+- Run all three tools after any edit: `validate.py` for internal consistency, `simulate.py` for
+  whether fights still feel the way [16](../docs/16-combat-math.md) says, and `economy.py` for
+  whether the player can afford them ([17](../docs/17-economy.md)).
 
 ## Fields worth knowing
 

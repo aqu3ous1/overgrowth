@@ -62,9 +62,12 @@ Currency: **Rell** ([Decisions #3](open-questions.md)).
 
 | Source | Share of income |
 |---|---|
-| Sidequests (mostly Ondo) | ~45% |
-| Battle drops | ~35% |
-| Found in the world | ~20% |
+| Sidequests (mostly Ondo) | 44% |
+| Battle drops | 35% |
+| Found in the world | 21% |
+
+Modelled, not estimated — see [17](17-economy.md) for the per-act ledger and
+`tools/economy.py`.
 
 Deliberately sidequest-weighted. Ondo's errands are the money engine, which means the player's
 financial security is tied to the friendliest stretch of the game — and the late game, where there
@@ -73,6 +76,11 @@ job.
 
 **Pricing philosophy:** the player should be able to afford roughly 70% of what they want at any
 given shop tier. Never comfortable, never desperate.
+
+Acts 4 and 5 run at a **loss** — the player spends the endgame burning savings earned back when the
+world still talked to them. That fell out of the sidequest distribution rather than being designed,
+and it lands on the difficulty curve: money is tightest exactly where the simulator says items stop
+being optional ([16](16-combat-math.md)).
 
 ## Sidequests
 

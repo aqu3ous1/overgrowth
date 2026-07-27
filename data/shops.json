@@ -1,0 +1,48 @@
+{
+  "note": "Shop stock by location. Each act's shop must sell enough healing to cover that act's attrition, and the last shop in the game is a Vixtry vending machine.",
+  "shops": [
+    {
+      "location": "Okobo Village",
+      "act": 1,
+      "flavour": "A counter in someone's front room. Four things on it.",
+      "stock": ["Spray", "Clean Rag", "Tent Stake", "Patched Coat"]
+    },
+    {
+      "location": "Ondo",
+      "act": 2,
+      "flavour": "A proper market row. The first time the player has choices they cannot all afford.",
+      "stock": [
+        "Spray", "Spray II", "Chalk Tablet", "Bitter Tonic", "Clean Rag",
+        "Knuckle Wrap", "Cold Compress", "Dropped Call",
+        "Magic Baton", "Anvil-Laden Sword", "Fancy Suit", "Featherweight Coat"
+      ]
+    },
+    {
+      "location": "Sable City",
+      "act": 3,
+      "flavour": "Six storefronts stacked vertically, treated as one shop UI. Loud.",
+      "stock": [
+        "Spray II", "Spray III", "Chalk Tablet", "Bitter Tonic", "Clean Rag",
+        "Knuckle Wrap", "Cold Compress", "Thin Static", "Wool Lining", "Loose Laces",
+        "Dropped Call", "Loose Wire", "Dead Battery", "Shed Skin",
+        "Length of Pipe", "Signal Rod", "Work Jacket"
+      ]
+    },
+    {
+      "location": "Vixtry Regional Campus",
+      "act": 4,
+      "flavour": "A vending machine in a break room. Staff walk past the player to use it.",
+      "final_shop": true,
+      "stock": [
+        "Spray II", "Spray III", "Full Spray", "Chalk Tablet", "Bitter Tonic", "Clean Rag",
+        "Thin Static", "Wool Lining", "Loose Laces", "Second Wind",
+        "Dead Battery", "Shed Skin",
+        "Foreman's Wrench", "Static Vest", "Lead Apron", "Quiet Instrument"
+      ]
+    }
+  ],
+  "no_shop_areas": [
+    "The Gallery", "The Sunken Orchard", "Kestrel Works",
+    "Bellhouse Commons", "The Long Hall", "The Root"
+  ]
+}

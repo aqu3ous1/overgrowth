@@ -82,13 +82,15 @@ Warp devices are found, never bought.
 Battle only. **All consumable**, except a small number of post-game finds
 ([11](11-pacing-and-systems.md)). Bought from shops or found in the world.
 
+Full pricing rationale, the shop list, and the per-act ledger are in [17](17-economy.md).
+
 ### Healing
 
 | Item | Effect | Price |
 |---|---|---|
 | Spray | Restores 40 HP | 30 |
-| Spray II | Restores 120 HP | 90 |
-| Spray III | Restores 260 HP | 220 |
+| Spray II | Restores 120 HP | 100 |
+| Spray III | Restores 260 HP | 240 |
 | Full Spray | Restores all HP | 600 |
 | Chalk Tablet | Restores 25 PP | 60 |
 | Bitter Tonic | Restores 25 SP | 60 |
@@ -132,29 +134,29 @@ get to act before the thing that won't let you leave.
 
 ### Weapons
 
-| Item | ATK | SPATK | DEF | SPD | Act |
-|---|---:|---:|---:|---:|---|
-| Bare Hands | — | — | — | — | 1 |
-| Tent Stake | +3 | — | — | — | 1 |
-| Magic Baton | — | +5 | — | +1 | 2 |
-| Anvil-Laden Sword | +5 | — | +1 | **−4** | 2 |
-| Length of Pipe | +7 | — | — | −1 | 3 |
-| Signal Rod | −2 | +9 | — | — | 3 |
-| Foreman's Wrench | +11 | — | +2 | **−3** | 4 |
-| Quiet Instrument | +4 | +12 | — | +2 | 5 |
+| Item | ATK | SPATK | DEF | SPD | Act | Price |
+|---|---:|---:|---:|---:|---|---:|
+| Bare Hands | — | — | — | — | 1 | — |
+| Tent Stake | +3 | — | — | — | 1 | 150 |
+| Magic Baton | — | +5 | — | +1 | 2 | 620 |
+| Anvil-Laden Sword | +5 | — | +1 | **−4** | 2 | 560 |
+| Length of Pipe | +7 | — | — | −1 | 3 | 1,400 |
+| Signal Rod | −2 | +9 | — | — | 3 | 1,650 |
+| Foreman's Wrench | +11 | — | +2 | **−3** | 4 | 3,000 |
+| Quiet Instrument | +4 | +12 | — | +2 | 5 | 5,200 |
 
 ### Body
 
-| Item | DEF | SPDEF | SPD | HP | Act |
-|---|---:|---:|---:|---:|---|
-| School Clothes | — | — | — | — | 1 |
-| Patched Coat | +3 | +1 | — | — | 1 |
-| Fancy Suit | +2 | +5 | — | — | 2 |
-| Featherweight Coat | **−2** | — | +3 | — | 2 |
-| Work Jacket | +8 | +2 | −1 | — | 3 |
-| Static Vest | +1 | +10 | — | — | 4 |
-| Lead Apron | +14 | +6 | **−6** | — | 4 |
-| Overgrown Coat | +6 | +6 | +2 | +20 | 5 |
+| Item | DEF | SPDEF | SPD | HP | Act | Price |
+|---|---:|---:|---:|---:|---|---:|
+| School Clothes | — | — | — | — | 1 | — |
+| Patched Coat | +3 | +1 | — | — | 1 | 200 |
+| Fancy Suit | +2 | +5 | — | — | 2 | 700 |
+| Featherweight Coat | **−2** | — | +3 | — | 2 | 500 |
+| Work Jacket | +8 | +2 | −1 | — | 3 | 1,500 |
+| Static Vest | +1 | +10 | — | — | 4 | 3,200 |
+| Lead Apron | +14 | +6 | **−6** | — | 4 | 2,800 |
+| Overgrown Coat | +6 | +6 | +2 | +20 | 5 | *found* |
 
 ### Rules
 

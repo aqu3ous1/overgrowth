@@ -1,37 +1,228 @@
 {
   "areas": [
-    { "id": 1,  "name": "The Gallery",             "type": "liminal",       "act": 0.5, "collectible": true, "enemies": false },
-    { "id": 2,  "name": "Okobo Village",           "type": "hub",           "act": 1,   "collectible": true, "enemies": true },
-    { "id": 3,  "name": "The Sunken Orchard",      "type": "liminal",       "act": 1,   "collectible": true, "enemies": true },
-    { "id": 4,  "name": "Ondo",                    "type": "hub",           "act": 2,   "collectible": true, "enemies": true },
-    { "id": 5,  "name": "Kestrel Works",           "type": "liminal",       "act": 2,   "collectible": true, "enemies": true },
-    { "id": 6,  "name": "Sable City",              "type": "hub",           "act": 3,   "collectible": true, "enemies": true },
-    { "id": 7,  "name": "Bellhouse Commons",       "type": "liminal",       "act": 3,   "collectible": true, "enemies": true },
-    { "id": 8,  "name": "Vixtry Regional Campus",  "type": "hub-hostile",   "act": 4,   "collectible": true, "enemies": true },
-    { "id": 9,  "name": "The Long Hall",           "type": "liminal",       "act": 4,   "collectible": true, "enemies": true },
-    { "id": 10, "name": "The Root",                "type": "liminal",       "act": 5,   "collectible": true, "enemies": true }
+    {
+      "id": 1,
+      "name": "The Gallery",
+      "type": "liminal",
+      "act": 0.5,
+      "collectible": true,
+      "enemies": false
+    },
+    {
+      "id": 2,
+      "name": "Okobo Village",
+      "type": "hub",
+      "act": 1,
+      "collectible": true,
+      "enemies": true
+    },
+    {
+      "id": 3,
+      "name": "The Sunken Orchard",
+      "type": "liminal",
+      "act": 1,
+      "collectible": true,
+      "enemies": true
+    },
+    {
+      "id": 4,
+      "name": "Ondo",
+      "type": "hub",
+      "act": 2,
+      "collectible": true,
+      "enemies": true
+    },
+    {
+      "id": 5,
+      "name": "Kestrel Works",
+      "type": "liminal",
+      "act": 2,
+      "collectible": true,
+      "enemies": true
+    },
+    {
+      "id": 6,
+      "name": "Sable City",
+      "type": "hub",
+      "act": 3,
+      "collectible": true,
+      "enemies": true
+    },
+    {
+      "id": 7,
+      "name": "Bellhouse Commons",
+      "type": "liminal",
+      "act": 3,
+      "collectible": true,
+      "enemies": true
+    },
+    {
+      "id": 8,
+      "name": "Vixtry Regional Campus",
+      "type": "hub-hostile",
+      "act": 4,
+      "collectible": true,
+      "enemies": true
+    },
+    {
+      "id": 9,
+      "name": "The Long Hall",
+      "type": "liminal",
+      "act": 4,
+      "collectible": true,
+      "enemies": true
+    },
+    {
+      "id": 10,
+      "name": "The Root",
+      "type": "liminal",
+      "act": 5,
+      "collectible": true,
+      "enemies": true
+    }
   ],
   "sidequests": [
-    { "id": 1,  "name": "The Well Bucket",      "area": "Okobo Village",          "act": 1, "reward_rell": 120 },
-    { "id": 2,  "name": "Someone's Brother",    "area": "Okobo Village",          "act": 1, "reward_rell": 200 },
-    { "id": 3,  "name": "Melon Opinion",        "area": "Okobo Village",          "act": 1, "reward_rell": 80 },
-    { "id": 4,  "name": "Dry Socks",            "area": "The Sunken Orchard",     "act": 1, "reward_rell": 150 },
-    { "id": 5,  "name": "The Dry Fountain",     "area": "Ondo",                   "act": 2, "reward_rell": 350 },
-    { "id": 6,  "name": "Boarding House Ledger","area": "Ondo",                   "act": 2, "reward_rell": 400 },
-    { "id": 7,  "name": "Lost Dog (Again)",     "area": "Ondo",                   "act": 2, "reward_rell": 200 },
-    { "id": 8,  "name": "Delivery: Northside",  "area": "Ondo",                   "act": 2, "reward_rell": 500 },
-    { "id": 9,  "name": "The Bakery Grievance", "area": "Ondo",                   "act": 2, "reward_rell": 300 },
-    { "id": 10, "name": "Records Request",      "area": "Ondo",                   "act": 2, "reward_rell": 450 },
-    { "id": 11, "name": "Park Bench",           "area": "Ondo",                   "act": 2, "reward_rell": 250 },
-    { "id": 12, "name": "A Small Mystery",      "area": "Ondo",                   "act": 2, "reward_rell": 400 },
-    { "id": 13, "name": "Last One Out",         "area": "Kestrel Works",          "act": 2, "reward_rell": 0, "no_giver": true },
-    { "id": 14, "name": "Transit Card",         "area": "Sable City",             "act": 3, "reward_rell": 700 },
-    { "id": 15, "name": "Six Storeys Up",       "area": "Sable City",             "act": 3, "reward_rell": 400 },
-    { "id": 16, "name": "Noodle Place",         "area": "Sable City",             "act": 3, "reward_rell": 900 },
-    { "id": 17, "name": "Canvasser Quota",      "area": "Sable City",             "act": 3, "reward_rell": 1200 },
-    { "id": 18, "name": "Unit 4C's Mail",       "area": "Bellhouse Commons",      "act": 3, "reward_rell": 600 },
-    { "id": 19, "name": "The Television",       "area": "Bellhouse Commons",      "act": 3, "reward_rell": 800 },
-    { "id": 20, "name": "Badge",                "area": "Vixtry Regional Campus", "act": 4, "reward_rell": 1500 }
+    {
+      "id": 1,
+      "name": "The Well Bucket",
+      "area": "Okobo Village",
+      "act": 1,
+      "reward_rell": 120
+    },
+    {
+      "id": 2,
+      "name": "Someone's Brother",
+      "area": "Okobo Village",
+      "act": 1,
+      "reward_rell": 200
+    },
+    {
+      "id": 3,
+      "name": "Melon Opinion",
+      "area": "Okobo Village",
+      "act": 1,
+      "reward_rell": 80
+    },
+    {
+      "id": 4,
+      "name": "Dry Socks",
+      "area": "The Sunken Orchard",
+      "act": 1,
+      "reward_rell": 150
+    },
+    {
+      "id": 5,
+      "name": "The Dry Fountain",
+      "area": "Ondo",
+      "act": 2,
+      "reward_rell": 350
+    },
+    {
+      "id": 6,
+      "name": "Boarding House Ledger",
+      "area": "Ondo",
+      "act": 2,
+      "reward_rell": 400
+    },
+    {
+      "id": 7,
+      "name": "Lost Dog (Again)",
+      "area": "Ondo",
+      "act": 2,
+      "reward_rell": 200
+    },
+    {
+      "id": 8,
+      "name": "Delivery: Northside",
+      "area": "Ondo",
+      "act": 2,
+      "reward_rell": 500
+    },
+    {
+      "id": 9,
+      "name": "The Bakery Grievance",
+      "area": "Ondo",
+      "act": 2,
+      "reward_rell": 300
+    },
+    {
+      "id": 10,
+      "name": "Records Request",
+      "area": "Ondo",
+      "act": 2,
+      "reward_rell": 450
+    },
+    {
+      "id": 11,
+      "name": "Park Bench",
+      "area": "Ondo",
+      "act": 2,
+      "reward_rell": 250
+    },
+    {
+      "id": 12,
+      "name": "A Small Mystery",
+      "area": "Ondo",
+      "act": 2,
+      "reward_rell": 400
+    },
+    {
+      "id": 13,
+      "name": "Last One Out",
+      "area": "Kestrel Works",
+      "act": 2,
+      "reward_rell": 0,
+      "no_giver": true
+    },
+    {
+      "id": 14,
+      "name": "Transit Card",
+      "area": "Sable City",
+      "act": 3,
+      "reward_rell": 700
+    },
+    {
+      "id": 15,
+      "name": "Six Storeys Up",
+      "area": "Sable City",
+      "act": 3,
+      "reward_rell": 400
+    },
+    {
+      "id": 16,
+      "name": "Noodle Place",
+      "area": "Sable City",
+      "act": 3,
+      "reward_rell": 900
+    },
+    {
+      "id": 17,
+      "name": "Canvasser Quota",
+      "area": "Sable City",
+      "act": 3,
+      "reward_rell": 1200
+    },
+    {
+      "id": 18,
+      "name": "Unit 4C's Mail",
+      "area": "Bellhouse Commons",
+      "act": 3,
+      "reward_rell": 600
+    },
+    {
+      "id": 19,
+      "name": "The Television",
+      "area": "Bellhouse Commons",
+      "act": 3,
+      "reward_rell": 800
+    },
+    {
+      "id": 20,
+      "name": "Badge",
+      "area": "Vixtry Regional Campus",
+      "act": 4,
+      "reward_rell": 1500
+    }
   ],
   "lore_notes_per_area": {
     "Okobo Village": 2,
@@ -45,15 +236,70 @@
     "The Root": 1
   },
   "pacing_hours": {
-    "act0_and_threshold": [0.4, 0.6],
-    "act1": [2.0, 2.5],
-    "act2": [2.5, 3.0],
-    "act3": [2.5, 3.0],
-    "act4": [2.0, 2.5],
-    "act5": [1.5, 2.0],
-    "optional": [2.0, 3.0]
+    "act0_and_threshold": [
+      0.4,
+      0.6
+    ],
+    "act1": [
+      2.0,
+      2.5
+    ],
+    "act2": [
+      2.5,
+      3.0
+    ],
+    "act3": [
+      2.5,
+      3.0
+    ],
+    "act4": [
+      2.0,
+      2.5
+    ],
+    "act5": [
+      1.5,
+      2.0
+    ],
+    "optional": [
+      2.0,
+      3.0
+    ]
   },
-  "income_share": { "sidequests": 0.45, "battle_drops": 0.35, "found": 0.20 },
-  "endings": ["standard", "secret"],
-  "collectibles_total": 10
+  "income_share": {
+    "sidequests": 0.45,
+    "battle_drops": 0.35,
+    "found": 0.2
+  },
+  "endings": [
+    "standard",
+    "secret"
+  ],
+  "collectibles_total": 10,
+  "economy": {
+    "currency": "Rell",
+    "money_per_encounter": "round(1 + 1.35 * enemy_level)",
+    "encounters_per_act": {
+      "1": 45,
+      "2": 60,
+      "3": 65,
+      "4": 50,
+      "5": 35
+    },
+    "mean_enemy_level_per_act": {
+      "1": 6,
+      "2": 13,
+      "3": 21,
+      "4": 31,
+      "5": 39
+    },
+    "found_money_per_act": {
+      "1": 250,
+      "2": 700,
+      "3": 1300,
+      "4": 1800,
+      "5": 400
+    },
+    "affordability_target": 0.7,
+    "affordability_note": "Fraction of what a player wants at a given shop tier that they can afford. Never comfortable, never desperate."
+  }
 }

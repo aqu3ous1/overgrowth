@@ -34,6 +34,7 @@ one long walk out.
 | [14 — Script Samples](docs/14-script-samples.md) | Six scenes written in full, as tone reference |
 | [15 — Lore Notes](docs/15-lore-notes.md) | All thirty readable notes, written out |
 | [16 — Combat Math](docs/16-combat-math.md) | Enemy stat derivation, damage formula, measured difficulty |
+| [17 — Economy](docs/17-economy.md) | Shops, prices, and the per-act ledger |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
 
 ## The numbers
@@ -41,16 +42,18 @@ one long walk out.
 `data/` holds the same balance figures as the systems docs, in a form something can read —
 progression curve, move lists, enemy roster, boss table, items and equipment, world and quests.
 
-`tools/validate.py` checks that the data and the docs agree with each other, and that both follow
-the rules the design claims to follow. `tools/simulate.py` fights every matchup in the game a few
-thousand times and checks the results against the targets in `data/statblocks.json`:
+Three tools keep the design honest. `validate.py` checks the data and docs agree with each other
+and with the rules the design claims. `simulate.py` fights every matchup a few thousand times
+against the targets in `statblocks.json`. `economy.py` checks the player can afford the fights the
+simulator says they're going to get.
 
 ```
-python3 tools/validate.py                 # 399 consistency checks
+python3 tools/validate.py                 # 489 consistency checks
 python3 tools/simulate.py --verbose       # 57 matchups, 2000 trials each
+python3 tools/economy.py --verbose        # per-act ledger
 ```
 
-Both are stdlib only, no dependencies.
+All stdlib only, no dependencies.
 
 It verifies the EXP curve against its own formula, that every move is castable at the level it's
 learned, that every boss shows `??` and no regular enemy does, that the Root is the only encounter
@@ -67,6 +70,13 @@ Move power and stats were both scaling, so they compounded — every late-game e
 while the early bosses were unwinnable. Fixing it meant treating move power as a sidegrade axis
 rather than a scaling one, and giving enemy HP a quadratic term. Neither problem is visible from
 reading the tables. See [16](docs/16-combat-math.md).
+
+The economy model found the healing ladder had **Spray and Spray II at identical value per Rell**,
+which makes one of them pointless, and confirmed something better than it disproved: acts 4 and 5
+run at a *loss*. The player spends the endgame burning savings earned back when the world still
+talked to them. That was never designed — it fell out of putting 13 of 20 sidequests before the end
+of Act 2, and it lands on exactly the point where the simulator says items stop being optional.
+See [17](docs/17-economy.md).
 
 ## Two rules the validator enforces, not just documents
 

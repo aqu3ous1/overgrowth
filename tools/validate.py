@@ -325,6 +325,59 @@ check(
     "The Overgrown Coat must be the clean, found-only endgame piece",
 )
 
+# Rell per HP must ascend across the spray ladder: for a solo character the
+# scarce resource in a fight is the turn, so bigger heals carry a premium.
+spray_hp = {"Spray": 40, "Spray II": 120, "Spray III": 260}
+ratios = [
+    i["price"] / spray_hp[i["name"]]
+    for i in items["battle_items"]["healing"]
+    if i["name"] in spray_hp
+]
+check(
+    all(b > a for a, b in zip(ratios, ratios[1:])),
+    f"Spray Rell-per-HP must strictly ascend, got {[round(r, 2) for r in ratios]} "
+    "— equal value makes a tier pointless",
+)
+
+shops = load("shops.json")
+known_items = {i["name"] for g in items["battle_items"].values() for i in g}
+known_items |= {p["name"] for slot in items["equipment"].values() for p in slot}
+for shop in shops["shops"]:
+    for entry in shop["stock"]:
+        check(entry in known_items, f"{shop['location']} stocks unknown item {entry!r}")
+    check(
+        shop["location"] in area_names,
+        f"Shop location {shop['location']!r} is not a known area",
+    )
+check(
+    not any(s["act"] >= 5 for s in shops["shops"]),
+    "Act 5 must have no shop — the Root is not a place that sells things",
+)
+final_shop = [s for s in shops["shops"] if s.get("final_shop")]
+check(len(final_shop) == 1, "Exactly one shop must be flagged as the final shop")
+if final_shop:
+    check(
+        final_shop[0]["location"] == "Vixtry Regional Campus",
+        "The last shop in the game must be the Vixtry vending machine",
+    )
+for area in shops["no_shop_areas"]:
+    check(area in area_names, f"no_shop_areas names unknown area {area!r}")
+    check(
+        area not in {s["location"] for s in shops["shops"]},
+        f"{area} is listed as having no shop but also has one",
+    )
+
+# Every purchasable piece of equipment must actually be stocked somewhere.
+stocked = {e for s in shops["shops"] for e in s["stock"]}
+for slot, pieces in items["equipment"].items():
+    for p in pieces:
+        if p.get("found_only") or p.get("price", 0) == 0:
+            continue
+        check(
+            p["name"] in stocked,
+            f"{p['name']} has a price but no shop sells it",
+        )
+
 first_warp = items["warp_devices"][0]
 check(
     first_warp["unlocks"] != "self",

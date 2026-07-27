@@ -16,7 +16,11 @@
       "drops": [
         "Spray II x3"
       ],
-      "exp": 300
+      "exp": 300,
+      "encounter_position": {
+        "band": 2,
+        "through_band": 0.7
+      }
     },
     {
       "order": 2,
@@ -34,7 +38,11 @@
       "drops": [
         "Second Wind x1"
       ],
-      "exp": 900
+      "exp": 900,
+      "encounter_position": {
+        "band": 4,
+        "through_band": 1.0
+      }
     },
     {
       "order": 3,
@@ -51,7 +59,11 @@
       "drops": [
         "Work Jacket"
       ],
-      "exp": 1200
+      "exp": 1200,
+      "encounter_position": {
+        "band": 6,
+        "through_band": 0.5
+      }
     },
     {
       "order": 4,
@@ -59,10 +71,10 @@
       "name": "Tenant",
       "act": 3,
       "display_level": "??",
-      "internal_level": 26,
+      "internal_level": 28,
       "player_expected": [
         21,
-        25
+        26
       ],
       "area": "Bellhouse Commons",
       "primitive": "cube",
@@ -70,7 +82,11 @@
         "Signal Rod",
         "Full Spray x2"
       ],
-      "exp": 2400
+      "exp": 2400,
+      "encounter_position": {
+        "band": 7,
+        "through_band": 1.0
+      }
     },
     {
       "order": 5,
@@ -87,7 +103,11 @@
       "drops": [
         "Second Wind x2"
       ],
-      "exp": 2900
+      "exp": 2900,
+      "encounter_position": {
+        "band": 8,
+        "through_band": 0.6
+      }
     },
     {
       "order": 6,
@@ -105,7 +125,11 @@
       "drops": [
         "Static Vest"
       ],
-      "exp": 4000
+      "exp": 4000,
+      "encounter_position": {
+        "band": 9,
+        "through_band": 1.0
+      }
     },
     {
       "order": 7,
@@ -113,16 +137,20 @@
       "name": "Something Left Over",
       "act": 5,
       "display_level": "??",
-      "internal_level": 40,
+      "internal_level": 42,
       "player_expected": [
         37,
-        39
+        40
       ],
       "area": "The Root",
       "drops": [
         "Full Spray x3"
       ],
-      "exp": 4200
+      "exp": 4200,
+      "encounter_position": {
+        "band": 10,
+        "through_band": 0.55
+      }
     },
     {
       "order": 8,
@@ -138,7 +166,11 @@
       "area": "The Root",
       "primitive": "pyramid",
       "drops": [],
-      "exp": 0
+      "exp": 0,
+      "encounter_position": {
+        "band": 10,
+        "through_band": 1.0
+      }
     }
   ],
   "secret_encounter": {

@@ -42,18 +42,17 @@ one long walk out.
 `data/` holds the same balance figures as the systems docs, in a form something can read —
 progression curve, move lists, enemy roster, boss table, items and equipment, world and quests.
 
-Three tools keep the design honest. `validate.py` checks the data and docs agree with each other
-and with the rules the design claims. `simulate.py` fights every matchup a few thousand times
-against the targets in `statblocks.json`. `economy.py` checks the player can afford the fights the
-simulator says they're going to get.
+Four tools keep the design honest, each checking a claim the documents make.
 
 ```
-python3 tools/validate.py                 # 489 consistency checks
-python3 tools/simulate.py --verbose       # 57 matchups, 2000 trials each
-python3 tools/economy.py --verbose        # per-act ledger
+python3 tools/validate.py       # 533 checks: do the data and docs agree?
+python3 tools/simulate.py       # 57 matchups x 2000 trials: do fights feel right?
+python3 tools/economy.py        # per-act ledger: can the player afford them?
+python3 tools/curve.py          # levelling walk: does the player reach the levels
+                                #   everything else assumes?
 ```
 
-All stdlib only, no dependencies.
+All stdlib only, no dependencies. Add `--verbose` to any of them.
 
 It verifies the EXP curve against its own formula, that every move is castable at the level it's
 learned, that every boss shows `??` and no regular enemy does, that the Root is the only encounter
@@ -77,6 +76,12 @@ run at a *loss*. The player spends the endgame burning savings earned back when 
 talked to them. That was never designed — it fell out of putting 13 of 20 sidequests before the end
 of Act 2, and it lands on exactly the point where the simulator says items stop being optional.
 See [17](docs/17-economy.md).
+
+The levelling walk closed the last unverified assumption. Every other tool takes the
+`player_expected` range at each boss on faith; `curve.py` derives it instead, and found two ranges a
+level too narrow. It also motivated **catch-up EXP** — the game quietly pays more per fight when the
+player is behind — because a game that lets you flee half its encounters and then walls you for
+doing it has set a trap. See [05](docs/05-progression.md).
 
 ## Two rules the validator enforces, not just documents
 

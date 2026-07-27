@@ -27,10 +27,10 @@ the cube. It costs nothing to make it mean something.
 | Mini-Boss 1 | **The Fruiting Tree** | 1 | `??` | 5–9 | Teaches boss-fight stakes before the first main boss. |
 | Main Boss 1 | **The Memorial** | 2 | `??` | 12–15 | First real threat. Limpo-themed. *(Obelisk)* |
 | Mini-Boss 2 | **Line Supervisor** | 3 | `??` | 16–19 | Yettallia industrial threat. First fight against a person. |
-| Main Boss 2 | **Tenant** | 3 | `??` | 21–25 | Yettallia's main threat / Vixtry muscle. *(Cube)* |
+| Main Boss 2 | **Tenant** | 3 | `??` | 21–26 | Yettallia's main threat / Vixtry muscle. *(Cube)* |
 | Mini-Boss 3 | **Account Manager** | 4 | `??` | 27–31 | Vixtry mid-tier enforcer. Knows exactly what he's doing. |
 | Main Boss 3 | **The Custodian** | 4 | `??` | 32–35 | The white figure, first form. *(Sphere)* |
-| Mini-Boss 4 | **Something Left Over** | 5 | `??` | 37–39 | Final obstacle before the climax. |
+| Mini-Boss 4 | **Something Left Over** | 5 | `??` | 37–40 | Final obstacle before the climax. |
 | Main Boss 4 | **The Custodian, Unfinished** | 5 | `??` | 40–43 | True form. Climax. *(Pyramid)* |
 
 ## `??`
@@ -52,17 +52,19 @@ does all of the work:
 
 ### Internal levels
 
-Never displayed. Listed here so encounters can be tuned, and so nobody re-derives them later.
+Never displayed. Listed here so encounters can be tuned, and so nobody re-derives them later. The
+**player expected** column is not a guess — `tools/curve.py` walks a playthrough and reports the
+level a player actually arrives at, and these ranges are set from that.
 
 | Encounter | Internal | Player expected |
 |---|---:|---|
 | The Fruiting Tree | 10 | 5–9 |
 | The Memorial | 16 | 12–15 |
 | Line Supervisor | 20 | 16–19 |
-| Tenant | 26 | 21–25 |
+| Tenant | 28 | 21–26 |
 | Account Manager | 32 | 27–31 |
 | The Custodian | 36 | 32–35 |
-| Something Left Over | 40 | 37–39 |
+| Something Left Over | 42 | 37–40 |
 | **The Custodian, Unfinished** | **48** | 40–43 |
 
 **The final boss is internally level 48 — three above the player's cap of 45.** He is the only thing

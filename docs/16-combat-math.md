@@ -88,10 +88,10 @@ At the expected level for each fight, with the item budget in `statblocks.json`:
 | The Fruiting Tree | 6 | 100% | 100% |
 | The Memorial | 9 | 100% | 100% |
 | Line Supervisor | 9 | 95% | 96% |
-| Tenant | 11 | 96% | 96% |
+| Tenant | 9 | 98% | 98% |
 | Account Manager | 6 | 100% | 100% |
 | **The Custodian** | 22 | 94% | **0%** |
-| Something Left Over | 12 | 95% | 91% |
+| Something Left Over | 15 | 94% | 88% |
 | **The Custodian, Unfinished** | 24 | 100% | **3%** |
 
 The shape this produced was not designed, it was measured, and it's better than what was drafted:
@@ -119,6 +119,11 @@ species built around *not* attacking — `Fence Post`, `Unit 4C`, `Fluorescent` 
 and priority moves, equipment, or a player who plays well. It is a tuning tool and a floor, not a
 proof — real play should be easier than these numbers, because the simulated player is a greedy
 damage-picker who never sets up.
+
+**And the levels it fights at are derived, not assumed.** `tools/curve.py` walks a playthrough and
+reports where the player actually is when each boss arrives ([05](05-progression.md)); the
+`player_expected` ranges here come from that walk. Two of them were originally a level too narrow
+at the top and were widened to match what the model produced.
 
 **It also fights each species at the right time.** An enemy at the top of a band is met later in the
 area, so it's simulated against a player nearer the top of their expected range rather than the band

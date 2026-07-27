@@ -21,9 +21,10 @@ The balance numbers from the systems docs, in JSON. Same figures, readable by to
 - Every value here is **first-pass and meant to be tuned.** None of it has been playtested. It
   exists so balance discussions have something concrete to argue with, and so a change in one place
   can be checked against every place it touches.
-- Run all three tools after any edit: `validate.py` for internal consistency, `simulate.py` for
-  whether fights still feel the way [16](../docs/16-combat-math.md) says, and `economy.py` for
-  whether the player can afford them ([17](../docs/17-economy.md)).
+- Run all four tools after any edit: `validate.py` for internal consistency, `simulate.py` for
+  whether fights still feel the way [16](../docs/16-combat-math.md) says, `economy.py` for
+  whether the player can afford them ([17](../docs/17-economy.md)), and `curve.py` for whether they
+  reach the levels the rest assumes ([05](../docs/05-progression.md)).
 
 ## Fields worth knowing
 
@@ -46,5 +47,7 @@ The balance numbers from the systems docs, in JSON. Same figures, readable by to
 - `forbidden_renderings` — regex patterns that must not appear in any doc.
 - `role` — one of standard/brute/wall/glass/support. With `level`, it is the entire stat block;
   see [16](../docs/16-combat-math.md).
+- `encounter_position` — where a boss sits in the run of encounters, as a band plus a fraction
+  through it. Used by `curve.py` to work out the level the player arrives at.
 - `inaction_rate` — how often a species does nothing on its turn. Carried by the enemies whose
   whole gimmick is not attacking, so the simulator does not treat them as constant threats.

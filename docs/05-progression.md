@@ -61,6 +61,49 @@ Deliberately generous early — EarthBound's forgiving curve is the model, and a
 feel they need to grind to clear a main-path boss. Difficulty lives in boss *design*, not in the
 required level.
 
+## EXP rewards and catch-up
+
+A regular enemy is worth:
+
+```
+exp = round(0.20 × level^2.32 × role.HP × catchup)
+catchup = clamp(1 + 0.12 × (enemy level − player level), 0.5, 2.0)
+```
+
+Two things are doing work there.
+
+**Payment scales with the role's HP multiplier.** A wall that takes six turns pays more than a glass
+enemy that dies in two. You're paid for the work, not for the kill.
+
+**Catch-up EXP.** The game quietly pays more per fight when the player is behind, and less when
+they're ahead — up to double and down to half.
+
+This exists because of the flee rule. Overgrowth lets the player walk away from roughly half its
+encounters ([04](04-battle-system.md)), and a game that offers that option and then punishes it with
+an under-levelled wall has set a trap. With catch-up, avoiding fights costs time and money but never
+digs a hole that only grinding fills. It also compresses the gap between a thorough player and a
+minimal one, which keeps boss tuning meaningful for both.
+
+It is never surfaced. No message says "bonus EXP." The numbers are just quietly kind.
+
+## Does the player actually get there?
+
+Everything else in these documents — boss tuning, the simulator's matchups, the `player_expected`
+ranges in [08](08-bosses.md) — assumes the player arrives at each fight around a particular level.
+`tools/curve.py` walks a playthrough band by band and checks it, for three play styles.
+
+| Act ends | Minimal (60% of fights) | Normal | Thorough (130%) | Target |
+|---|---|---|---|---|
+| 1 | 8 | 9 | 9 | 9 |
+| 2 | 15 | 16 | 17 | 16 |
+| 3 | 25 | 27 | 28 | 26 |
+| 4 | 34 | 36 | 37 | 36 |
+| 5 | 40 | 42 | 44 | 43 |
+
+The three styles stay within about four levels of each other for the whole game, which is the
+catch-up term earning its place. A normal player reaches 42 of a possible 45 by the finale — short
+of the cap, so the last few levels remain something to find rather than something everyone has.
+
 ## Stat growth
 
 Base values at level 1 and at cap. Growth is roughly linear with a small bump at levels 10, 20, 30

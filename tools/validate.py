@@ -214,6 +214,33 @@ check(
     "The Root must be the only band the player outclasses",
 )
 
+# Per-band encounter counts must reconcile with the per-act figures the economy
+# model runs on — two files, one truth.
+by_act: dict[int, int] = {}
+for b in enemies["bands"]:
+    check("act" in b and "encounters" in b, f"Band {b['band']} is missing act or encounters")
+    by_act[b["act"]] = by_act.get(b["act"], 0) + b["encounters"]
+for act, total in sorted(by_act.items()):
+    claimed = world["economy"]["encounters_per_act"][str(act)]
+    check(
+        total == claimed,
+        f"act {act}: bands sum to {total} encounters, world.json claims {claimed}",
+    )
+
+# Boss positions must point at real bands, in order.
+last = (0, 0.0)
+for e in sorted(bosses["encounters"], key=lambda e: e["order"]):
+    pos = e.get("encounter_position")
+    check(pos is not None, f"{e['name']} has no encounter_position")
+    if pos:
+        check(
+            any(b["band"] == pos["band"] for b in enemies["bands"]),
+            f"{e['name']} is positioned in band {pos['band']}, which does not exist",
+        )
+        here = (pos["band"], pos["through_band"])
+        check(here > last, f"{e['name']} is positioned before the previous boss")
+        last = here
+
 # Only one regular enemy may block fleeing outright.
 no_flee = [e for e in roster if e.get("no_flee")]
 check(

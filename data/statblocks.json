@@ -156,5 +156,31 @@
     "regular_encounter": 0,
     "mini_boss": 3,
     "main_boss": 5
+  },
+  "exp_reward": {
+    "note": "EXP for a regular enemy, scaled by the role's HP multiplier (you are paid for the work) and by how far ahead of the player the enemy is.",
+    "formula": "round(0.20 * level^2.32 * role.HP * catchup)",
+    "catchup": {
+      "formula": "clamp(1 + 0.12 * (enemy_level - player_level), 0.5, 2.0)",
+      "why": "A player who flees a lot or explores little is paid more per fight, so avoiding combat never digs a hole grinding is the only way out of. Supports the no-grinding pillar and makes RUN a real option rather than a trap."
+    }
+  },
+  "progression_targets": {
+    "note": "Where a player should be when each boss arrives, and how far the three play styles may diverge. Checked by tools/curve.py.",
+    "encounter_completion": {
+      "minimal": 0.6,
+      "normal": 1.0,
+      "thorough": 1.3
+    },
+    "level_at_act_end": {
+      "1": 9,
+      "2": 16,
+      "3": 26,
+      "4": 36,
+      "5": 43
+    },
+    "max_overshoot_levels": 4,
+    "max_undershoot_levels": 3,
+    "encounters_per_band_source": "data/enemies.json bands[].encounters"
   }
 }

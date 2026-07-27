@@ -10,7 +10,9 @@
       "player_expected": [
         1,
         6
-      ]
+      ],
+      "act": 1,
+      "encounters": 22
     },
     {
       "band": 2,
@@ -22,7 +24,9 @@
       "player_expected": [
         5,
         9
-      ]
+      ],
+      "act": 1,
+      "encounters": 23
     },
     {
       "band": 3,
@@ -34,7 +38,9 @@
       "player_expected": [
         9,
         12
-      ]
+      ],
+      "act": 2,
+      "encounters": 25
     },
     {
       "band": 4,
@@ -46,7 +52,9 @@
       "player_expected": [
         12,
         15
-      ]
+      ],
+      "act": 2,
+      "encounters": 35
     },
     {
       "band": 5,
@@ -58,7 +66,9 @@
       "player_expected": [
         15,
         18
-      ]
+      ],
+      "act": 3,
+      "encounters": 15
     },
     {
       "band": 6,
@@ -70,7 +80,9 @@
       "player_expected": [
         17,
         21
-      ]
+      ],
+      "act": 3,
+      "encounters": 20
     },
     {
       "band": 7,
@@ -82,7 +94,9 @@
       "player_expected": [
         21,
         25
-      ]
+      ],
+      "act": 3,
+      "encounters": 30
     },
     {
       "band": 8,
@@ -94,7 +108,9 @@
       "player_expected": [
         27,
         31
-      ]
+      ],
+      "act": 4,
+      "encounters": 28
     },
     {
       "band": 9,
@@ -106,7 +122,9 @@
       "player_expected": [
         32,
         35
-      ]
+      ],
+      "act": 4,
+      "encounters": 22
     },
     {
       "band": 10,
@@ -119,7 +137,9 @@
         37,
         43
       ],
-      "player_outclasses": true
+      "player_outclasses": true,
+      "act": 5,
+      "encounters": 35
     }
   ],
   "roster": [

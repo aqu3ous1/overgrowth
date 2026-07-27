@@ -186,7 +186,7 @@ of these documents thinks it is describing anything unusual.*
 > A staff list, first initial and surname.
 > Fourteen names.
 > Thirteen of them are printed normally.
-> The eleventh reads: **▓. ▓▓▓▓▓▓**
+> The eleventh reads: **D. ▓▓▓▓▓▓**
 
 **#27 — Ethics Review**
 > The committee reviewed the involuntary cohort
@@ -232,6 +232,13 @@ The protagonist knows all three, obviously. He's lived with them his whole life.
 never finds out — the game is told from close enough to him that the names never need saying, and
 far enough that they're never said.
 
+**One exception: the father's initial.** A single letter, `D.`, on one staff roster in Act 4. It is
+the only mark the game ever prints of anyone in that family, and it is deliberately not enough to be
+worth anything — a player who finds it learns that the father exists, is on a payroll, and starts
+with a D. Nothing else follows from it.
+
+The mother has no equivalent. She is never initialled, never listed, and never on a document.
+
 ### The three dodges
 
 Every place the family name could appear, it doesn't:
@@ -240,13 +247,16 @@ Every place the family name could appear, it doesn't:
 |---|---|
 | Act 0, the parents arguing | `▓▓▓ ▓▓▓▓` — the same block glyphs as everything else through that door. |
 | Act 3, the Vixtry grunt | *"Same last name as one of the hardware guys."* Spoken about, never printed. |
-| Act 4, note #26 | `▓. ▓▓▓▓▓▓` on a staff roster where thirteen other names print fine. |
+| Act 4, note #26 | `D. ▓▓▓▓▓▓` on a staff roster where thirteen other names print fine. |
 
 ### How to write around it
 
 - **Parents are referred to by role, never by name.** "Mum," "Dad," "your father," "one of the
   hardware guys." Role nouns are fine and should be used freely — they're how a kid refers to his
   parents anyway, so nothing has to be contorted.
+- **The `D.` is not a thread to pull.** It appears once, is never repeated, and no other document,
+  line, or system in the game corroborates it. Do not add a second sighting — one initial reads as
+  an accident of paperwork, and two read as a puzzle the game is asking to be solved.
 - **No NPC ever addresses a parent directly**, because an NPC who did would have to use a name.
   This is a constraint on scene construction, not just on dialogue: the parents are never in a room
   with anyone who would greet them.
@@ -266,4 +276,4 @@ past him for the entire first scene is not going to be handed their names.
 surname printed on a document — so the document simply doesn't have one to match, and the dodge
 that hides the family is the same dodge that makes the naming system work.
 
-Nothing about the father is ever printed. Not his surname, not his first name, not his initial.
+One letter is the entire inheritance. `D.`

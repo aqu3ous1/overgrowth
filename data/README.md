@@ -10,7 +10,7 @@ The balance numbers from the systems docs, in JSON. Same figures, readable by to
 | `bosses.json` | [08](../docs/08-bosses.md) | Eight boss encounters, their primitives and drops; the secret encounter |
 | `items.json` | [06](../docs/06-items-and-equipment.md) | Battle items with prices, both equipment slots, warp devices |
 | `world.json` | [07](../docs/07-world-and-areas.md), [13](../docs/13-sidequests.md) | Areas, sidequests, lore-note distribution, pacing, economy |
-| `naming.json` | [15](../docs/15-lore-notes.md) | The family-name rule, its three dodge sites, and renderings that must never reappear |
+| `naming.json` | [15](../docs/15-lore-notes.md) | The family-name rule, its three dodge sites, the one permitted initial, and renderings that must never appear |
 
 ## Rules
 
@@ -35,5 +35,8 @@ The balance numbers from the systems docs, in JSON. Same figures, readable by to
   closes RUN through the ordinary flee rule instead.
 - `recolour_of` — Root-band species that reuse an earlier enemy at a new level. Four of them, which
   is why the roster has 49 entries and 45 species.
-- `forbidden_renderings` — regex patterns that must never appear in any doc. Currently guards
-  against a draft that printed the father's initial.
+- `permitted_initials` — the father's initial is the one mark of the family the game ever prints.
+  The mother's is `null` and must stay that way.
+- `roster_line` / `initial_appears_once` — the initial may be printed, but never with a surname
+  after it, and never more than once. Guarded so a later draft can't turn one letter into a thread.
+- `forbidden_renderings` — regex patterns that must not appear in any doc.

@@ -23,7 +23,11 @@ list is the arc: he starts with `Punch` and ends with `Wake Up`.
 
 **His family's names are never revealed** — surname, father, mother, none of them, anywhere in the
 game. He knows them; the player doesn't. The player supplies his first name and nothing else, and
-nobody ever asks for the rest. Hard rule with the three dodge sites in [15](15-lore-notes.md).
+nobody ever asks for the rest.
+
+The sole exception is **the father's initial**, printed once on a staff roster in Act 4 and never
+corroborated anywhere else. One letter, deliberately not enough to be worth anything. Hard rule and
+the three dodge sites in [15](15-lore-notes.md).
 
 ---
 

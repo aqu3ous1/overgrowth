@@ -52,7 +52,7 @@ learned, that every boss shows `??` and no regular enemy does, that the Root is 
 band the player outclasses, that every act from 2 to 4 offers a trade-off item in both equipment
 slots, that the family's names are never rendered anywhere, that the scope table in
 [00](docs/00-overview.md) still matches the rosters, and that no doc links to a file that isn't
-there — 381 checks in total.
+there — 389 checks in total.
 
 **Run it after changing any number.** It caught four real inconsistencies the first time it ran,
 including two arithmetic errors in the EXP table and a boss the player could have fled from.
@@ -65,7 +65,9 @@ cap — the final boss is internally 48 against a cap of 45, and nobody will eve
 
 **The family's names are never revealed.** Not the surname, not the father's, not the mother's,
 nowhere in the game. The protagonist knows them; the player doesn't. Parents are referred to by role
-only, and the three places the name could structurally appear all dodge it.
+only, and the three places the name could structurally appear all dodge it. The single exception is
+the father's initial, printed once on a staff roster and never corroborated — the validator fails if
+a second sighting is ever added, or if a surname is printed after it.
 
 ## Reading order for a new collaborator
 

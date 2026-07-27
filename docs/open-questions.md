@@ -70,9 +70,15 @@ Parents are referred to by role only, no NPC ever addresses a parent directly (a
 have to use a name), and the player enters a first name only at file creation. The three places the
 name could structurally appear all dodge it — see [15](15-lore-notes.md).
 
+**One exception: the father's initial**, printed once on an Act 4 staff roster. It is never
+repeated, never corroborated, and the surname beside it stays redacted. One initial reads as an
+accident of paperwork; two would read as a puzzle asking to be solved, so `tools/validate.py` fails
+on a second sighting in any document, and on any surname printed after it.
+
+The mother has no equivalent — never initialled, never listed, never on a document.
+
 This was a proposal covering only the surname and has been promoted to a hard rule covering the
-whole family. The earlier draft printed the father's initial on a staff roster; it no longer does,
-and `tools/validate.py` guards against it coming back.
+whole family.
 
 **Reversal cost:** high. It's load-bearing for the name-entry system (a player-entered name can
 never match a printed surname) and for the prologue's block-glyph motif.

@@ -18,8 +18,11 @@ not final script.
 6. **The family's names are never revealed.** Not the surname, not the father's name, not the
    mother's. Parents are referred to by role only — "Mum," "Dad," "your father," "one of the
    hardware guys" — and no NPC ever addresses a parent directly, because an NPC who did would have
-   to use a name. The protagonist knows all three; the player never finds out. Full rule and the
-   three places it's dodged: [15](15-lore-notes.md).
+   to use a name. The protagonist knows all three; the player never finds out.
+
+   One exception: **the father's initial**, on one staff roster in Act 4. It is never repeated and
+   never corroborated — do not add a second sighting. Full rule and the three places the name is
+   dodged: [15](15-lore-notes.md).
 
 ## Voice by faction
 

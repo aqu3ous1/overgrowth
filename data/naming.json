@@ -1,8 +1,9 @@
 {
-  "rule": "The game never renders the family name, the father's name, or the mother's name, in any form or medium. The protagonist knows all three; the player never finds out.",
+  "rule": "The game never renders the family name, the father's name, or the mother's name, in any form or medium. The protagonist knows all three; the player never finds out. The single exception is the father's initial, which appears once.",
   "doc": "docs/15-lore-notes.md",
   "player_name_entry": { "first_name": true, "surname": false },
   "permitted_family_names": [],
+  "permitted_initials": { "father": "D.", "mother": null },
   "redaction_glyph": "▓",
   "dodge_sites": [
     {
@@ -22,17 +23,31 @@
     {
       "id": "hardware-roster",
       "where": "Act 4, lore note #26",
-      "method": "redacted line in an otherwise normal document",
+      "method": "father's initial, surname redacted, in an otherwise normal document",
       "doc": "docs/15-lore-notes.md",
-      "must_contain": "▓. ▓▓▓▓▓▓"
+      "must_contain": "D. ▓▓▓▓▓▓"
     }
   ],
   "forbidden_renderings": [
     {
-      "pattern": "D\\. ▓",
-      "why": "An earlier draft printed the father's initial. Nothing about him is printed."
+      "pattern": "(?:mother|mum|mom)'s (?:initial|name) is",
+      "why": "The mother is never initialled, listed, or named."
     }
   ],
+  "roster_line": {
+    "doc": "docs/15-lore-notes.md",
+    "match": "The eleventh reads",
+    "must_contain": "D. ▓▓▓▓▓▓",
+    "must_not_match": "D\\.\\s*[A-Za-z]",
+    "why": "The father's initial is permitted; a surname printed after it is not."
+  },
+  "initial_appears_once": {
+    "pattern": "D\\. ▓",
+    "doc": "docs/15-lore-notes.md",
+    "notes_section_ends_at": "## RULE",
+    "count": 1,
+    "why": "One initial reads as an accident of paperwork. Two read as a puzzle asking to be solved."
+  },
   "rule_must_be_referenced_from": [
     "docs/03-characters.md",
     "docs/10-writing-guide.md",

@@ -404,6 +404,43 @@ check(
     naming["player_name_entry"]["surname"] is False,
     "The player must never be asked for a surname",
 )
+check(
+    naming["permitted_initials"]["mother"] is None,
+    "The mother is never initialled, listed, or named",
+)
+
+# The father's initial is the single permitted mark. It may be printed, but the
+# surname after it may not be.
+roster = naming["roster_line"]
+roster_text = (ROOT / roster["doc"]).read_text()
+roster_lines = [l for l in roster_text.splitlines() if roster["match"] in l]
+check(len(roster_lines) == 1, f"Expected one roster line matching {roster['match']!r}")
+for line in roster_lines:
+    check(roster["must_contain"] in line, f"Roster line must read {roster['must_contain']}")
+    check(
+        re.search(roster["must_not_match"], line) is None,
+        f"Roster line prints a surname after the initial: {roster['why']}",
+    )
+
+# The initial appears in exactly one lore note. One reads as an accident of
+# paperwork; two read as a puzzle asking to be solved.
+once = naming["initial_appears_once"]
+notes_only = roster_text.split(once["notes_section_ends_at"])[0]
+sightings = len(re.findall(once["pattern"], notes_only))
+check(
+    sightings == once["count"],
+    f"The father's initial appears in {sightings} lore note(s), "
+    f"expected {once['count']}: {once['why']}",
+)
+check(
+    sum(
+        len(re.findall(once["pattern"], text))
+        for f, text in all_md.items()
+        if f != ROOT / once["doc"]
+    )
+    == 0,
+    "The father's initial must appear in one document only — do not corroborate it",
+)
 
 for site in naming["dodge_sites"]:
     target = ROOT / site["doc"]

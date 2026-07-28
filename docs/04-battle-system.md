@@ -41,6 +41,10 @@ Two tabs, and the split is enforced:
 
 Using an item takes the whole turn and resolves at the player's speed priority like any other action.
 
+**Restorative items also work outside battle**, from the bag in the pause menu. Boosters and enemy
+debuffs do not, and say so: a stat stage does not survive the end of a fight, so spending one in a
+corridor would be spending it on nothing.
+
 ### RUN
 
 | Condition | Outcome |
@@ -90,7 +94,9 @@ so that "some things don't let you leave" is established before it matters.
 1. Player selects an action.
 2. Enemies select actions (hidden).
 3. All actions sort by **SPD**, ties broken by a coin flip. Some moves override priority — e.g.
-   `Wind-Up Punch` always acts last, `Rush Down` always acts first.
+   `Wind-Up Punch` always acts last, `Rush Down` always acts first. **Losing the roll is stated**
+   ("KID winds up." / "Fence Post moves first."): an action that silently resolves later reads as a
+   dropped input, not as a slower character.
 4. Actions resolve in order. Dead combatants' queued actions are dropped.
 5. End-of-turn: status ticks, buff/debuff durations decrement, PP/SP regen (see below).
 

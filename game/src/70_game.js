@@ -71,6 +71,10 @@ const NOTES = {
 const SHOP_STOCK = ['Spray', 'Clean Rag'];
 const ONDO_STOCK = ['Spray', 'Spray II', 'Chalk Tablet', 'Bitter Tonic',
                     'Clean Rag', 'Knuckle Wrap', 'Cold Compress', 'Dropped Call'];
+// Food, not equipment. Cheaper per point than the market row and he knows it.
+const GROCER_STOCK = ['Spray', 'Chalk Tablet', 'Bitter Tonic'];
+const STOCKS = { ondo: ONDO_STOCK, grocer: GROCER_STOCK };
+const SHOP_TITLES = { ondo: 'ONDO', grocer: 'GROCER' };
 
 // --- NPC lines ---------------------------------------------------------
 // Limpo villagers attach a redundant location to statements about time.
@@ -176,6 +180,12 @@ const NPCS = {
             'Pay is good because the walk is bad.'];
   },
   ondo_shopkeeper: () => (['Whole market row, and it is mostly me now.']),
+  // He has heard about the note. He is not going to be the one to mention it.
+  ondo_grocer: () => ([
+    'Come in. Mind the step, it has been like that for years.',
+    'You have been up the row, then. Talked to him.',
+    'He is not wrong, is the thing. That is what gets me.',
+  ]),
   ondo_innkeeper: () => (['Bed is upstairs. Sign the book if you like. Nobody reads it.']),
   // Sidequest 6. Three overdue rents. Two pay. One has left.
   landlady: () => {
@@ -245,10 +255,10 @@ function interact() {
 
   if (target.kind === 'npc') {
     if (target.shop) {
-      const stock = target.shop === 'ondo' ? ONDO_STOCK : SHOP_STOCK;
-      const lines = target.shop === 'ondo' ? NPCS.ondo_shopkeeper() : NPCS.shopkeeper();
+      const stock = STOCKS[target.shop] || SHOP_STOCK;
+      const lines = (NPCS[target.key] || NPCS.shopkeeper)();
       Dialogue.say(lines.map(t => ({ text: t, speaker: 'npc' })), () => {
-        Shop.start(stock, target.shop === 'ondo' ? 'ONDO' : 'OKOBO'); Game.mode = 'shop';
+        Shop.start(stock, SHOP_TITLES[target.shop] || 'OKOBO'); Game.mode = 'shop';
       });
       return;
     }
@@ -346,7 +356,15 @@ function interact() {
                    () => Story.memorialFight());
       return;
     case 'machine':
-      Dialogue.say([{ text: 'A machine, stopped mid-cycle. Cold all the way through.', speaker: 'system' }]);
+      Dialogue.say(World.id === 'kestrel_boiler'
+        ? [{ text: 'A boiler. It is the only warm thing left in the works.', speaker: 'system' },
+            { text: 'Nobody has been down here to light it.', speaker: 'system' }]
+        : [{ text: 'A machine, stopped mid-cycle. Cold all the way through.', speaker: 'system' }]);
+      return;
+    case 'desk':
+      Dialogue.say([{ text: 'A desk, squared away. Pen lined up with the edge.', speaker: 'system' },
+                    { text: 'Somebody signed every one of those notices from this chair.', speaker: 'system' },
+                    { text: 'Then somebody signed theirs.', speaker: 'system' }]);
       return;
     case 'door7':
       if (Player.flags.roomSeven) {
@@ -699,6 +717,7 @@ const Game = {
   startNewGame() {
     Player.level = 1; Player.exp = 0; Player.money = 0;
     Player.bag = {}; Player.flags = {}; Player.notes = []; Player.collectibles = 0;
+    Player.seen = [];
     Player.restore();
     Player.addItem('Spray', 2);
     Save.clear();
@@ -731,8 +750,10 @@ const Game = {
       if (Input.hit('ok')) { this.mode = 'title'; Title.enter(); }
       return;
     }
-    if (this.mode === 'shop') { Shop.update(dt); if (!Shop.open) this.mode = 'field'; return; }
-    if (this.mode === 'menu') { Menu.update(dt); if (!Menu.open) this.mode = 'field'; return; }
+    if (this.mode === 'shop') { Shop.update(dt); if (!Shop.open && this.mode === 'shop') this.mode = 'field'; return; }
+    // The mode check matters: OPTIONS closes the menu *and* sets mode itself, so
+    // an unconditional fall-back to 'field' here would immediately undo it.
+    if (this.mode === 'menu') { Menu.update(dt); if (!Menu.open && this.mode === 'menu') this.mode = 'field'; return; }
     if (this.mode === 'battle') { Battle.update(dt); return; }
 
     // field

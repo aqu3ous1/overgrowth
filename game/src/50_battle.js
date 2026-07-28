@@ -2,6 +2,24 @@
 // Turn-based, one combatant, no party. The camera sits behind the player so
 // only the top of his head is in frame; he is never seen taking a hit.
 
+// "48 BASE POWER, 1 HIT" / "9 BASE POWER PER HIT, 2-4 HITS". Read off the data,
+// so a retune in data/moves.json changes what the game says about itself.
+// Uppercase because the font has no room below the baseline: lowercase p, g and
+// y sit their descenders inside the glyph box and read as capitals.
+function moveStatLine(m) {
+  if (!m || m.cost === undefined) return '';
+  const hits = Array.isArray(m.hits) ? `${m.hits[0]}-${m.hits[1]} HITS`
+             : `${m.hits || 1} HIT${(m.hits || 1) > 1 ? 'S' : ''}`;
+  if (!m.power) {
+    if (m.heal_fraction) return `RESTORES ${Math.round(m.heal_fraction * 100)}% MAX HP`;
+    if (m.inflicts) return `INFLICTS ${m.inflicts.toUpperCase()}`;
+    return 'NO DAMAGE';
+  }
+  const per = Array.isArray(m.hits) || (m.hits || 1) > 1 ? ' PER HIT' : '';
+  const pow = Array.isArray(m.power) ? `${m.power[0]}-${m.power[1]}` : m.power;
+  return `${pow} BASE POWER${per}, ${hits}`;
+}
+
 const Battle = {
   active: false, enemy: null, state: 'intro', log: [], logT: 0,
   cursor: 0, sub: null, subCursor: 0, subScroll: 0, rep: {},
@@ -50,6 +68,7 @@ const Battle = {
     this.shake = 0; this.flash = 0.5; this.enemyHurt = 0; this.playerHurt = 0;
     this.result = null; this.onEnd = onEnd || null;
     this.homesick = false;
+    this.enemyDone = false; this.pending = null;
     this.backdrop = { floor: World.room.floor, wall: World.room.wall, bright: World.room.bright };
     Audio_.play(enemy.boss ? 'boss' : 'battle');
     this.push(`${enemy.name.toUpperCase()} appeared.`);
@@ -72,6 +91,34 @@ const Battle = {
     return this.enemy.level <= Player.level;
   },
 
+  // --- turn order ------------------------------------------------------
+  // Actions sort by SPD, ties broken by a coin flip, and a move's own priority
+  // overrides both — see docs/04. Without this the player always acted first,
+  // SPD did nothing outside the crit roll, and `Wind-Up Punch` was a worse
+  // Punch that lied about it in its own description.
+  playerFirst(move) {
+    if (move && move.priority === 'first') return true;
+    if (move && move.priority === 'last') return false;
+    if (Player.spd === this.enemy.spd) return Math.random() < 0.5;
+    return Player.spd > this.enemy.spd;
+  },
+
+  // Queue the player's action behind the enemy's, and say why — an action that
+  // simply happens later with no explanation reads as a dropped input.
+  yieldTo(act, why) {
+    this.pending = act;
+    this.push(why);
+    this.state = 'message';
+    this.after = () => this.enemyTurn();
+  },
+
+  // Where every player action lands once it has resolved.
+  afterPlayer() {
+    if (this.enemy.hp <= 0) { this.checkEnemy(); return; }
+    if (this.enemyDone) { this.startTurn(); return; }
+    this.enemyTurn();
+  },
+
   // --- player actions --------------------------------------------------
   useMove(kind, move) {
     const pool = kind === 'physical' ? 'pp' : 'sp';
@@ -86,6 +133,17 @@ const Battle = {
     }
     Player[pool] -= move.cost;
     this.sub = null;
+    if (!this.playerFirst(move)) {
+      this.yieldTo(() => this.resolveMove(kind, move),
+                   move.priority === 'last'
+                     ? `${Player.name} winds up.`
+                     : `${this.enemy.name} moves first.`);
+      return;
+    }
+    this.resolveMove(kind, move);
+  },
+
+  resolveMove(kind, move) {
     this.push(move.name.toUpperCase() + '!');
 
     if (move.heal_fraction) {
@@ -94,7 +152,7 @@ const Battle = {
       Audio_.sfx('heal');
       this.push(`Recovered ${amt} HP.`);
       if (move.name === 'Mend+') this.homesick = false;
-      this.state = 'message'; this.after = () => this.enemyTurn();
+      this.state = 'message'; this.after = () => this.afterPlayer();
       return;
     }
     if (move.name === 'Quiet Room') {
@@ -102,14 +160,14 @@ const Battle = {
       if (this.homesick) { this.homesick = false; this.push('The room went quiet.'); }
       else this.push('The room went quiet.');
       Audio_.sfx('heal');
-      this.state = 'message'; this.after = () => this.enemyTurn();
+      this.state = 'message'; this.after = () => this.afterPlayer();
       return;
     }
     if (!move.power) {
       if (move.inflicts) this.push(`${this.enemy.name} is ${move.inflicts}.`);
       else this.push('Nothing obvious happened.');
       Audio_.sfx('psy');
-      this.state = 'message'; this.after = () => this.enemyTurn();
+      this.state = 'message'; this.after = () => this.afterPlayer();
       return;
     }
 
@@ -124,7 +182,7 @@ const Battle = {
     if (move.accuracy && Math.random() > move.accuracy) {
       this.push('It missed.');
       Audio_.sfx('wrong');
-      this.state = 'message'; this.after = () => this.enemyTurn();
+      this.state = 'message'; this.after = () => this.afterPlayer();
       return;
     }
 
@@ -142,7 +200,7 @@ const Battle = {
     }
 
     this.state = 'message';
-    this.after = () => this.checkEnemy();
+    this.after = () => this.afterPlayer();
   },
 
   useItem(name) {
@@ -150,6 +208,15 @@ const Battle = {
     if (!it) return;
     Player.useItem(name);
     this.sub = null;
+    // An item is an action like any other and sorts by SPD the same way.
+    if (!this.playerFirst(null)) {
+      this.yieldTo(() => this.resolveItem(name, it), `${this.enemy.name} moves first.`);
+      return;
+    }
+    this.resolveItem(name, it);
+  },
+
+  resolveItem(name, it) {
     this.push(`Used ${name}.`);
     if (it.heal) {
       const amt = it.heal === 'full' ? Player.maxHp : it.heal;
@@ -161,7 +228,7 @@ const Battle = {
     else if (it.sp) { Player.sp = Math.min(Player.maxSp, Player.sp + it.sp); Audio_.sfx('heal'); this.push(`Recovered ${it.sp} SP.`); }
     else { Audio_.sfx('ok'); this.push('Nothing obvious happened.'); }
     this.state = 'message';
-    this.after = () => this.enemyTurn();
+    this.after = () => this.afterPlayer();
   },
 
   tryFlee() {
@@ -181,7 +248,7 @@ const Battle = {
     } else {
       this.push("Couldn't get away.");
       Audio_.sfx('wrong');
-      this.state = 'message'; this.after = () => this.enemyTurn();
+      this.state = 'message'; this.after = () => this.afterPlayer();
     }
   },
 
@@ -193,17 +260,19 @@ const Battle = {
       this.enemy.hp = Math.round(this.enemy.maxHp * this.enemy.restoresOnce);
       Audio_.sfx('wrong');
       this.push(`${this.enemy.name} is still standing.`);
-      this.state = 'message'; this.after = () => this.enemyTurn();
+      this.state = 'message';
+      this.after = () => (this.enemyDone ? this.startTurn() : this.enemyTurn());
       return;
     }
     this.victory();
   },
 
   enemyTurn() {
-    this.turn++;
-    if (this.quiet > 0) this.quiet--;
+    if (!this.enemyDone) { this.turn++; if (this.quiet > 0) this.quiet--; }
     const e = this.enemy;
-    if (e.hp <= 0) { this.victory(); return; }
+    // Dead before it acts - which is now reachable, because the player can
+    // outspeed it. Any action it had queued is dropped, per docs/04.
+    if (e.hp <= 0) { this.pending = null; this.checkEnemy(); return; }
 
     // Tiered boss: each tier lost drops its guard and raises its urgency.
     if (e.tiers) {
@@ -224,6 +293,9 @@ const Battle = {
       }
     }
 
+    // Past this point the enemy is definitely taking its action this turn.
+    this.enemyDone = true;
+
     if (Math.random() < e.inaction || !e.dealsDamage) {
       if (e.inflicts === 'Homesick' && !this.homesick) {
         this.homesick = true;
@@ -231,14 +303,14 @@ const Battle = {
       } else {
         this.push(`${e.name} did nothing.`);
       }
-      this.state = 'message'; this.after = () => this.startTurn();
+      this.state = 'message'; this.after = () => this.afterEnemy();
       return;
     }
 
     if (e.inflicts === 'Homesick' && !this.homesick && Math.random() < 0.6) {
       this.homesick = true;
       this.push(`${e.name} made you think of home.`);
-      this.state = 'message'; this.after = () => this.startTurn();
+      this.state = 'message'; this.after = () => this.afterEnemy();
       return;
     }
 
@@ -254,10 +326,20 @@ const Battle = {
     Audio_.sfx('hurt');
     this.push(`${e.name} hit you for ${dmg}.`);
     this.state = 'message';
-    this.after = () => this.startTurn();
+    this.after = () => this.afterEnemy();
+  },
+
+  // If the player's action was queued behind the enemy's, it happens now.
+  afterEnemy() {
+    const p = this.pending;
+    this.pending = null;
+    if (p && Player.hp > 0) { p(); return; }
+    this.startTurn();
   },
 
   startTurn() {
+    this.enemyDone = false;
+    this.pending = null;
     if (Player.hp <= 0) { this.defeat(); return; }
     // The trickle. With Punch at 2 PP this is what guarantees there is never a
     // state where the player has no move at all — see docs/05.
@@ -524,8 +606,14 @@ const Battle = {
       text(cost, x + w - textWidth(cost) - 10, yy, afford ? '#b8b8c2' : '#6a6a74');
       if (idx === this.subCursor) text('>', x + 6, yy, '#e8d24a');
     }
+    // No prose in a fight. The numbers, and nothing to read twice — what a move
+    // actually does is spelled out in the pause menu's MOVES tab.
     const sel = list[this.subCursor];
-    const desc = sel && (sel.notes || (DATA.items[sel.name] && DATA.items[sel.name].effect) || '');
-    if (desc) text(wrap(desc, w - 24)[0], x + 8, y + h - 10, '#8a8a94');
+    if (sel) {
+      const line = this.sub === 'bag'
+        ? ((DATA.items[sel.name] || {}).effect || '')
+        : moveStatLine(sel);
+      if (line) text(line, x + 8, y + h - 10, '#8a8a94');
+    }
   },
 };

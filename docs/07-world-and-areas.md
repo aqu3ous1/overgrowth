@@ -73,8 +73,8 @@ centre, in a clearing where the water is deeper.
 The largest Limpo settlement and the game's sidequest engine. Market district, boarding house,
 government block, a park with a dry fountain. Visibly a capital that used to be grander.
 
-**Contains:** the best mid-game shop, ~8 sidequests (the primary money source), the game's **first
-Vixtry billboard**, and an optional boarding-house NPC who mentions a man who "went inside and got
+**Contains:** the best mid-game shop and a grocer on the far side of town, ~8 sidequests (the
+primary money source), the game's **first Vixtry billboard**, and an optional boarding-house NPC who mentions a man who "went inside and got
 better" and is gone afterward.
 
 This is the warmest, busiest, most EarthBound stretch of the game, sitting immediately before
@@ -86,8 +86,9 @@ An abandoned multi-floor factory in a region of permanent Siberia-grade winter. 
 following a rumour or reading an unmarked road sign — a player who doesn't read things has to be
 told where it is by an NPC, which is a small, deliberate embarrassment.
 
-Cold, dark, mechanically dead. The lore here is a decade of layoff notices found in stages, floor by
-floor, ending with a note from the last person to leave. **Second Custodian sighting**, standing in
+Cold, dark, mechanically dead. Three production floors, a boiler room below, the foreman's office
+and the changing room. The lore here is a decade of layoff notices found in stages, room by room,
+ending with a note from the last person to leave. **Second Custodian sighting**, standing in
 a cleared room on the way back out.
 
 **Main Boss 1** in the factory yard, beneath a war memorial. (Obelisk — see [08](08-bosses.md).)

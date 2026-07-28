@@ -36,15 +36,15 @@ one long walk out.
 | [16 — Combat Math](docs/16-combat-math.md) | Enemy stat derivation, damage formula, measured difficulty |
 | [17 — Economy](docs/17-economy.md) | Shops, prices, and the per-act ledger |
 | [18 — Vertical Slice](docs/18-vertical-slice.md) | What to build first, and how to know it worked |
-| [19 — The Playable Build](docs/19-build.md) | What 0.3.0 contains, and where it deviates |
+| [19 — The Playable Build](docs/19-build.md) | What 0.3.1 contains, and where it deviates |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
 
 ## Play it
 
-**0.3.0 is playable — Acts 0 through 2.** `game/overgrowth.html` is the title screen, the bedroom,
+**0.3.1 is playable — Acts 0 through 2.** `game/overgrowth.html` is the title screen, the bedroom,
 the Gallery, Okobo, the Sunken Orchard, the road, Ondo, Kestrel Works, and both bosses through
-**The Memorial** — in one self-contained file with no assets and no dependencies. Twenty-seven
-rooms. Every sprite is drawn pixel by pixel at runtime, every tile texture is procedural, the font
+**The Memorial** — in one self-contained file with no assets and no dependencies. Thirty-one
+rooms, an illustrated world map, and a walk cycle. Every sprite is drawn pixel by pixel at runtime, every tile texture is procedural, the font
 is a 5x7 bitmap defined inline, and all the audio is WebAudio synthesis.
 
 ```
@@ -67,7 +67,7 @@ progression curve, move lists, enemy roster, boss table, items and equipment, wo
 Four tools keep the design honest, each checking a claim the documents make.
 
 ```
-python3 tools/validate.py       # 576 checks: do the data, docs and build agree?
+python3 tools/validate.py       # 577 checks: do the data, docs and build agree?
 python3 tools/simulate.py       # 57 matchups x 2000 trials: do fights feel right?
 python3 tools/economy.py        # per-act ledger: can the player afford them?
 python3 tools/curve.py          # levelling walk: does the player reach the levels
@@ -84,7 +84,7 @@ learned, that every boss shows `??` and no regular enemy does, that the Root is 
 band the player outclasses, that every act from 2 to 4 offers a trade-off item in both equipment
 slots, that the family's names are never rendered anywhere, that the scope table in
 [00](docs/00-overview.md) still matches the rosters, and that no doc links to a file that isn't
-there — 576 checks in total, including that the checked-in build is not stale.
+there — 577 checks in total, including that the checked-in build is not stale.
 
 **Run both after changing any number.** The validator caught four real inconsistencies on its first
 run, including two arithmetic errors in the EXP table and a boss the player could have fled from.
@@ -114,6 +114,16 @@ never placed in a room, a light switch attached to the wrong object, a sidequest
 accepted and never finished, an NPC meant to be seen once who could be talked to forever. None of
 those are *inconsistent*, so none of the checkers had anything to compare. `playtest.py` now walks
 every one of them.
+
+Then a player found the worst one: **Kestrel Works had one way in, and it was one tile wide.** The
+factory door sat in the middle of a fifteen-tile wall with nothing leading to it, so the area read
+as a dead end. The playtest now sweeps the whole wall and fails if fewer than three approaches work.
+
+0.3.1 also closed a rule that had been documented since the first draft and never built: **turn
+order.** The player always acted first, SPD did nothing outside the crit roll, and `Wind-Up Punch`
+— a move whose whole identity is *hits harder but goes last* — was a more expensive Punch that lied
+about it. The simulator had not been modelling it either; adding it moved measured attrition from
+15% to 19%, which is the honest price of the rule. Every matchup still lands inside target.
 
 The levelling walk closed the last unverified assumption. Every other tool takes the
 `player_expected` range at each boss on faith; `curve.py` derives it instead, and found two ranges a

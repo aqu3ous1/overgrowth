@@ -662,37 +662,43 @@ const DATA = {
    "price": 30,
    "effect": "restore 40 HP",
    "battle": true,
-   "heal": 40
+   "heal": 40,
+   "field": true
   },
   "Spray II": {
    "price": 100,
    "effect": "restore 120 HP",
    "battle": true,
-   "heal": 120
+   "heal": 120,
+   "field": true
   },
   "Spray III": {
    "price": 240,
    "effect": "restore 260 HP",
    "battle": true,
-   "heal": 260
+   "heal": 260,
+   "field": true
   },
   "Full Spray": {
    "price": 600,
    "effect": "restore all HP",
    "battle": true,
-   "heal": "full"
+   "heal": "full",
+   "field": true
   },
   "Chalk Tablet": {
    "price": 60,
    "effect": "restore 25 PP",
    "battle": true,
-   "pp": 25
+   "pp": 25,
+   "field": true
   },
   "Bitter Tonic": {
    "price": 60,
    "effect": "restore 25 SP",
    "battle": true,
-   "sp": 25
+   "sp": 25,
+   "field": true
   },
   "Clean Rag": {
    "price": 25,

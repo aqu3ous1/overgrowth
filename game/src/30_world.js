@@ -311,10 +311,10 @@ const ROOMS = {
       { x: 18, y: 3, t: 'memorial', label: 'memorial' },
     ],
     npcs: [
-      { x: 5, y: 8, pal: 'villager', key: 'okobo_woman' },
-      { x: 12, y: 5, pal: 'villager2', key: 'okobo_man', spr: 'villager_hat' },
-      { x: 16, y: 10, pal: 'villager3', key: 'okobo_child' },
-      { x: 20, y: 7, pal: 'villager', key: 'okobo_elder', spr: 'villager_hat' },
+      { art: 'vlg_woman', x: 5, y: 8, key: 'okobo_woman' },
+      { art: 'vlg_man', x: 12, y: 5, key: 'okobo_man' },
+      { art: 'vlg_child', x: 16, y: 10, key: 'okobo_child' },
+      { art: 'vlg_elder', x: 20, y: 7, key: 'okobo_elder' },
     ],
     exits: [
       { x: 5, y: 4, to: 'shop', at: [4, 4], sfx: 'door' },
@@ -337,7 +337,7 @@ const ROOMS = {
       '#...D...#',
       '#########',
     ],
-    npcs: [{ x: 4, y: 1, pal: 'villager2', key: 'shopkeeper', shop: true }],
+    npcs: [{ art: 'vlg_shop', x: 4, y: 1, key: 'shopkeeper', shop: true }],
     exits: [{ x: 4, y: 5, to: 'okobo', at: [5, 5] }],
     start: [4, 4],
   },
@@ -354,7 +354,7 @@ const ROOMS = {
       '#########',
     ],
     objects: [{ x: 2, y: 1, t: 'bed', label: 'bed', save: true }],
-    npcs: [{ x: 6, y: 2, pal: 'villager', key: 'innkeeper' }],
+    npcs: [{ art: 'vlg_inn', x: 6, y: 2, key: 'innkeeper' }],
     exits: [{ x: 4, y: 5, to: 'okobo', at: [16, 5] }],
     start: [4, 4],
   },
@@ -371,7 +371,7 @@ const ROOMS = {
       '#########',
     ],
     objects: [{ x: 6, y: 1, t: 'note', note: 'ration_card' }],
-    npcs: [{ x: 3, y: 2, pal: 'villager3', key: 'hess' }],
+    npcs: [{ art: 'vlg_hess', x: 3, y: 2, key: 'hess' }],
     exits: [{ x: 4, y: 5, to: 'okobo', at: [17, 10] }],
     start: [4, 4],
   },
@@ -536,17 +536,17 @@ const ROOMS = {
       { x: 22, y: 6, t: 'billboard', label: 'billboard' },
     ],
     npcs: [
-      { x: 8, y: 6,  pal: 'villager',  key: 'ondo_clerk' },
-      { x: 20, y: 9, pal: 'villager2', key: 'ondo_baker', spr: 'villager_hat' },
-      { x: 12, y: 13, pal: 'villager3', key: 'ondo_bench' },
-      { x: 25, y: 6, pal: 'villager',  key: 'ondo_courier', spr: 'villager_hat' },
+      { art: 'ond_clerk', x: 8, y: 6, key: 'ondo_clerk' },
+      { art: 'ond_baker', x: 20, y: 9, key: 'ondo_baker' },
+      { art: 'ond_bench', x: 12, y: 13, key: 'ondo_bench' },
+      { art: 'ond_courier', x: 25, y: 6, key: 'ondo_courier' },
     ],
     exits: [
       { x: 6, y: 4, to: 'ondo_shop', at: [4, 4], sfx: 'door' },
       { x: 15, y: 4, to: 'ondo_inn', at: [4, 4], sfx: 'door' },
       { x: 23, y: 4, to: 'boarding_house', at: [4, 6], sfx: 'door' },
       { x: 8, y: 12, to: 'records_room', at: [4, 7], sfx: 'door' },
-      { x: 25, y: 12, to: 'ondo_shop', at: [4, 4], sfx: 'door' },
+      { x: 25, y: 12, to: 'ondo_grocer', at: [4, 4], sfx: 'door' },
       { x: 0, y: 7, w: 1, h: 2, to: 'road_ondo', at: [21, 5] },
       { x: 27, y: 15, w: 2, h: 1, to: 'winter_road', at: [2, 5] },
     ],
@@ -564,8 +564,25 @@ const ROOMS = {
       '#...D...#',
       '#########',
     ],
-    npcs: [{ x: 4, y: 1, pal: 'villager2', key: 'ondo_shopkeeper', shop: 'ondo' }],
+    npcs: [{ art: 'ond_shop', x: 4, y: 1, key: 'ondo_shopkeeper', shop: 'ondo' }],
     exits: [{ x: 4, y: 5, to: 'ondo', at: [6, 5] }],
+    start: [4, 4],
+  },
+
+  // The other end of the baker's grievance. Sells food; the feud is free.
+  ondo_grocer: {
+    floor: 'wood', wall: 'stone', light: 0.4, music: 'ondo', grain: 0.04,
+    map: [
+      '#########',
+      '#.......#',
+      '#.==.==.#',
+      '#.......#',
+      '#.......#',
+      '#...D...#',
+      '#########',
+    ],
+    npcs: [{ art: 'ond_grocer', x: 4, y: 2, key: 'ondo_grocer', shop: 'grocer' }],
+    exits: [{ x: 4, y: 5, w: 1, h: 1, to: 'ondo', at: [25, 13], sfx: 'door' }],
     start: [4, 4],
   },
 
@@ -581,7 +598,7 @@ const ROOMS = {
       '#########',
     ],
     objects: [{ x: 2, y: 1, t: 'bed', label: 'bed', save: true }],
-    npcs: [{ x: 6, y: 2, pal: 'villager3', key: 'ondo_innkeeper' }],
+    npcs: [{ art: 'ond_inn', x: 6, y: 2, key: 'ondo_innkeeper' }],
     exits: [{ x: 4, y: 5, to: 'ondo', at: [15, 5] }],
     start: [4, 4],
   },
@@ -603,10 +620,10 @@ const ROOMS = {
       { x: 5, y: 1, t: 'door7', label: 'door' },
     ],
     npcs: [
-      { x: 3, y: 3, pal: 'villager', key: 'boarder', once: 'boarderSeen' },
-      { x: 7, y: 4, pal: 'villager2', key: 'landlady' },
-      { x: 2, y: 5, pal: 'villager3', key: 'tenant_three' },
-      { x: 9, y: 3, pal: 'villager2', key: 'tenant_five', spr: 'villager_hat' },
+      { art: 'boarder', x: 3, y: 3, key: 'boarder', once: 'boarderSeen' },
+      { art: 'landlady', x: 7, y: 4, key: 'landlady' },
+      { art: 'tenant_three', x: 2, y: 5, key: 'tenant_three' },
+      { art: 'tenant_five', x: 9, y: 3, key: 'tenant_five' },
     ],
     exits: [{ x: 5, y: 6, to: 'ondo', at: [23, 5] }],
     start: [5, 5],
@@ -629,7 +646,7 @@ const ROOMS = {
       { x: 10, y: 5, t: 'collectible', which: 'poster_corner' },
       { x: 2, y: 3, t: 'note', note: 'work_order' },
     ],
-    npcs: [{ x: 9, y: 1, pal: 'villager3', key: 'records_clerk' }],
+    npcs: [{ art: 'records', x: 9, y: 1, key: 'records_clerk' }],
     exits: [{ x: 5, y: 7, to: 'ondo', at: [8, 13] }],
     start: [5, 6],
   },
@@ -670,22 +687,22 @@ const ROOMS = {
       '#....................#',
       '#..################..#',
       '#..################..#',
-      '#..#########D#####...#',
-      '#....................#',
-      'P....................#',
-      'P....................#',
+      '#..#######DDD#####...#',
+      '#.........PPP........#',
+      'P.........PPP........#',
+      'P.........PPP........#',
       '#....................#',
       '######################',
     ],
     objects: [
       // Far corner, away from both exits: the boss is something you walk up to.
       { x: 18, y: 8, t: 'memorial_stone', label: 'memorial' },
-      { x: 11, y: 6, t: 'panel', label: 'panel' },
+      { x: 8, y: 6, t: 'panel', label: 'panel' },
     ],
     spawn: [{ name: 'Yard Light', n: 1 }, { name: 'Frostbitten Glove', n: 1 }],
     exits: [
       { x: 0, y: 7, w: 1, h: 2, to: 'winter_road', at: [20, 5] },
-      { x: 12, y: 5, to: 'kestrel_f1', at: [10, 9], sfx: 'door' },
+      { x: 10, y: 5, w: 3, h: 1, to: 'kestrel_f1', at: [10, 7], sfx: 'door' },
     ],
     start: [2, 8],
   },
@@ -701,20 +718,47 @@ const ROOMS = {
       '#..===..===..===....#',
       '#...................#',
       '#...................#',
-      '#........P..........#',
-      '#........P..........#',
-      '#########P###########',
+      '#.D......PPP........P',
+      '#.P......PPP........P',
+      '#########PPP#########',
     ],
     objects: [
       { x: 4, y: 4, t: 'note', note: 'notice_year_one' },
       { x: 16, y: 7, t: 'machine', label: 'machine' },
+      { x: 6, y: 1, t: 'machine', label: 'machine' },
     ],
     spawn: [{ name: 'Conveyor', n: 2 }, { name: 'Coil', n: 1 }],
     exits: [
-      { x: 9, y: 8, w: 1, h: 3, to: 'kestrel_yard', at: [12, 6] },
-      { x: 19, y: 1, w: 1, h: 1, to: 'kestrel_f2', at: [2, 8] },
+      { x: 9, y: 8, w: 3, h: 3, to: 'kestrel_yard', at: [11, 6] },
+      { x: 2, y: 8, w: 1, h: 2, to: 'kestrel_boiler', at: [3, 3], sfx: 'door' },
+      { x: 20, y: 8, w: 1, h: 2, to: 'kestrel_f2', at: [2, 8] },
     ],
-    start: [10, 9],
+    start: [10, 7],
+  },
+
+  // The boiler room. Below everything, and the only part of the works that is
+  // still warm — which is the wrong way round, and the game does not say so.
+  kestrel_boiler: {
+    floor: 'concrete', wall: 'concrete', light: 1.1, music: 'kestrel', grain: 0.08, dark: true,
+    map: [
+      '################',
+      '#..............#',
+      'P..............#',
+      'P..............#',
+      '#....======....#',
+      '#....======....#',
+      '#..............#',
+      '#..............#',
+      '################',
+    ],
+    objects: [
+      { x: 11, y: 3, t: 'note', note: 'safety_inspection' },
+      { x: 6, y: 6, t: 'machine', label: 'boiler' },
+      { x: 10, y: 6, t: 'machine', label: 'boiler' },
+    ],
+    spawn: [{ name: 'Coil', n: 2 }],
+    exits: [{ x: 0, y: 2, w: 1, h: 2, to: 'kestrel_f1', at: [3, 9], sfx: 'door' }],
+    start: [3, 3],
   },
 
   kestrel_f2: {
@@ -724,24 +768,45 @@ const ROOMS = {
       '#...................#',
       '#..====....====.....#',
       '#...................#',
-      '#...................#',
-      '#..====....====.....#',
-      '#...................#',
+      '#........DD.........#',
+      '#..====..PP.===.....#',
+      '#........PP.........#',
       'P...................#',
       'P..................D#',
       '#####################',
     ],
     objects: [
-      { x: 6, y: 4, t: 'note', note: 'notice_year_four' },
-      { x: 14, y: 7, t: 'note', note: 'shift_schedule' },
+      { x: 6, y: 3, t: 'note', note: 'notice_year_four' },
     ],
     spawn: [{ name: 'Conveyor', n: 1 }, { name: 'Second Shift', n: 1 },
             { name: 'Yard Light', n: 1 }],
     exits: [
-      { x: 0, y: 7, w: 1, h: 2, to: 'kestrel_f1', at: [18, 2] },
+      { x: 0, y: 7, w: 1, h: 2, to: 'kestrel_f1', at: [19, 8] },
+      { x: 9, y: 4, w: 2, h: 1, to: 'kestrel_office', at: [6, 4], sfx: 'door' },
       { x: 19, y: 8, to: 'kestrel_f3', at: [3, 7], sfx: 'door' },
     ],
     start: [2, 8],
+  },
+
+  // The foreman's office. Somebody had to sign the notices.
+  kestrel_office: {
+    floor: 'wood', wall: 'concrete', light: 0.6, music: 'kestrel', grain: 0.05,
+    map: [
+      '#############',
+      '#...........#',
+      '#.==.....==.#',
+      '#...........#',
+      '#...........#',
+      '#.....P.....#',
+      '#.....D.....#',
+      '#############',
+    ],
+    objects: [
+      { x: 3, y: 4, t: 'note', note: 'shift_schedule' },
+      { x: 9, y: 1, t: 'desk', label: 'desk' },
+    ],
+    exits: [{ x: 6, y: 5, w: 1, h: 2, to: 'kestrel_f2', at: [10, 6], sfx: 'door' }],
+    start: [6, 4],
   },
 
   kestrel_f3: {
@@ -753,21 +818,47 @@ const ROOMS = {
       '#.................#',
       '#.................#',
       '#.===.===.===.===.#',
-      '#.................#',
-      'D.................#',
+      '#........PP.......#',
+      'P........DD.......#',
       '###################',
     ],
     objects: [
       { x: 5, y: 4, t: 'note', note: 'in_a_locker' },
-      { x: 11, y: 4, t: 'note', note: 'safety_inspection' },
       { x: 16, y: 1, t: 'collectible', which: 'loose_key' },
       { x: 15, y: 6, t: 'locker', label: 'locker' },
-      // The last note in the sequence, in the furthest corner of the last floor.
-      { x: 17, y: 4, t: 'note', note: 'last_one_out' },
     ],
     spawn: [{ name: 'Second Shift', n: 2 }, { name: 'Frostbitten Glove', n: 1 }],
-    exits: [{ x: 0, y: 7, to: 'kestrel_f2', at: [18, 8] }],
+    exits: [
+      { x: 0, y: 7, w: 1, h: 1, to: 'kestrel_f2', at: [18, 8] },
+      { x: 9, y: 7, w: 2, h: 1, to: 'kestrel_locker', at: [7, 2], sfx: 'door' },
+    ],
     start: [3, 7],
+  },
+
+  // The changing room. Two hundred lockers, all of them open, and the note the
+  // last person out left on their way through it.
+  kestrel_locker: {
+    floor: 'concrete', wall: 'concrete', light: 0.9, music: 'kestrel', grain: 0.07,
+    map: [
+      '###############',
+      '#######PP######',
+      '#......PP.....#',
+      '#.====.PP.====#',
+      '#.............#',
+      '#.====...====.#',
+      '#.............#',
+      '###############',
+    ],
+    objects: [
+      { x: 3, y: 4, t: 'locker', label: 'locker' },
+      { x: 11, y: 4, t: 'locker', label: 'locker' },
+      { x: 7, y: 6, t: 'locker', label: 'locker' },
+      // The last note in the sequence, in the last room anyone used.
+      { x: 12, y: 6, t: 'note', note: 'last_one_out' },
+    ],
+    spawn: [{ name: 'Frostbitten Glove', n: 1 }],
+    exits: [{ x: 7, y: 1, w: 2, h: 1, to: 'kestrel_f3', at: [9, 6], sfx: 'door' }],
+    start: [7, 3],
   },
 };
 
@@ -788,7 +879,7 @@ const World = {
       if (n.once && Player.flags[n.once]) continue;
       this.entities.push({
         kind: 'npc', x: n.x * TS + TS / 2, y: n.y * TS + TS / 2,
-        pal: n.pal, key: n.key, shop: n.shop, spr: n.spr, face: 'down', bob: Math.random() * 6,
+        art: n.art, key: n.key, shop: n.shop, face: 'down', bob: Math.random() * 6,
       });
     }
     // Wandering enemies, only those not already beaten out of this room.
@@ -807,6 +898,10 @@ const World = {
       if (o.t === 'collectible' && Player.flags['got_' + o.which]) continue;
       this.entities.push({ kind: 'object', ...o, x: o.x * TS + TS / 2, y: o.y * TS + TS / 2 });
     }
+
+    // Remember the leg of the walk this room belongs to, for the map.
+    const leg = routeIndexOf(id);
+    if (leg >= 0 && !Player.seen.includes(leg)) Player.seen.push(leg);
 
     const start = at || r.start;
     Player.x = start[0] * TS + TS / 2;
@@ -970,11 +1065,13 @@ const World = {
     if (e.kind === 'player') { Player.draw(px, py); return; }
 
     if (e.kind === 'npc') {
-      const nm = e.spr || 'villager';
+      // Sprite and palette share a name: every person is one entry in
+      // gen_sprites' PEOPLE table, so they cannot be mismatched here.
+      const nm = e.art;
       const w = spriteWidth(nm), h = spriteHeight(nm);
       const bob = Math.sin(e.bob * 1.6) > 0.94 ? 1 : 0;
       rect(px - 4, py + 1, 9, 2, 'rgba(0,0,0,0.28)');
-      sprite(e.spr || 'villager', px - w / 2, py - h + 3 - bob, e.pal);
+      sprite(nm, px - w / 2, py - h + 3 - bob, nm);
       return;
     }
 
@@ -1144,6 +1241,14 @@ const World = {
         rect(px - 6, py - 19, 13, 3, '#7d8791');
         break;
       }
+      case 'desk':
+        rect(px - 11, py - 12, 23, 12, '#4a3a26');
+        rect(px - 11, py - 12, 23, 2, '#6b5436');
+        rect(px - 9, py - 9, 8, 6, '#33261a');
+        rect(px + 2, py - 9, 8, 6, '#33261a');
+        rect(px - 7, py - 15, 9, 4, '#d8d2c2');   // paper, squared off
+        rect(px - 7, py - 15, 9, 1, '#f0ece0');
+        break;
       case 'panel': {
         // A grey box on a post. The one working light in the yard is on it.
         rect(px - 1, py - 8, 3, 10, '#5a5d64');
@@ -1193,7 +1298,7 @@ const ENEMY_ART = {
   'Yard Dog':        { spr: 'dog',      pal: 'dog' },
   'Postbox':         { spr: 'postbox',  pal: 'postbox' },
   'Sunned Melon':    { spr: 'melon',    pal: 'melon' },
-  'Little Cousin':   { spr: 'villager', pal: 'villager3' },
+  'Little Cousin':   { spr: 'vlg_child',  pal: 'vlg_child' },
   'Fence Post':      { spr: 'post',     pal: 'post' },
   'Windfall':        { spr: 'melon',    pal: 'fruiting' },
   'Drowned Ladder':  { spr: 'ladder',   pal: 'ladder' },

@@ -89,10 +89,15 @@ const Dialogue = {
 };
 
 // --- player ------------------------------------------------------------
+// Seconds per walk frame. At 62 px/s and 16 px tiles this puts a footfall
+// every ~10 px, which is the rate that stops the stride reading as a skid.
+const STEP_FRAME = 0.16;
+
 const Player = {
   name: 'KID', x: 0, y: 0, face: 'down', walkT: 0, moving: false,
   level: 1, exp: 0, hp: 30, pp: 10, sp: 8, money: 0,
   bag: {}, flags: {}, collectibles: 0, notes: [],
+  seen: [],                               // route indices reached, for the map
   stepAcc: 0,
 
   statAt(level, stat) {
@@ -160,24 +165,32 @@ const Player = {
     this.moving = !!(dx || dy);
     if (dx) this.face = dx > 0 ? 'right' : 'left';
     else if (dy) this.face = dy > 0 ? 'down' : 'up';
+    const interval = STEP_FRAME * 2;        // one footfall per stride frame
     if (this.moving) {
       World.move(this, dx * sp * dt, dy * sp * dt);
-      this.walkT += dt * 8;
+      // walkT counts animation frames, so the cycle and the footstep sound are
+      // driven by the same number and cannot drift apart.
+      this.walkT += dt / STEP_FRAME;
       this.stepAcc += dt;
-      const interval = 0.32;
       if (this.stepAcc > interval) {
         this.stepAcc = 0;
         Audio_.sfx(World.room.floor === 'water' ? 'water' : 'step');
       }
-    } else { this.walkT = 0; this.stepAcc = 0.3; }
+    } else { this.walkT = 0; this.stepAcc = interval; }
   },
 
   draw(px, py) {
-    const name = this.face === 'up' ? 'player_up'
+    const base = this.face === 'up' ? 'player_up'
                : this.face === 'down' ? 'player_down' : 'player_side';
+    // Four-beat cycle: stride, contact, other stride, contact. Going straight
+    // between the two strides makes him skate; the contact pose in between is
+    // what reads as a footfall — and it is the frame the step sound lands on.
+    const CYCLE = ['_1', '', '_2', ''];
+    const name = this.moving
+      ? base + CYCLE[Math.floor(this.walkT) % 4]
+      : base;
     const w = spriteWidth(name), h = spriteHeight(name);
-    const bob = this.moving && Math.sin(this.walkT) > 0 ? 1 : 0;
     rect(px - 5, py + 1, 11, 2, 'rgba(0,0,0,0.32)');
-    sprite(name, px - w / 2, py - h + 3 - bob, 'player', this.face === 'left');
+    sprite(name, px - w / 2, py - h + 3, 'player', this.face === 'left');
   },
 };

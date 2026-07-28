@@ -116,7 +116,7 @@
 </footer>
 
 <div class="meta">
-  <span>0.3.0</span><span>&middot;</span><span>Acts 0&ndash;2</span><span>&middot;</span>
+  <span>0.3.1</span><span>&middot;</span><span>Acts 0&ndash;2</span><span>&middot;</span>
   <span id="audio-note">Click the screen for sound</span>
 </div>
 
@@ -786,37 +786,43 @@ const DATA = {
    "price": 30,
    "effect": "restore 40 HP",
    "battle": true,
-   "heal": 40
+   "heal": 40,
+   "field": true
   },
   "Spray II": {
    "price": 100,
    "effect": "restore 120 HP",
    "battle": true,
-   "heal": 120
+   "heal": 120,
+   "field": true
   },
   "Spray III": {
    "price": 240,
    "effect": "restore 260 HP",
    "battle": true,
-   "heal": 260
+   "heal": 260,
+   "field": true
   },
   "Full Spray": {
    "price": 600,
    "effect": "restore all HP",
    "battle": true,
-   "heal": "full"
+   "heal": "full",
+   "field": true
   },
   "Chalk Tablet": {
    "price": 60,
    "effect": "restore 25 PP",
    "battle": true,
-   "pp": 25
+   "pp": 25,
+   "field": true
   },
   "Bitter Tonic": {
    "price": 60,
    "effect": "restore 25 SP",
    "battle": true,
-   "sp": 25
+   "sp": 25,
+   "field": true
   },
   "Clean Rag": {
    "price": 25,
@@ -1195,12 +1201,52 @@ const SPR = {
     '..4333333334..',
     '...99333399...',
     '..9888777779..',
-    '.978887777779.',
-    '.978887777779.',
+    '.97888cc77779.',
+    '.9788cddc7779.',
+    '.41188cc77114.',
     '.411887777114.',
-    '.411887777114.',
-    '..44aa99aa44..',
+    '..44aa..aa44..',
     '....bb..bb....',
+  ],
+  player_down_1: [
+    '...44211144...',
+    '..4222221114..',
+    '.422222211114.',
+    '.425552255514.',
+    '.415652256514.',
+    '.415552155514.',
+    '.411111111114.',
+    '..4111331114..',
+    '..4333333334..',
+    '...99333399...',
+    '..9888777779..',
+    '.97888cc77779.',
+    '.9788cddc7114.',
+    '.97888cc77114.',
+    '.41188777779..',
+    '.4119....aab..',
+    '..4aa....bb...',
+    '...bb.........',
+  ],
+  player_down_2: [
+    '...44211144...',
+    '..4222221114..',
+    '.422222211114.',
+    '.425552255514.',
+    '.415652256514.',
+    '.415552155514.',
+    '.411111111114.',
+    '..4111331114..',
+    '..4333333334..',
+    '...99333399...',
+    '..9888777779..',
+    '.97888cc77779.',
+    '.4118cddc7779.',
+    '.41188cc77779.',
+    '..98887777114.',
+    '..baa....9114.',
+    '...bb....aa4..',
+    '.........bb...',
   ],
   player_up: [
     '.....4444.....',
@@ -1215,12 +1261,52 @@ const SPR = {
     '..4333333334..',
     '...99333399...',
     '..9888777779..',
-    '.978887777779.',
-    '.978887777779.',
+    '.97888cc77779.',
+    '.9788cddc7779.',
+    '.41188cc77114.',
     '.411887777114.',
-    '.411887777114.',
-    '..44aa99aa44..',
+    '..44aa..aa44..',
     '....bb..bb....',
+  ],
+  player_up_1: [
+    '...44211144...',
+    '..4222221114..',
+    '.422222211114.',
+    '.422222211114.',
+    '.412222211114.',
+    '.411222111114.',
+    '.411111111114.',
+    '..4111331114..',
+    '..4333333334..',
+    '...99333399...',
+    '..9888777779..',
+    '.97888cc77779.',
+    '.9788cddc7114.',
+    '.97888cc77114.',
+    '.41188777779..',
+    '.4119....aab..',
+    '..4aa....bb...',
+    '...bb.........',
+  ],
+  player_up_2: [
+    '...44211144...',
+    '..4222221114..',
+    '.422222211114.',
+    '.422222211114.',
+    '.412222211114.',
+    '.411222111114.',
+    '.411111111114.',
+    '..4111331114..',
+    '..4333333334..',
+    '...99333399...',
+    '..9888777779..',
+    '.97888cc77779.',
+    '.4118cddc7779.',
+    '.41188cc77779.',
+    '..98887777114.',
+    '..baa....9114.',
+    '...bb....aa4..',
+    '.........bb...',
   ],
   player_side: [
     '.....4444.....',
@@ -1235,35 +1321,264 @@ const SPR = {
     '..43333333334.',
     '...993333994..',
     '..9888777779..',
-    '.978887777779.',
-    '.978887777779.',
+    '.97888cc77779.',
+    '.9788cddc7779.',
+    '.41188cc77114.',
     '.411887777114.',
-    '.411887777114.',
-    '..44aa99aa44..',
+    '..44aa..aa44..',
     '....bb..bb....',
   ],
-  villager: [
+  player_side_1: [
+    '...44211144...',
+    '..4222221114..',
+    '.422222211114.',
+    '.42225551555..',
+    '.41225561556..',
+    '.41125551555..',
+    '.411111111114.',
+    '..4111331114..',
+    '..43333333334.',
+    '..9993333994..',
+    '.97888777779..',
+    '.97888cc7779..',
+    '.4118cddc7779.',
+    '.41188cc77779.',
+    '..98887777114.',
+    '...99....aa14.',
+    '..baa....bb4..',
+    '...bb.........',
+  ],
+  player_side_2: [
+    '...44211144...',
+    '..4222221114..',
+    '.422222211114.',
+    '.42225551555..',
+    '.41225561556..',
+    '.41125551555..',
+    '.411111111114.',
+    '..4111331114..',
+    '..43333333334.',
+    '...993333999..',
+    '..98887777779.',
+    '..9888cc77779.',
+    '.9788cddc7114.',
+    '.97888cc77114.',
+    '.41188777779..',
+    '.41aa....99...',
+    '..4bb....aab..',
+    '.........bb...',
+  ],
+  vlg_woman: [
+    '............',
+    '..99999999..',
+    '.9999999999.',
+    '.9244244119.',
+    '.9254254119.',
+    '.9122211119.',
+    '.9111111119.',
+    '.9333333339.',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  vlg_man: [
+    '...aaaaaa...',
+    '..9aaaaaa9..',
+    'aaaaaaaaaaaa',
+    '.9244244119.',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  vlg_child: [
+    '.9..9..9..9.',
+    '.9999999999.',
+    '..99999999..',
+    '.3244244113.',
+    '.3154254113.',
+    '.3112111113.',
+    '..31333113..',
+    '...333333...',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..3dd..dd3..',
+  ],
+  vlg_elder: [
+    '...aaaaaa...',
+    '...aaaaaa...',
+    '...aaaaaa...',
+    'aaaaaaaaaaaa',
+    '.9244244119.',
+    '.9254254119.',
+    '.9122211119.',
+    '.3199999913.',
+    '..39999993..',
+    '....9999....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.31cc..cc13.',
+    '.31cc..cc13.',
+    '..3dd..dd3..',
+  ],
+  vlg_shop: [
+    '....9999....',
+    '..99999999..',
+    '..99999999..',
+    '.3244244113.',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '..88888888..',
+    '.8776666668.',
+    '867bbbbbb668',
+    '867bbbbbb668',
+    '317bbbbbb613',
+    '318cc..cc813',
+    '.3dcc..ccd3.',
+    '...dd..dd...',
+  ],
+  vlg_inn: [
+    '............',
+    '..99999999..',
+    '.9999999999.',
+    '.9244244119.',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.867bbbb668.',
+    '.867bbbb668.',
+    '.317bbbb613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  vlg_hess: [
+    '............',
+    '..99999999..',
+    '.9999999999.',
+    '.9244244119.',
+    '.9254254119.',
+    '.9122211119.',
+    '.9111111119.',
+    '.9333333339.',
+    '....3333....',
+    '...8.88.8...',
+    '..87866868..',
+    '.8678668668.',
+    '.8678668668.',
+    '.3178668613.',
+    '.3177666613.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  ond_clerk: [
+    '............',
+    '..99999999..',
+    '.9999999999.',
+    '.9544544159.',
+    '..55455415..',
+    '..555255513.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...8.88.8...',
+    '..87866868..',
+    '.8678668668.',
+    '.8678668668.',
+    '.3178668613.',
+    '.3177666613.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  ond_baker: [
+    '...aaaaaa...',
+    '...aaaaaa...',
+    '..aaaaaaaa..',
+    '.3244244113.',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '..88888888..',
+    '.8776666668.',
+    '867bbbbbb668',
+    '867bbbbbb668',
+    '317bbbbbb613',
+    '318cc..cc813',
+    '.3dcc..ccd3.',
+    '...dd..dd...',
+  ],
+  ond_bench: [
+    '............',
     '....3333....',
     '...322113...',
     '..32222113..',
-    '.3244244113.',
-    '.3254254113.',
-    '.3122211113.',
-    '.3111111113.',
-    '..33333333..',
-    '....3333....',
-    '...888888...',
-    '..87766668..',
-    '.8677666668.',
+    '.9244244119.',
+    '.9254254119.',
+    '.9122211119.',
+    '.3199999913.',
+    '..39999993..',
+    '....9999....',
+    '...8.88.8...',
+    '..87866868..',
+    '.8678668668.',
+    '.8678668668.',
     '.3177666613.',
-    '.3177666613.',
-    '..38888883..',
-    '....88.88...',
+    '.31cc..cc13.',
+    '..3dd..dd3..',
   ],
-  villager_hat: [
-    '...888888...',
-    '.8888888888.',
-    '..32222113..',
+  ond_courier: [
+    '..aaaaaaaa..',
+    '..aaaaaaaa..',
+    '..aaaaaaaa..',
+    '..aaaaaaaa..',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...8.8888...',
+    '..87b66668..',
+    '.8677b66668.',
+    '.86776bbb68.',
+    '.317766bb13.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  ond_shop: [
+    '....9999....',
+    '..99999999..',
+    '..99999999..',
     '.3244244113.',
     '.3254254113.',
     '.3122211113.',
@@ -1272,11 +1587,145 @@ const SPR = {
     '....3333....',
     '...888888...',
     '..87766668..',
+    '.867bbbb668.',
+    '.867bbbb668.',
+    '.317bbbb613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  ond_inn: [
+    '............',
+    '..99999999..',
+    '.9999999999.',
+    '.9244244119.',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '..88888888..',
+    '.8776666668.',
+    '867766666668',
+    '867766666668',
+    '317766666613',
+    '318cc..cc813',
+    '.3dcc..ccd3.',
+    '...dd..dd...',
+  ],
+  boarder: [
+    '.9..9..9..9.',
+    '.9999999999.',
+    '..99999999..',
+    '.3244244113.',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...8.88.8...',
+    '..87866868..',
+    '.8678668668.',
+    '.8678668668.',
+    '.3178668613.',
+    '.3177666613.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  landlady: [
+    '....9999....',
+    '..99999999..',
+    '..99999999..',
+    '..54454415..',
+    '..55455415..',
+    '..555255513.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '..88888888..',
+    '.8776666668.',
+    '867766666668',
+    '867766666668',
+    '317766666613',
+    '318cc..cc813',
+    '.3dcc..ccd3.',
+    '...dd..dd...',
+  ],
+  tenant_three: [
+    '............',
+    '............',
+    '..99999999..',
+    '.9999999999.',
+    '.9244244119.',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.31cc..cc13.',
+    '.31cc..cc13.',
+    '..3dd..dd3..',
+  ],
+  tenant_five: [
+    '..aaaaaaaa..',
+    '..aaaaaaaa..',
+    '..aaaaaaaa..',
+    '.bbbbbbbbbb.',
+    '.9254254119.',
+    '.9122211119.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
     '.8677666668.',
     '.3177666613.',
-    '.3177666613.',
-    '..38888883..',
-    '....88.88...',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  records: [
+    '............',
+    '..99999999..',
+    '.9999999999.',
+    '.9544544159.',
+    '.9554554159.',
+    '.9555255519.',
+    '.9111111119.',
+    '.9333333339.',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.867bbbb668.',
+    '.867bbbb668.',
+    '.317bbbb613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  ond_grocer: [
+    '....3333....',
+    '...322113...',
+    '..32222113..',
+    '.9244244119.',
+    '.9254254119.',
+    '.9122211119.',
+    '.3199999913.',
+    '..39999993..',
+    '....9999....',
+    '..88888888..',
+    '.8776666668.',
+    '867bbbbbb668',
+    '867bbbbbb668',
+    '317bbbbbb613',
+    '318cc..cc813',
+    '.3dcc..ccd3.',
+    '...dd..dd...',
   ],
   custodian: [
     '.....2222.....',
@@ -1639,10 +2088,7 @@ const SPR = {
 };
 
 const PAL = {
-  player: { 1: '#4a7fc1', 2: '#79a8dd', 3: '#35618f', 4: '#1d3757', 5: '#f2f4f8', 6: '#12121a', 7: '#4f9440', 8: '#77c064', 9: '#2c5c26', a: '#3b4359', b: '#171a24' },
-  villager: { 1: '#c98b6a', 2: '#e2ab89', 3: '#6f4630', 4: '#f2f4f8', 5: '#12121a', 6: '#a05a8c', 7: '#c47cae', 8: '#5e3050', 9: '#2c2430' },
-  villager2: { 1: '#9fbe74', 2: '#c3dc9a', 3: '#4e6238', 4: '#f2f4f8', 5: '#12121a', 6: '#d0a24a', 7: '#eec473', 8: '#7d5f22', 9: '#2c2430' },
-  villager3: { 1: '#7fb6c6', 2: '#a8d6e2', 3: '#3d626e', 4: '#f2f4f8', 5: '#12121a', 6: '#c56a5a', 7: '#e08e7c', 8: '#77362b', 9: '#2c2430' },
+  player: { 1: '#4a7fc1', 2: '#79a8dd', 3: '#35618f', 4: '#1d3757', 5: '#f2f4f8', 6: '#12121a', 7: '#4f9440', 8: '#77c064', 9: '#2c5c26', a: '#3b4359', b: '#171a24', c: '#eef2e4', d: '#e8c24a' },
   custodian: { 1: '#f0f0f0', 2: '#08080a' },
   dog: { 1: '#8a7256', 2: '#a9906e', 3: '#3d3122', 4: '#f2f4f8' },
   postbox: { 1: '#9a5a4a', 2: '#bc7565', 3: '#241a18', 4: '#5a5a62', 5: '#241a18' },
@@ -1654,6 +2100,25 @@ const PAL = {
   bigtree: { 1: '#5aa04a', 2: '#7dc26a', 3: '#7a5a34', 4: '#d0707e', 5: '#9a7448', 6: '#24421c' },
   fruiting: { 1: '#c05a6a', 2: '#dd8090', 3: '#7a4a34', 4: '#f0d070', 5: '#9a6448', 6: '#4a1f27' },
   winter: { 1: '#57545c', 2: '#6e6b74', 3: '#4a4048', 4: '#7c7982', 5: '#5e5158', 6: '#2b2830' },
+  vlg_woman: { 1: '#c98b6a', 2: '#eda47d', 3: '#7d5642', 4: '#f2f4f8', 5: '#12121a', 6: '#a05a8c', 7: '#c06ca8', 8: '#532f49', 9: '#4a3324', a: '#3a3a44', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
+  vlg_man: { 1: '#9fbe74', 2: '#bce089', 3: '#637648', 4: '#f2f4f8', 5: '#12121a', 6: '#d0a24a', 7: '#fac259', 8: '#6c5426', 9: '#3f4a2a', a: '#9a7c4a', b: '#5c5340', c: '#3e3a46', d: '#222026' },
+  vlg_child: { 1: '#7fb6c6', 2: '#96d7ea', 3: '#4f717b', 4: '#f2f4f8', 5: '#12121a', 6: '#c56a5a', 7: '#ec7f6c', 8: '#66372f', 9: '#2f4650', a: '#4a4258', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
+  vlg_elder: { 1: '#b8a48c', 2: '#d9c2a5', 3: '#726657', 4: '#f2f4f8', 5: '#12121a', 6: '#6f7a86', 7: '#8592a1', 8: '#3a3f46', 9: '#d8d4cc', a: '#8a7c62', b: '#4c4640', c: '#3e3a46', d: '#222026' },
+  vlg_shop: { 1: '#c98b6a', 2: '#eda47d', 3: '#7d5642', 4: '#f2f4f8', 5: '#12121a', 6: '#5f8f7a', 7: '#72ac92', 8: '#314a3f', 9: '#54321f', a: '#3a3a44', b: '#e4e0d2', c: '#3e3a46', d: '#222026' },
+  vlg_inn: { 1: '#9fbe74', 2: '#bce089', 3: '#637648', 4: '#f2f4f8', 5: '#12121a', 6: '#7a6ba8', 7: '#9280ca', 8: '#3f3857', 9: '#3f4a2a', a: '#3a3a44', b: '#dcd6c4', c: '#3e3a46', d: '#222026' },
+  vlg_hess: { 1: '#c98b6a', 2: '#eda47d', 3: '#7d5642', 4: '#f2f4f8', 5: '#12121a', 6: '#8a5a3a', 7: '#a66c46', 8: '#482f1e', 9: '#3a2a1c', a: '#3a3a44', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
+  ond_clerk: { 1: '#b9a58e', 2: '#dac3a8', 3: '#736658', 4: '#f2f4f8', 5: '#12121a', 6: '#4a5a7a', 7: '#596c92', 8: '#262f3f', 9: '#3a3730', a: '#3a3a44', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
+  ond_baker: { 1: '#c98b6a', 2: '#eda47d', 3: '#7d5642', 4: '#f2f4f8', 5: '#12121a', 6: '#b06a4a', 7: '#d37f59', 8: '#5c3726', 9: '#442d1c', a: '#efe9dc', b: '#efe9dc', c: '#3e3a46', d: '#222026' },
+  ond_bench: { 1: '#b8a48c', 2: '#d9c2a5', 3: '#726657', 4: '#f2f4f8', 5: '#12121a', 6: '#5a5f52', 7: '#6c7262', 8: '#2f312b', 9: '#ded9d0', a: '#494438', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
+  ond_courier: { 1: '#9fbe74', 2: '#bce089', 3: '#637648', 4: '#f2f4f8', 5: '#12121a', 6: '#38607a', 7: '#437392', 8: '#1d323f', 9: '#3f4a2a', a: '#2c4658', b: '#c2a25a', c: '#2f3a48', d: '#1a2028' },
+  ond_shop: { 1: '#7fb6c6', 2: '#96d7ea', 3: '#4f717b', 4: '#f2f4f8', 5: '#12121a', 6: '#8a5f8f', 7: '#a672ac', 8: '#48314a', 9: '#2f4650', a: '#3a3a44', b: '#e4e0d2', c: '#3e3a46', d: '#222026' },
+  ond_inn: { 1: '#c98b6a', 2: '#eda47d', 3: '#7d5642', 4: '#f2f4f8', 5: '#12121a', 6: '#6a7f4a', 7: '#7f9859', 8: '#374226', 9: '#4a3324', a: '#3a3a44', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
+  boarder: { 1: '#a8a094', 2: '#c6bdaf', 3: '#68635c', 4: '#f2f4f8', 5: '#12121a', 6: '#4c4a54', 7: '#5b5965', 8: '#28262c', 9: '#5a5650', a: '#39373e', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
+  landlady: { 1: '#c98b6a', 2: '#eda47d', 3: '#7d5642', 4: '#f2f4f8', 5: '#12121a', 6: '#7a3f4a', 7: '#924c59', 8: '#3f2126', 9: '#8e8478', a: '#4a3a40', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
+  tenant_three: { 1: '#9fbe74', 2: '#bce089', 3: '#637648', 4: '#f2f4f8', 5: '#12121a', 6: '#7a5a3a', 7: '#926c46', 8: '#3f2f1e', 9: '#3f4a2a', a: '#3a3a44', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
+  tenant_five: { 1: '#b9a58e', 2: '#dac3a8', 3: '#736658', 4: '#f2f4f8', 5: '#12121a', 6: '#4a6a6a', 7: '#597f7f', 8: '#263737', 9: '#7a6a58', a: '#9a4a44', b: '#6a2f2c', c: '#43413a', d: '#252420' },
+  records: { 1: '#7fb6c6', 2: '#96d7ea', 3: '#4f717b', 4: '#f2f4f8', 5: '#12121a', 6: '#5a5a6e', 7: '#6c6c84', 8: '#2f2f39', 9: '#2f4650', a: '#3a3a44', b: '#d6d2c6', c: '#3e3a46', d: '#222026' },
+  ond_grocer: { 1: '#9fbe74', 2: '#bce089', 3: '#637648', 4: '#f2f4f8', 5: '#12121a', 6: '#4a6a4a', 7: '#597f59', 8: '#263726', 9: '#c8c0b0', a: '#3a3a44', b: '#dcd6c4', c: '#3e3a46', d: '#222026' },
   milepost: { 1: '#8d8d84', 2: '#adada2', 3: '#4c4c46', 4: '#2a2a26' },
   ration_tin: { 1: '#9aa2a8', 2: '#bcc4ca', 3: '#8a5a3a', 4: '#d8cba0', 5: '#3a3f44' },
   bicycle: { 1: '#5c6068', 2: '#8d3f3a', 3: '#3f434a', 4: '#1e2126' },
@@ -2190,10 +2655,10 @@ const ROOMS = {
       { x: 18, y: 3, t: 'memorial', label: 'memorial' },
     ],
     npcs: [
-      { x: 5, y: 8, pal: 'villager', key: 'okobo_woman' },
-      { x: 12, y: 5, pal: 'villager2', key: 'okobo_man', spr: 'villager_hat' },
-      { x: 16, y: 10, pal: 'villager3', key: 'okobo_child' },
-      { x: 20, y: 7, pal: 'villager', key: 'okobo_elder', spr: 'villager_hat' },
+      { art: 'vlg_woman', x: 5, y: 8, key: 'okobo_woman' },
+      { art: 'vlg_man', x: 12, y: 5, key: 'okobo_man' },
+      { art: 'vlg_child', x: 16, y: 10, key: 'okobo_child' },
+      { art: 'vlg_elder', x: 20, y: 7, key: 'okobo_elder' },
     ],
     exits: [
       { x: 5, y: 4, to: 'shop', at: [4, 4], sfx: 'door' },
@@ -2216,7 +2681,7 @@ const ROOMS = {
       '#...D...#',
       '#########',
     ],
-    npcs: [{ x: 4, y: 1, pal: 'villager2', key: 'shopkeeper', shop: true }],
+    npcs: [{ art: 'vlg_shop', x: 4, y: 1, key: 'shopkeeper', shop: true }],
     exits: [{ x: 4, y: 5, to: 'okobo', at: [5, 5] }],
     start: [4, 4],
   },
@@ -2233,7 +2698,7 @@ const ROOMS = {
       '#########',
     ],
     objects: [{ x: 2, y: 1, t: 'bed', label: 'bed', save: true }],
-    npcs: [{ x: 6, y: 2, pal: 'villager', key: 'innkeeper' }],
+    npcs: [{ art: 'vlg_inn', x: 6, y: 2, key: 'innkeeper' }],
     exits: [{ x: 4, y: 5, to: 'okobo', at: [16, 5] }],
     start: [4, 4],
   },
@@ -2250,7 +2715,7 @@ const ROOMS = {
       '#########',
     ],
     objects: [{ x: 6, y: 1, t: 'note', note: 'ration_card' }],
-    npcs: [{ x: 3, y: 2, pal: 'villager3', key: 'hess' }],
+    npcs: [{ art: 'vlg_hess', x: 3, y: 2, key: 'hess' }],
     exits: [{ x: 4, y: 5, to: 'okobo', at: [17, 10] }],
     start: [4, 4],
   },
@@ -2415,17 +2880,17 @@ const ROOMS = {
       { x: 22, y: 6, t: 'billboard', label: 'billboard' },
     ],
     npcs: [
-      { x: 8, y: 6,  pal: 'villager',  key: 'ondo_clerk' },
-      { x: 20, y: 9, pal: 'villager2', key: 'ondo_baker', spr: 'villager_hat' },
-      { x: 12, y: 13, pal: 'villager3', key: 'ondo_bench' },
-      { x: 25, y: 6, pal: 'villager',  key: 'ondo_courier', spr: 'villager_hat' },
+      { art: 'ond_clerk', x: 8, y: 6, key: 'ondo_clerk' },
+      { art: 'ond_baker', x: 20, y: 9, key: 'ondo_baker' },
+      { art: 'ond_bench', x: 12, y: 13, key: 'ondo_bench' },
+      { art: 'ond_courier', x: 25, y: 6, key: 'ondo_courier' },
     ],
     exits: [
       { x: 6, y: 4, to: 'ondo_shop', at: [4, 4], sfx: 'door' },
       { x: 15, y: 4, to: 'ondo_inn', at: [4, 4], sfx: 'door' },
       { x: 23, y: 4, to: 'boarding_house', at: [4, 6], sfx: 'door' },
       { x: 8, y: 12, to: 'records_room', at: [4, 7], sfx: 'door' },
-      { x: 25, y: 12, to: 'ondo_shop', at: [4, 4], sfx: 'door' },
+      { x: 25, y: 12, to: 'ondo_grocer', at: [4, 4], sfx: 'door' },
       { x: 0, y: 7, w: 1, h: 2, to: 'road_ondo', at: [21, 5] },
       { x: 27, y: 15, w: 2, h: 1, to: 'winter_road', at: [2, 5] },
     ],
@@ -2443,8 +2908,25 @@ const ROOMS = {
       '#...D...#',
       '#########',
     ],
-    npcs: [{ x: 4, y: 1, pal: 'villager2', key: 'ondo_shopkeeper', shop: 'ondo' }],
+    npcs: [{ art: 'ond_shop', x: 4, y: 1, key: 'ondo_shopkeeper', shop: 'ondo' }],
     exits: [{ x: 4, y: 5, to: 'ondo', at: [6, 5] }],
+    start: [4, 4],
+  },
+
+  // The other end of the baker's grievance. Sells food; the feud is free.
+  ondo_grocer: {
+    floor: 'wood', wall: 'stone', light: 0.4, music: 'ondo', grain: 0.04,
+    map: [
+      '#########',
+      '#.......#',
+      '#.==.==.#',
+      '#.......#',
+      '#.......#',
+      '#...D...#',
+      '#########',
+    ],
+    npcs: [{ art: 'ond_grocer', x: 4, y: 2, key: 'ondo_grocer', shop: 'grocer' }],
+    exits: [{ x: 4, y: 5, w: 1, h: 1, to: 'ondo', at: [25, 13], sfx: 'door' }],
     start: [4, 4],
   },
 
@@ -2460,7 +2942,7 @@ const ROOMS = {
       '#########',
     ],
     objects: [{ x: 2, y: 1, t: 'bed', label: 'bed', save: true }],
-    npcs: [{ x: 6, y: 2, pal: 'villager3', key: 'ondo_innkeeper' }],
+    npcs: [{ art: 'ond_inn', x: 6, y: 2, key: 'ondo_innkeeper' }],
     exits: [{ x: 4, y: 5, to: 'ondo', at: [15, 5] }],
     start: [4, 4],
   },
@@ -2482,10 +2964,10 @@ const ROOMS = {
       { x: 5, y: 1, t: 'door7', label: 'door' },
     ],
     npcs: [
-      { x: 3, y: 3, pal: 'villager', key: 'boarder', once: 'boarderSeen' },
-      { x: 7, y: 4, pal: 'villager2', key: 'landlady' },
-      { x: 2, y: 5, pal: 'villager3', key: 'tenant_three' },
-      { x: 9, y: 3, pal: 'villager2', key: 'tenant_five', spr: 'villager_hat' },
+      { art: 'boarder', x: 3, y: 3, key: 'boarder', once: 'boarderSeen' },
+      { art: 'landlady', x: 7, y: 4, key: 'landlady' },
+      { art: 'tenant_three', x: 2, y: 5, key: 'tenant_three' },
+      { art: 'tenant_five', x: 9, y: 3, key: 'tenant_five' },
     ],
     exits: [{ x: 5, y: 6, to: 'ondo', at: [23, 5] }],
     start: [5, 5],
@@ -2508,7 +2990,7 @@ const ROOMS = {
       { x: 10, y: 5, t: 'collectible', which: 'poster_corner' },
       { x: 2, y: 3, t: 'note', note: 'work_order' },
     ],
-    npcs: [{ x: 9, y: 1, pal: 'villager3', key: 'records_clerk' }],
+    npcs: [{ art: 'records', x: 9, y: 1, key: 'records_clerk' }],
     exits: [{ x: 5, y: 7, to: 'ondo', at: [8, 13] }],
     start: [5, 6],
   },
@@ -2549,22 +3031,22 @@ const ROOMS = {
       '#....................#',
       '#..################..#',
       '#..################..#',
-      '#..#########D#####...#',
-      '#....................#',
-      'P....................#',
-      'P....................#',
+      '#..#######DDD#####...#',
+      '#.........PPP........#',
+      'P.........PPP........#',
+      'P.........PPP........#',
       '#....................#',
       '######################',
     ],
     objects: [
       // Far corner, away from both exits: the boss is something you walk up to.
       { x: 18, y: 8, t: 'memorial_stone', label: 'memorial' },
-      { x: 11, y: 6, t: 'panel', label: 'panel' },
+      { x: 8, y: 6, t: 'panel', label: 'panel' },
     ],
     spawn: [{ name: 'Yard Light', n: 1 }, { name: 'Frostbitten Glove', n: 1 }],
     exits: [
       { x: 0, y: 7, w: 1, h: 2, to: 'winter_road', at: [20, 5] },
-      { x: 12, y: 5, to: 'kestrel_f1', at: [10, 9], sfx: 'door' },
+      { x: 10, y: 5, w: 3, h: 1, to: 'kestrel_f1', at: [10, 7], sfx: 'door' },
     ],
     start: [2, 8],
   },
@@ -2580,20 +3062,47 @@ const ROOMS = {
       '#..===..===..===....#',
       '#...................#',
       '#...................#',
-      '#........P..........#',
-      '#........P..........#',
-      '#########P###########',
+      '#.D......PPP........P',
+      '#.P......PPP........P',
+      '#########PPP#########',
     ],
     objects: [
       { x: 4, y: 4, t: 'note', note: 'notice_year_one' },
       { x: 16, y: 7, t: 'machine', label: 'machine' },
+      { x: 6, y: 1, t: 'machine', label: 'machine' },
     ],
     spawn: [{ name: 'Conveyor', n: 2 }, { name: 'Coil', n: 1 }],
     exits: [
-      { x: 9, y: 8, w: 1, h: 3, to: 'kestrel_yard', at: [12, 6] },
-      { x: 19, y: 1, w: 1, h: 1, to: 'kestrel_f2', at: [2, 8] },
+      { x: 9, y: 8, w: 3, h: 3, to: 'kestrel_yard', at: [11, 6] },
+      { x: 2, y: 8, w: 1, h: 2, to: 'kestrel_boiler', at: [3, 3], sfx: 'door' },
+      { x: 20, y: 8, w: 1, h: 2, to: 'kestrel_f2', at: [2, 8] },
     ],
-    start: [10, 9],
+    start: [10, 7],
+  },
+
+  // The boiler room. Below everything, and the only part of the works that is
+  // still warm — which is the wrong way round, and the game does not say so.
+  kestrel_boiler: {
+    floor: 'concrete', wall: 'concrete', light: 1.1, music: 'kestrel', grain: 0.08, dark: true,
+    map: [
+      '################',
+      '#..............#',
+      'P..............#',
+      'P..............#',
+      '#....======....#',
+      '#....======....#',
+      '#..............#',
+      '#..............#',
+      '################',
+    ],
+    objects: [
+      { x: 11, y: 3, t: 'note', note: 'safety_inspection' },
+      { x: 6, y: 6, t: 'machine', label: 'boiler' },
+      { x: 10, y: 6, t: 'machine', label: 'boiler' },
+    ],
+    spawn: [{ name: 'Coil', n: 2 }],
+    exits: [{ x: 0, y: 2, w: 1, h: 2, to: 'kestrel_f1', at: [3, 9], sfx: 'door' }],
+    start: [3, 3],
   },
 
   kestrel_f2: {
@@ -2603,24 +3112,45 @@ const ROOMS = {
       '#...................#',
       '#..====....====.....#',
       '#...................#',
-      '#...................#',
-      '#..====....====.....#',
-      '#...................#',
+      '#........DD.........#',
+      '#..====..PP.===.....#',
+      '#........PP.........#',
       'P...................#',
       'P..................D#',
       '#####################',
     ],
     objects: [
-      { x: 6, y: 4, t: 'note', note: 'notice_year_four' },
-      { x: 14, y: 7, t: 'note', note: 'shift_schedule' },
+      { x: 6, y: 3, t: 'note', note: 'notice_year_four' },
     ],
     spawn: [{ name: 'Conveyor', n: 1 }, { name: 'Second Shift', n: 1 },
             { name: 'Yard Light', n: 1 }],
     exits: [
-      { x: 0, y: 7, w: 1, h: 2, to: 'kestrel_f1', at: [18, 2] },
+      { x: 0, y: 7, w: 1, h: 2, to: 'kestrel_f1', at: [19, 8] },
+      { x: 9, y: 4, w: 2, h: 1, to: 'kestrel_office', at: [6, 4], sfx: 'door' },
       { x: 19, y: 8, to: 'kestrel_f3', at: [3, 7], sfx: 'door' },
     ],
     start: [2, 8],
+  },
+
+  // The foreman's office. Somebody had to sign the notices.
+  kestrel_office: {
+    floor: 'wood', wall: 'concrete', light: 0.6, music: 'kestrel', grain: 0.05,
+    map: [
+      '#############',
+      '#...........#',
+      '#.==.....==.#',
+      '#...........#',
+      '#...........#',
+      '#.....P.....#',
+      '#.....D.....#',
+      '#############',
+    ],
+    objects: [
+      { x: 3, y: 4, t: 'note', note: 'shift_schedule' },
+      { x: 9, y: 1, t: 'desk', label: 'desk' },
+    ],
+    exits: [{ x: 6, y: 5, w: 1, h: 2, to: 'kestrel_f2', at: [10, 6], sfx: 'door' }],
+    start: [6, 4],
   },
 
   kestrel_f3: {
@@ -2632,21 +3162,47 @@ const ROOMS = {
       '#.................#',
       '#.................#',
       '#.===.===.===.===.#',
-      '#.................#',
-      'D.................#',
+      '#........PP.......#',
+      'P........DD.......#',
       '###################',
     ],
     objects: [
       { x: 5, y: 4, t: 'note', note: 'in_a_locker' },
-      { x: 11, y: 4, t: 'note', note: 'safety_inspection' },
       { x: 16, y: 1, t: 'collectible', which: 'loose_key' },
       { x: 15, y: 6, t: 'locker', label: 'locker' },
-      // The last note in the sequence, in the furthest corner of the last floor.
-      { x: 17, y: 4, t: 'note', note: 'last_one_out' },
     ],
     spawn: [{ name: 'Second Shift', n: 2 }, { name: 'Frostbitten Glove', n: 1 }],
-    exits: [{ x: 0, y: 7, to: 'kestrel_f2', at: [18, 8] }],
+    exits: [
+      { x: 0, y: 7, w: 1, h: 1, to: 'kestrel_f2', at: [18, 8] },
+      { x: 9, y: 7, w: 2, h: 1, to: 'kestrel_locker', at: [7, 2], sfx: 'door' },
+    ],
     start: [3, 7],
+  },
+
+  // The changing room. Two hundred lockers, all of them open, and the note the
+  // last person out left on their way through it.
+  kestrel_locker: {
+    floor: 'concrete', wall: 'concrete', light: 0.9, music: 'kestrel', grain: 0.07,
+    map: [
+      '###############',
+      '#######PP######',
+      '#......PP.....#',
+      '#.====.PP.====#',
+      '#.............#',
+      '#.====...====.#',
+      '#.............#',
+      '###############',
+    ],
+    objects: [
+      { x: 3, y: 4, t: 'locker', label: 'locker' },
+      { x: 11, y: 4, t: 'locker', label: 'locker' },
+      { x: 7, y: 6, t: 'locker', label: 'locker' },
+      // The last note in the sequence, in the last room anyone used.
+      { x: 12, y: 6, t: 'note', note: 'last_one_out' },
+    ],
+    spawn: [{ name: 'Frostbitten Glove', n: 1 }],
+    exits: [{ x: 7, y: 1, w: 2, h: 1, to: 'kestrel_f3', at: [9, 6], sfx: 'door' }],
+    start: [7, 3],
   },
 };
 
@@ -2667,7 +3223,7 @@ const World = {
       if (n.once && Player.flags[n.once]) continue;
       this.entities.push({
         kind: 'npc', x: n.x * TS + TS / 2, y: n.y * TS + TS / 2,
-        pal: n.pal, key: n.key, shop: n.shop, spr: n.spr, face: 'down', bob: Math.random() * 6,
+        art: n.art, key: n.key, shop: n.shop, face: 'down', bob: Math.random() * 6,
       });
     }
     // Wandering enemies, only those not already beaten out of this room.
@@ -2686,6 +3242,10 @@ const World = {
       if (o.t === 'collectible' && Player.flags['got_' + o.which]) continue;
       this.entities.push({ kind: 'object', ...o, x: o.x * TS + TS / 2, y: o.y * TS + TS / 2 });
     }
+
+    // Remember the leg of the walk this room belongs to, for the map.
+    const leg = routeIndexOf(id);
+    if (leg >= 0 && !Player.seen.includes(leg)) Player.seen.push(leg);
 
     const start = at || r.start;
     Player.x = start[0] * TS + TS / 2;
@@ -2849,11 +3409,13 @@ const World = {
     if (e.kind === 'player') { Player.draw(px, py); return; }
 
     if (e.kind === 'npc') {
-      const nm = e.spr || 'villager';
+      // Sprite and palette share a name: every person is one entry in
+      // gen_sprites' PEOPLE table, so they cannot be mismatched here.
+      const nm = e.art;
       const w = spriteWidth(nm), h = spriteHeight(nm);
       const bob = Math.sin(e.bob * 1.6) > 0.94 ? 1 : 0;
       rect(px - 4, py + 1, 9, 2, 'rgba(0,0,0,0.28)');
-      sprite(e.spr || 'villager', px - w / 2, py - h + 3 - bob, e.pal);
+      sprite(nm, px - w / 2, py - h + 3 - bob, nm);
       return;
     }
 
@@ -3023,6 +3585,14 @@ const World = {
         rect(px - 6, py - 19, 13, 3, '#7d8791');
         break;
       }
+      case 'desk':
+        rect(px - 11, py - 12, 23, 12, '#4a3a26');
+        rect(px - 11, py - 12, 23, 2, '#6b5436');
+        rect(px - 9, py - 9, 8, 6, '#33261a');
+        rect(px + 2, py - 9, 8, 6, '#33261a');
+        rect(px - 7, py - 15, 9, 4, '#d8d2c2');   // paper, squared off
+        rect(px - 7, py - 15, 9, 1, '#f0ece0');
+        break;
       case 'panel': {
         // A grey box on a post. The one working light in the yard is on it.
         rect(px - 1, py - 8, 3, 10, '#5a5d64');
@@ -3072,7 +3642,7 @@ const ENEMY_ART = {
   'Yard Dog':        { spr: 'dog',      pal: 'dog' },
   'Postbox':         { spr: 'postbox',  pal: 'postbox' },
   'Sunned Melon':    { spr: 'melon',    pal: 'melon' },
-  'Little Cousin':   { spr: 'villager', pal: 'villager3' },
+  'Little Cousin':   { spr: 'vlg_child',  pal: 'vlg_child' },
   'Fence Post':      { spr: 'post',     pal: 'post' },
   'Windfall':        { spr: 'melon',    pal: 'fruiting' },
   'Drowned Ladder':  { spr: 'ladder',   pal: 'ladder' },
@@ -3175,10 +3745,15 @@ const Dialogue = {
 };
 
 // --- player ------------------------------------------------------------
+// Seconds per walk frame. At 62 px/s and 16 px tiles this puts a footfall
+// every ~10 px, which is the rate that stops the stride reading as a skid.
+const STEP_FRAME = 0.16;
+
 const Player = {
   name: 'KID', x: 0, y: 0, face: 'down', walkT: 0, moving: false,
   level: 1, exp: 0, hp: 30, pp: 10, sp: 8, money: 0,
   bag: {}, flags: {}, collectibles: 0, notes: [],
+  seen: [],                               // route indices reached, for the map
   stepAcc: 0,
 
   statAt(level, stat) {
@@ -3246,25 +3821,33 @@ const Player = {
     this.moving = !!(dx || dy);
     if (dx) this.face = dx > 0 ? 'right' : 'left';
     else if (dy) this.face = dy > 0 ? 'down' : 'up';
+    const interval = STEP_FRAME * 2;        // one footfall per stride frame
     if (this.moving) {
       World.move(this, dx * sp * dt, dy * sp * dt);
-      this.walkT += dt * 8;
+      // walkT counts animation frames, so the cycle and the footstep sound are
+      // driven by the same number and cannot drift apart.
+      this.walkT += dt / STEP_FRAME;
       this.stepAcc += dt;
-      const interval = 0.32;
       if (this.stepAcc > interval) {
         this.stepAcc = 0;
         Audio_.sfx(World.room.floor === 'water' ? 'water' : 'step');
       }
-    } else { this.walkT = 0; this.stepAcc = 0.3; }
+    } else { this.walkT = 0; this.stepAcc = interval; }
   },
 
   draw(px, py) {
-    const name = this.face === 'up' ? 'player_up'
+    const base = this.face === 'up' ? 'player_up'
                : this.face === 'down' ? 'player_down' : 'player_side';
+    // Four-beat cycle: stride, contact, other stride, contact. Going straight
+    // between the two strides makes him skate; the contact pose in between is
+    // what reads as a footfall — and it is the frame the step sound lands on.
+    const CYCLE = ['_1', '', '_2', ''];
+    const name = this.moving
+      ? base + CYCLE[Math.floor(this.walkT) % 4]
+      : base;
     const w = spriteWidth(name), h = spriteHeight(name);
-    const bob = this.moving && Math.sin(this.walkT) > 0 ? 1 : 0;
     rect(px - 5, py + 1, 11, 2, 'rgba(0,0,0,0.32)');
-    sprite(name, px - w / 2, py - h + 3 - bob, 'player', this.face === 'left');
+    sprite(name, px - w / 2, py - h + 3, 'player', this.face === 'left');
   },
 };
 
@@ -3273,6 +3856,24 @@ const Player = {
 // ---------------------------------------------------------------- battle
 // Turn-based, one combatant, no party. The camera sits behind the player so
 // only the top of his head is in frame; he is never seen taking a hit.
+
+// "48 BASE POWER, 1 HIT" / "9 BASE POWER PER HIT, 2-4 HITS". Read off the data,
+// so a retune in data/moves.json changes what the game says about itself.
+// Uppercase because the font has no room below the baseline: lowercase p, g and
+// y sit their descenders inside the glyph box and read as capitals.
+function moveStatLine(m) {
+  if (!m || m.cost === undefined) return '';
+  const hits = Array.isArray(m.hits) ? `${m.hits[0]}-${m.hits[1]} HITS`
+             : `${m.hits || 1} HIT${(m.hits || 1) > 1 ? 'S' : ''}`;
+  if (!m.power) {
+    if (m.heal_fraction) return `RESTORES ${Math.round(m.heal_fraction * 100)}% MAX HP`;
+    if (m.inflicts) return `INFLICTS ${m.inflicts.toUpperCase()}`;
+    return 'NO DAMAGE';
+  }
+  const per = Array.isArray(m.hits) || (m.hits || 1) > 1 ? ' PER HIT' : '';
+  const pow = Array.isArray(m.power) ? `${m.power[0]}-${m.power[1]}` : m.power;
+  return `${pow} BASE POWER${per}, ${hits}`;
+}
 
 const Battle = {
   active: false, enemy: null, state: 'intro', log: [], logT: 0,
@@ -3322,6 +3923,7 @@ const Battle = {
     this.shake = 0; this.flash = 0.5; this.enemyHurt = 0; this.playerHurt = 0;
     this.result = null; this.onEnd = onEnd || null;
     this.homesick = false;
+    this.enemyDone = false; this.pending = null;
     this.backdrop = { floor: World.room.floor, wall: World.room.wall, bright: World.room.bright };
     Audio_.play(enemy.boss ? 'boss' : 'battle');
     this.push(`${enemy.name.toUpperCase()} appeared.`);
@@ -3344,6 +3946,34 @@ const Battle = {
     return this.enemy.level <= Player.level;
   },
 
+  // --- turn order ------------------------------------------------------
+  // Actions sort by SPD, ties broken by a coin flip, and a move's own priority
+  // overrides both — see docs/04. Without this the player always acted first,
+  // SPD did nothing outside the crit roll, and `Wind-Up Punch` was a worse
+  // Punch that lied about it in its own description.
+  playerFirst(move) {
+    if (move && move.priority === 'first') return true;
+    if (move && move.priority === 'last') return false;
+    if (Player.spd === this.enemy.spd) return Math.random() < 0.5;
+    return Player.spd > this.enemy.spd;
+  },
+
+  // Queue the player's action behind the enemy's, and say why — an action that
+  // simply happens later with no explanation reads as a dropped input.
+  yieldTo(act, why) {
+    this.pending = act;
+    this.push(why);
+    this.state = 'message';
+    this.after = () => this.enemyTurn();
+  },
+
+  // Where every player action lands once it has resolved.
+  afterPlayer() {
+    if (this.enemy.hp <= 0) { this.checkEnemy(); return; }
+    if (this.enemyDone) { this.startTurn(); return; }
+    this.enemyTurn();
+  },
+
   // --- player actions --------------------------------------------------
   useMove(kind, move) {
     const pool = kind === 'physical' ? 'pp' : 'sp';
@@ -3358,6 +3988,17 @@ const Battle = {
     }
     Player[pool] -= move.cost;
     this.sub = null;
+    if (!this.playerFirst(move)) {
+      this.yieldTo(() => this.resolveMove(kind, move),
+                   move.priority === 'last'
+                     ? `${Player.name} winds up.`
+                     : `${this.enemy.name} moves first.`);
+      return;
+    }
+    this.resolveMove(kind, move);
+  },
+
+  resolveMove(kind, move) {
     this.push(move.name.toUpperCase() + '!');
 
     if (move.heal_fraction) {
@@ -3366,7 +4007,7 @@ const Battle = {
       Audio_.sfx('heal');
       this.push(`Recovered ${amt} HP.`);
       if (move.name === 'Mend+') this.homesick = false;
-      this.state = 'message'; this.after = () => this.enemyTurn();
+      this.state = 'message'; this.after = () => this.afterPlayer();
       return;
     }
     if (move.name === 'Quiet Room') {
@@ -3374,14 +4015,14 @@ const Battle = {
       if (this.homesick) { this.homesick = false; this.push('The room went quiet.'); }
       else this.push('The room went quiet.');
       Audio_.sfx('heal');
-      this.state = 'message'; this.after = () => this.enemyTurn();
+      this.state = 'message'; this.after = () => this.afterPlayer();
       return;
     }
     if (!move.power) {
       if (move.inflicts) this.push(`${this.enemy.name} is ${move.inflicts}.`);
       else this.push('Nothing obvious happened.');
       Audio_.sfx('psy');
-      this.state = 'message'; this.after = () => this.enemyTurn();
+      this.state = 'message'; this.after = () => this.afterPlayer();
       return;
     }
 
@@ -3396,7 +4037,7 @@ const Battle = {
     if (move.accuracy && Math.random() > move.accuracy) {
       this.push('It missed.');
       Audio_.sfx('wrong');
-      this.state = 'message'; this.after = () => this.enemyTurn();
+      this.state = 'message'; this.after = () => this.afterPlayer();
       return;
     }
 
@@ -3414,7 +4055,7 @@ const Battle = {
     }
 
     this.state = 'message';
-    this.after = () => this.checkEnemy();
+    this.after = () => this.afterPlayer();
   },
 
   useItem(name) {
@@ -3422,6 +4063,15 @@ const Battle = {
     if (!it) return;
     Player.useItem(name);
     this.sub = null;
+    // An item is an action like any other and sorts by SPD the same way.
+    if (!this.playerFirst(null)) {
+      this.yieldTo(() => this.resolveItem(name, it), `${this.enemy.name} moves first.`);
+      return;
+    }
+    this.resolveItem(name, it);
+  },
+
+  resolveItem(name, it) {
     this.push(`Used ${name}.`);
     if (it.heal) {
       const amt = it.heal === 'full' ? Player.maxHp : it.heal;
@@ -3433,7 +4083,7 @@ const Battle = {
     else if (it.sp) { Player.sp = Math.min(Player.maxSp, Player.sp + it.sp); Audio_.sfx('heal'); this.push(`Recovered ${it.sp} SP.`); }
     else { Audio_.sfx('ok'); this.push('Nothing obvious happened.'); }
     this.state = 'message';
-    this.after = () => this.enemyTurn();
+    this.after = () => this.afterPlayer();
   },
 
   tryFlee() {
@@ -3453,7 +4103,7 @@ const Battle = {
     } else {
       this.push("Couldn't get away.");
       Audio_.sfx('wrong');
-      this.state = 'message'; this.after = () => this.enemyTurn();
+      this.state = 'message'; this.after = () => this.afterPlayer();
     }
   },
 
@@ -3465,17 +4115,19 @@ const Battle = {
       this.enemy.hp = Math.round(this.enemy.maxHp * this.enemy.restoresOnce);
       Audio_.sfx('wrong');
       this.push(`${this.enemy.name} is still standing.`);
-      this.state = 'message'; this.after = () => this.enemyTurn();
+      this.state = 'message';
+      this.after = () => (this.enemyDone ? this.startTurn() : this.enemyTurn());
       return;
     }
     this.victory();
   },
 
   enemyTurn() {
-    this.turn++;
-    if (this.quiet > 0) this.quiet--;
+    if (!this.enemyDone) { this.turn++; if (this.quiet > 0) this.quiet--; }
     const e = this.enemy;
-    if (e.hp <= 0) { this.victory(); return; }
+    // Dead before it acts - which is now reachable, because the player can
+    // outspeed it. Any action it had queued is dropped, per docs/04.
+    if (e.hp <= 0) { this.pending = null; this.checkEnemy(); return; }
 
     // Tiered boss: each tier lost drops its guard and raises its urgency.
     if (e.tiers) {
@@ -3496,6 +4148,9 @@ const Battle = {
       }
     }
 
+    // Past this point the enemy is definitely taking its action this turn.
+    this.enemyDone = true;
+
     if (Math.random() < e.inaction || !e.dealsDamage) {
       if (e.inflicts === 'Homesick' && !this.homesick) {
         this.homesick = true;
@@ -3503,14 +4158,14 @@ const Battle = {
       } else {
         this.push(`${e.name} did nothing.`);
       }
-      this.state = 'message'; this.after = () => this.startTurn();
+      this.state = 'message'; this.after = () => this.afterEnemy();
       return;
     }
 
     if (e.inflicts === 'Homesick' && !this.homesick && Math.random() < 0.6) {
       this.homesick = true;
       this.push(`${e.name} made you think of home.`);
-      this.state = 'message'; this.after = () => this.startTurn();
+      this.state = 'message'; this.after = () => this.afterEnemy();
       return;
     }
 
@@ -3526,10 +4181,20 @@ const Battle = {
     Audio_.sfx('hurt');
     this.push(`${e.name} hit you for ${dmg}.`);
     this.state = 'message';
-    this.after = () => this.startTurn();
+    this.after = () => this.afterEnemy();
+  },
+
+  // If the player's action was queued behind the enemy's, it happens now.
+  afterEnemy() {
+    const p = this.pending;
+    this.pending = null;
+    if (p && Player.hp > 0) { p(); return; }
+    this.startTurn();
   },
 
   startTurn() {
+    this.enemyDone = false;
+    this.pending = null;
     if (Player.hp <= 0) { this.defeat(); return; }
     // The trickle. With Punch at 2 PP this is what guarantees there is never a
     // state where the player has no move at all — see docs/05.
@@ -3796,9 +4461,15 @@ const Battle = {
       text(cost, x + w - textWidth(cost) - 10, yy, afford ? '#b8b8c2' : '#6a6a74');
       if (idx === this.subCursor) text('>', x + 6, yy, '#e8d24a');
     }
+    // No prose in a fight. The numbers, and nothing to read twice — what a move
+    // actually does is spelled out in the pause menu's MOVES tab.
     const sel = list[this.subCursor];
-    const desc = sel && (sel.notes || (DATA.items[sel.name] && DATA.items[sel.name].effect) || '');
-    if (desc) text(wrap(desc, w - 24)[0], x + 8, y + h - 10, '#8a8a94');
+    if (sel) {
+      const line = this.sub === 'bag'
+        ? ((DATA.items[sel.name] || {}).effect || '')
+        : moveStatLine(sel);
+      if (line) text(line, x + 8, y + h - 10, '#8a8a94');
+    }
   },
 };
 
@@ -3815,7 +4486,7 @@ const Save = {
     const d = {
       name: Player.name, level: Player.level, exp: Player.exp,
       hp: Player.hp, pp: Player.pp, sp: Player.sp, money: Player.money,
-      bag: Player.bag, flags: Player.flags, notes: Player.notes,
+      bag: Player.bag, flags: Player.flags, notes: Player.notes, seen: Player.seen,
       collectibles: Player.collectibles, room: World.id,
       x: Math.round(Player.x), y: Math.round(Player.y), stamp: Date.now(),
     };
@@ -3831,7 +4502,7 @@ const Save = {
     Object.assign(Player, {
       name: d.name, level: d.level, exp: d.exp, hp: d.hp, pp: d.pp, sp: d.sp,
       money: d.money, bag: d.bag || {}, flags: d.flags || {}, notes: d.notes || [],
-      collectibles: d.collectibles || 0,
+      collectibles: d.collectibles || 0, seen: d.seen || [],
     });
     World.load(d.room || 'okobo');
     Player.x = d.x; Player.y = d.y;
@@ -3927,6 +4598,9 @@ const Options = {
       this.save();
       Audio_.sfx('cancel');
       if (this.from === 'title') { Game.mode = 'title'; Title.enter(); }
+      // Back to where they were, not to the field - they opened this from the
+      // pause menu and expect to land there again.
+      else if (this.from === 'menu') { Menu.open = true; Game.mode = 'menu'; }
       else { Game.mode = 'field'; }
     };
     if (Input.hit('no')) { leave(); return; }
@@ -4015,44 +4689,246 @@ const NameEntry = {
   },
 };
 
+// The route, in the order it is walked, and where each leg sits on the map of
+// Limpo. `at` is in map space (288x112); `kind` picks the marker. The first two
+// legs have no `at` on purpose — the bedroom and the Gallery are not places in
+// this world, and the map does not pretend otherwise.
+const ROUTE = [
+  { label: 'HOME',            rooms: ['bedroom'] },
+  { label: 'THE GALLERY',     rooms: ['void', 'gallery_ext', 'gallery_hall', 'gallery_room',
+                                      'gallery_corridor'] },
+  { label: 'OKOBO',           rooms: ['arrival', 'okobo', 'shop', 'inn', 'house'],
+    at: [56, 82], kind: 'town', short: 'OKOBO' },
+  { label: 'THE NORTH ROAD',  rooms: ['north_road'], at: [74, 70], kind: 'road' },
+  { label: 'SUNKEN ORCHARD',  rooms: ['orchard1', 'orchard2', 'orchard3', 'clearing'],
+    at: [100, 60], kind: 'orchard', short: 'ORCHARD' },
+  { label: 'THE ROAD TO ONDO', rooms: ['road_ondo'], at: [124, 50], kind: 'road' },
+  { label: 'ONDO',            rooms: ['ondo', 'ondo_shop', 'ondo_inn', 'ondo_grocer',
+                                      'boarding_house', 'records_room'],
+    at: [148, 40], kind: 'city', short: 'ONDO' },
+  { label: 'THE WINTER ROAD', rooms: ['winter_road'], at: [162, 24], kind: 'road' },
+  { label: 'KESTREL WORKS',   rooms: ['kestrel_yard', 'kestrel_f1', 'kestrel_f2', 'kestrel_f3',
+                                      'kestrel_boiler', 'kestrel_office', 'kestrel_locker'],
+    at: [190, 13], kind: 'works', short: 'KESTREL' },
+];
+function routeIndexOf(roomId) {
+  return ROUTE.findIndex(a => a.rooms.includes(roomId));
+}
+
+// --- the map of Limpo --------------------------------------------------
+// Painted once into an offscreen canvas and blitted, because the terrain is
+// thousands of little rects and redrawing it every frame to show a static
+// picture would be silly.
+const MAP_W = 288, MAP_H = 112;
+const MAP_SNOW = 30;                 // everything north of this line is winter
+
+const WorldMap = {
+  cv: null, cx: null, built: 0,
+
+  // Limpo is a lumpy peninsula. Ellipses rather than a traced outline: this has
+  // to read as a coastline at 288 pixels, not survive being zoomed in on.
+  land(x, y) {
+    const blob = (cx_, cy_, rx, ry) => {
+      const dx = (x - cx_) / rx, dy = (y - cy_) / ry;
+      return dx * dx + dy * dy <= 1;
+    };
+    return blob(96, 74, 86, 40) || blob(150, 46, 78, 34) ||
+           blob(196, 20, 62, 22) || blob(64, 52, 44, 26) || blob(120, 30, 46, 22);
+  },
+
+  build() {
+    if (!this.cv) {
+      this.cv = document.createElement('canvas');
+      this.cv.width = MAP_W; this.cv.height = MAP_H;
+      this.cx = this.cv.getContext('2d');
+    }
+    const c = this.cx;
+    c.clearRect(0, 0, MAP_W, MAP_H);
+    c.fillStyle = '#13202b'; c.fillRect(0, 0, MAP_W, MAP_H);      // the sea
+
+    // Terrain, two pixels at a time. Snow in the north, marsh where the orchard
+    // drowned, and a coastal band so the edge is not a hard cut.
+    for (let y = 0; y < MAP_H; y += 2) {
+      for (let x = 0; x < MAP_W; x += 2) {
+        if (!this.land(x, y)) continue;
+        const n = hash2(x * 3 + 1, y * 7 + 2);
+        const edge = !this.land(x + 4, y) || !this.land(x - 4, y)
+                  || !this.land(x, y + 4) || !this.land(x, y - 4);
+        const marsh = Math.hypot(x - 100, (y - 62) * 1.7) < 22;
+        // The snowline wanders. A straight one reads as a stripe of paint
+        // rather than as the point where the country stops thawing.
+        const snowAt = MAP_SNOW + Math.sin(x * 0.055) * 7 + Math.sin(x * 0.017) * 6
+                     + (n > 0.7 ? 2 : 0);
+        let col;
+        if (edge) col = n > 0.5 ? '#5f5a44' : '#6d6650';           // sand
+        else if (y < snowAt) col = n > 0.55 ? '#c2ccd6' : '#a8b3bf';
+        else if (y < snowAt + 11) col = n > 0.5 ? '#6f7a68' : '#5e6a5a';  // thaw
+        else if (marsh) col = n > 0.5 ? '#3c6274' : '#33566a';
+        else col = n > 0.62 ? '#4c7d3e' : (n > 0.28 ? '#3f6a34' : '#375c2d');
+        c.fillStyle = col; c.fillRect(x, y, 2, 2);
+      }
+    }
+
+    // The road, drawn as the walk itself: leg to leg, in order.
+    const pts = ROUTE.filter(a => a.at).map(a => a.at);
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
+      const steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+      for (let s = 0; s <= steps; s++) {
+        if (s % 4 === 3) continue;                                 // dashed
+        const px = Math.round(x0 + (x1 - x0) * s / steps);
+        const py = Math.round(y0 + (y1 - y0) * s / steps);
+        // A dark pixel under each dash, so the road stays legible crossing
+        // both the green and the snow.
+        c.fillStyle = 'rgba(24,20,12,0.55)'; c.fillRect(px, py + 1, 1, 1);
+        c.fillStyle = '#b09a62'; c.fillRect(px, py, 1, 1);
+      }
+    }
+
+    // Yettallia, across the water. No label: he has only heard about it.
+    c.fillStyle = '#232a33';
+    for (let y = 0; y < MAP_H; y += 2) {
+      const w = 16 + Math.round(Math.sin(y * 0.09) * 5);
+      c.fillRect(MAP_W - w, y, w, 2);
+    }
+    c.fillStyle = '#2c343e'; c.fillRect(MAP_W - 3, 0, 3, MAP_H);
+    this.built = 1;
+  },
+
+  // Markers are drawn live, not baked, because which ones are visible changes.
+  marker(px, py, kind) {
+    switch (kind) {
+      case 'town':
+        rect(px - 5, py - 3, 4, 5, '#c8bda0'); rect(px - 5, py - 4, 4, 1, '#8a6a4a');
+        rect(px, py - 5, 5, 7, '#d8cdb0');     rect(px, py - 6, 5, 1, '#8a6a4a');
+        break;
+      case 'city':
+        for (let i = 0; i < 4; i++) {
+          const h = 5 + (i % 2) * 4;
+          rect(px - 7 + i * 4, py + 2 - h, 3, h, '#ded4c0');
+          rect(px - 7 + i * 4, py + 1 - h, 3, 1, '#9a8a6a');
+        }
+        break;
+      case 'orchard':
+        for (const [ox, oy] of [[-5, 0], [0, -3], [5, 1]]) {
+          rect(px + ox - 2, py + oy - 4, 5, 4, '#2f6a52');
+          rect(px + ox - 1, py + oy, 2, 3, '#4a3a24');
+        }
+        break;
+      case 'works':
+        rect(px - 7, py - 4, 14, 6, '#5b5f66');
+        rect(px - 7, py - 4, 14, 1, '#767b83');
+        rect(px + 2, py - 11, 3, 8, '#4a4e55');
+        rect(px + 2, py - 12, 3, 1, '#767b83');
+        break;
+      default:                                   // a road, and nothing on it
+        rect(px - 1, py - 1, 3, 3, '#9a8a5a');
+        rect(px, py, 1, 1, '#2a2418');
+    }
+  },
+};
+
 // --- pause menu --------------------------------------------------------
+const TAB_STATUS = 0, TAB_BAG = 1, TAB_MOVES = 2, TAB_MAP = 3, TAB_NOTES = 4, TAB_OPTIONS = 5;
+
 const Menu = {
-  open: false, tab: 0, cursor: 0, rep: {}, tabs: ['STATUS', 'BAG', 'NOTES', 'OPTIONS'],
-  toggle() { this.open = !this.open; this.cursor = 0; Audio_.sfx(this.open ? 'ok' : 'cancel'); },
+  open: false, tab: 0, cursor: 0, rep: {},
+  tabs: ['STATUS', 'BAG', 'MOVES', 'MAP', 'NOTES', 'OPTIONS'],
+  message: '', messageT: 0,
+  toggle() { this.open = !this.open; this.cursor = 0; this.messageT = 0; Audio_.sfx(this.open ? 'ok' : 'cancel'); },
   update(dt) {
+    this.messageT = Math.max(0, this.messageT - dt);
     if (Input.hit('menu') || Input.hit('no')) { this.toggle(); return; }
-    if (Input.repeat('left', this.rep)) { this.tab = (this.tab + 3) % 4; this.cursor = 0; Audio_.sfx('blip'); }
-    if (Input.repeat('right', this.rep)) { this.tab = (this.tab + 1) % 4; this.cursor = 0; Audio_.sfx('blip'); }
-    if (this.tab === 3 && Input.hit('ok')) {
-      this.open = false; Options.enter('field'); Game.mode = 'options'; Audio_.sfx('ok'); return;
+    const n = this.tabs.length;
+    if (Input.repeat('left', this.rep)) { this.tab = (this.tab + n - 1) % n; this.cursor = 0; this.messageT = 0; Audio_.sfx('blip'); }
+    if (Input.repeat('right', this.rep)) { this.tab = (this.tab + 1) % n; this.cursor = 0; this.messageT = 0; Audio_.sfx('blip'); }
+    // Read the confirm key ONCE. Input.hit consumes, so a second call in a
+    // later branch always sees false - that is how the BAG tab ended up doing
+    // nothing while the NOTES branch above it silently ate the press.
+    const ok = Input.hit('ok');
+    if (this.tab === TAB_OPTIONS && ok) {
+      this.open = false; Options.enter('menu'); Game.mode = 'options'; Audio_.sfx('ok'); return;
     }
     const list = this.list();
     if (list.length) {
       if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + list.length) % list.length; Audio_.sfx('blip'); }
       if (Input.repeat('down', this.rep)) { this.cursor = (this.cursor + 1) % list.length; Audio_.sfx('blip'); }
-      if (Input.hit('ok') && this.tab === 2) {
+      if (ok && this.tab === TAB_NOTES) {
         const note = list[this.cursor];
         Audio_.sfx('ok');
         this.open = false;
         Dialogue.say(NOTES[note].pages.map(t => ({ text: t, speaker: 'system' })));
       }
+      if (ok && this.tab === TAB_BAG) this.useFromBag(list[this.cursor]);
     }
   },
+
+  // Restoratives work out here too. Everything else in the bag is either a
+  // stat stage, which does not survive leaving a fight, or a debuff with
+  // nothing to aim at.
+  useFromBag(name) {
+    const it = DATA.items[name];
+    if (!it) return;
+    if (!it.field) {
+      this.message = it.battle ? 'Only in a fight.' : 'Nothing to use it on.';
+      this.messageT = 1.6;
+      Audio_.sfx('wrong');
+      return;
+    }
+    const full = (it.heal && Player.hp >= Player.maxHp)
+              || (it.pp && Player.pp >= Player.maxPp)
+              || (it.sp && Player.sp >= Player.maxSp);
+    if (full) {
+      this.message = 'He does not need it yet.';
+      this.messageT = 1.6;
+      Audio_.sfx('wrong');
+      return;
+    }
+    Player.useItem(name);
+    let got = 0, pool = 'HP';
+    if (it.heal) {
+      const before = Player.hp;
+      Player.hp = Math.min(Player.maxHp, Player.hp + (it.heal === 'full' ? Player.maxHp : it.heal));
+      got = Player.hp - before;
+    } else if (it.pp) {
+      const before = Player.pp;
+      Player.pp = Math.min(Player.maxPp, Player.pp + it.pp);
+      got = Player.pp - before; pool = 'PP';
+    } else if (it.sp) {
+      const before = Player.sp;
+      Player.sp = Math.min(Player.maxSp, Player.sp + it.sp);
+      got = Player.sp - before; pool = 'SP';
+    }
+    Audio_.sfx('heal');
+    this.message = `Recovered ${got} ${pool}.`;
+    this.messageT = 1.6;
+    // The list just got shorter; do not leave the cursor past the end.
+    const n = this.list().length;
+    if (this.cursor >= n) this.cursor = Math.max(0, n - 1);
+  },
   list() {
-    if (this.tab === 1) return Object.keys(Player.bag);
-    if (this.tab === 2) return Player.notes;
+    if (this.tab === TAB_BAG) return Object.keys(Player.bag);
+    if (this.tab === TAB_MOVES) return Player.moves('physical').concat(Player.moves('special'));
+    if (this.tab === TAB_NOTES) return Player.notes;
     return [];
   },
   draw() {
     rect(0, 0, W, H, 'rgba(4,4,8,0.88)');
-    for (let i = 0; i < 4; i++) {
-      const x = 10 + i * 76;
-      if (i === this.tab) rect(x - 4, 8, 70, 12, '#1e2630');
-      text(this.tabs[i], x, 11, i === this.tab ? '#f0ece2' : '#70707c');
+    // Laid out by measured width rather than a fixed pitch: six labels of very
+    // different lengths do not sit on a grid without gaps you can drive a bus
+    // through.
+    let tx = 8;
+    for (let i = 0; i < this.tabs.length; i++) {
+      const w = textWidth(this.tabs[i]) + 8;
+      if (i === this.tab) rect(tx - 2, 8, w, 12, '#1e2630');
+      text(this.tabs[i], tx + 2, 11, i === this.tab ? '#f0ece2' : '#70707c');
+      tx += w + 2;
     }
     rect(8, 22, W - 16, 1, '#3a3a44');
 
-    if (this.tab === 0) {
+    if (this.tab === TAB_MAP) { this.drawMap(); }
+    else if (this.tab === TAB_MOVES) { this.drawMoves(); }
+    else if (this.tab === 0) {
       const rows = [
         ['NAME', Player.name], ['LEVEL', Player.level],
         ['HP', `${Player.hp} / ${Player.maxHp}`],
@@ -4069,26 +4945,120 @@ const Menu = {
         text(rows[i][0], x, y, '#8a8a94');
         text(String(rows[i][1]), x + 52, y, '#e8e8ee');
       }
-    } else if (this.tab === 3) {
+    } else if (this.tab === TAB_OPTIONS) {
       text('PRESS Z TO OPEN OPTIONS.', 14, 32, '#9a9aa4');
     } else {
       const list = this.list();
       if (!list.length) {
-        text(this.tab === 1 ? 'NOTHING IN THE BAG.' : 'NOTHING READ YET.', 14, 32, '#70707c');
+        text(this.tab === TAB_BAG ? 'NOTHING IN THE BAG.' : 'NOTHING READ YET.', 14, 32, '#70707c');
       }
       for (let i = 0; i < Math.min(11, list.length); i++) {
         const y = 30 + i * 11;
-        const name = this.tab === 1 ? list[i] : NOTES[list[i]].title;
-        text(name, 20, y, i === this.cursor ? '#f0ece2' : '#9a9aa4');
-        if (this.tab === 1) text('x' + Player.bag[list[i]], W - 34, y, '#8a8a94');
+        const name = this.tab === TAB_BAG ? list[i] : NOTES[list[i]].title;
+        // In the bag, what you cannot use out here is dimmed - the same tell
+        // the battle menu uses for a move you cannot pay for.
+        const usable = this.tab !== TAB_BAG || (DATA.items[list[i]] || {}).field;
+        const lit = i === this.cursor;
+        text(name, 20, y, usable ? (lit ? '#f0ece2' : '#9a9aa4') : (lit ? '#9a9aa4' : '#63636e'));
+        if (this.tab === TAB_BAG) text('x' + Player.bag[list[i]], W - 34, y, '#8a8a94');
         if (i === this.cursor) text('>', 12, y, '#e8d24a');
       }
-      if (this.tab === 1 && list.length) {
+      if (this.tab === TAB_BAG && list.length) {
         const it = DATA.items[list[this.cursor]];
         if (it) text(wrap(it.effect || '', W - 30)[0], 14, H - 16, '#8a8a94');
+        text(`HP ${Player.hp}/${Player.maxHp}   PP ${Player.pp}/${Player.maxPp}`
+             + `   SP ${Player.sp}/${Player.maxSp}`, 14, H - 27, '#6e6e7a');
       }
     }
-    text('C / X  CLOSE', W - textWidth('C / X  CLOSE') - 10, H - 12, '#5a5a66');
+    if (this.messageT > 0) {
+      const w = textWidth(this.message) + 12;
+      rect((W - w) / 2, H - 46, w, 13, '#12121a');
+      text(this.message, (W - w) / 2 + 6, H - 43, '#e8d24a');
+    }
+    const hint = this.tab === TAB_BAG ? 'Z  USE     C / X  CLOSE'
+               : this.tab === TAB_MAP ? '' : 'C / X  CLOSE';
+    if (hint) text(hint, W - textWidth(hint) - 10, H - 12, '#5a5a66');
+  },
+
+  // Every move he knows, with what it costs and what it does. This is the only
+  // place that prose lives now - a fight is not the moment to read.
+  drawMoves() {
+    const list = this.list();
+    const phys = Player.moves('physical').length;
+    for (let i = 0; i < Math.min(11, list.length); i++) {
+      const m = list[i], y = 29 + i * 11;
+      const lit = i === this.cursor;
+      const pool = i < phys ? 'PP' : 'SP';
+      const afford = (i < phys ? Player.pp : Player.sp) >= m.cost;
+      text(m.name.toUpperCase(), 18, y, lit ? '#f0ece2' : (afford ? '#9a9aa4' : '#63636e'));
+      const cost = `${m.cost} ${pool}`;
+      // Columns are tight: COUNTER STANCE is the longest name and Multi-Jab has
+      // the longest stat line, and all three have to fit across 320 pixels. The
+      // cost is right-aligned to its column so the names never collide with it.
+      text(cost, 128 - textWidth(cost), y, afford ? '#b8b8c2' : '#63636e');
+      text(moveStatLine(m), 136, y, lit ? '#b0b0ba' : '#7a7a86');
+      if (lit) text('>', 10, y, '#e8d24a');
+    }
+    const sel = list[this.cursor];
+    if (sel && sel.notes) {
+      const lines = wrap(sel.notes, W - 28);
+      for (let i = 0; i < Math.min(2, lines.length); i++)
+        text(lines[i], 14, H - 24 + i * 10, '#8a8a94');
+    }
+  },
+
+  // A map of Limpo, in the town-map idiom: terrain, a road, and a marker for
+  // every place he has actually been. Everywhere he has not is under cloud.
+  drawMap() {
+    if (!WorldMap.built) WorldMap.build();
+    const ox = 16, oy = 26;
+    cx.drawImage(WorldMap.cv, ox, oy);
+
+    const here = routeIndexOf(World.id);
+    // Cloud over the legs not yet walked, cut back leg by leg as he goes. It is
+    // a ragged edge rather than a straight one, so it reads as weather.
+    const reached = Player.seen.filter(i => ROUTE[i] && ROUTE[i].at);
+    const frontier = reached.length
+      ? Math.max(...reached.map(i => ROUTE[i].at[0])) + 26 : 0;
+    cx.save();
+    cx.beginPath(); cx.rect(ox, oy, MAP_W, MAP_H); cx.clip();
+    for (let y = 0; y < MAP_H; y += 2) {
+      const jag = Math.round(Math.sin(y * 0.21) * 5 + Math.sin(y * 0.07) * 4);
+      const x0 = frontier + jag;
+      if (x0 >= MAP_W) continue;
+      rect(ox + x0, oy + y, MAP_W - x0, 2, 'rgba(10,12,18,0.95)');
+      rect(ox + x0, oy + y, 2, 2, 'rgba(70,76,90,0.6)');
+    }
+    cx.restore();
+    rect(ox - 1, oy - 1, MAP_W + 2, 1, '#3a3a44');
+    rect(ox - 1, oy + MAP_H, MAP_W + 2, 1, '#3a3a44');
+    rect(ox - 1, oy - 1, 1, MAP_H + 2, '#3a3a44');
+    rect(ox + MAP_W, oy - 1, 1, MAP_H + 2, '#3a3a44');
+
+    for (let i = 0; i < ROUTE.length; i++) {
+      const a = ROUTE[i];
+      if (!a.at || !Player.seen.includes(i)) continue;
+      const px = ox + a.at[0], py = oy + a.at[1];
+      WorldMap.marker(px, py, a.kind);
+      if (a.short) {
+        const w = textWidth(a.short), ly = py + (a.kind === 'orchard' ? 6 : 4);
+        rect(px - w / 2 - 2, ly, w + 4, 9, 'rgba(8,10,14,0.76)');
+        text(a.short, px - w / 2, ly + 1, i === here ? '#f0ece2' : '#b6b2a6');
+      }
+      if (i === here && Math.sin(Time.t * 5) > -0.2) {
+        rect(px - 6, py - 12, 3, 1, '#e8d24a'); rect(px - 6, py - 12, 1, 3, '#e8d24a');
+        rect(px + 4, py - 12, 3, 1, '#e8d24a'); rect(px + 6, py - 12, 1, 3, '#e8d24a');
+        rect(px - 6, py + 3, 3, 1, '#e8d24a');  rect(px - 6, py + 1, 1, 3, '#e8d24a');
+        rect(px + 4, py + 3, 3, 1, '#e8d24a');  rect(px + 6, py + 1, 1, 3, '#e8d24a');
+      }
+    }
+
+    // The one place on his walk that this map has no square for.
+    const label = here >= 0 && ROUTE[here].at ? ROUTE[here].label
+                : here >= 0 ? 'NOT ON ANY MAP' : '';
+    if (label) text(label, 16, H - 12, here >= 0 && ROUTE[here].at ? '#e8d24a' : '#8a7a4a');
+    const count = `${reached.length} / ${ROUTE.filter(a => a.at).length}`;
+    text(count, W - textWidth(count) - 16, H - 12, '#5a5a66');
   },
 };
 
@@ -4222,6 +5192,10 @@ const NOTES = {
 const SHOP_STOCK = ['Spray', 'Clean Rag'];
 const ONDO_STOCK = ['Spray', 'Spray II', 'Chalk Tablet', 'Bitter Tonic',
                     'Clean Rag', 'Knuckle Wrap', 'Cold Compress', 'Dropped Call'];
+// Food, not equipment. Cheaper per point than the market row and he knows it.
+const GROCER_STOCK = ['Spray', 'Chalk Tablet', 'Bitter Tonic'];
+const STOCKS = { ondo: ONDO_STOCK, grocer: GROCER_STOCK };
+const SHOP_TITLES = { ondo: 'ONDO', grocer: 'GROCER' };
 
 // --- NPC lines ---------------------------------------------------------
 // Limpo villagers attach a redundant location to statements about time.
@@ -4327,6 +5301,12 @@ const NPCS = {
             'Pay is good because the walk is bad.'];
   },
   ondo_shopkeeper: () => (['Whole market row, and it is mostly me now.']),
+  // He has heard about the note. He is not going to be the one to mention it.
+  ondo_grocer: () => ([
+    'Come in. Mind the step, it has been like that for years.',
+    'You have been up the row, then. Talked to him.',
+    'He is not wrong, is the thing. That is what gets me.',
+  ]),
   ondo_innkeeper: () => (['Bed is upstairs. Sign the book if you like. Nobody reads it.']),
   // Sidequest 6. Three overdue rents. Two pay. One has left.
   landlady: () => {
@@ -4396,10 +5376,10 @@ function interact() {
 
   if (target.kind === 'npc') {
     if (target.shop) {
-      const stock = target.shop === 'ondo' ? ONDO_STOCK : SHOP_STOCK;
-      const lines = target.shop === 'ondo' ? NPCS.ondo_shopkeeper() : NPCS.shopkeeper();
+      const stock = STOCKS[target.shop] || SHOP_STOCK;
+      const lines = (NPCS[target.key] || NPCS.shopkeeper)();
       Dialogue.say(lines.map(t => ({ text: t, speaker: 'npc' })), () => {
-        Shop.start(stock, target.shop === 'ondo' ? 'ONDO' : 'OKOBO'); Game.mode = 'shop';
+        Shop.start(stock, SHOP_TITLES[target.shop] || 'OKOBO'); Game.mode = 'shop';
       });
       return;
     }
@@ -4497,7 +5477,15 @@ function interact() {
                    () => Story.memorialFight());
       return;
     case 'machine':
-      Dialogue.say([{ text: 'A machine, stopped mid-cycle. Cold all the way through.', speaker: 'system' }]);
+      Dialogue.say(World.id === 'kestrel_boiler'
+        ? [{ text: 'A boiler. It is the only warm thing left in the works.', speaker: 'system' },
+            { text: 'Nobody has been down here to light it.', speaker: 'system' }]
+        : [{ text: 'A machine, stopped mid-cycle. Cold all the way through.', speaker: 'system' }]);
+      return;
+    case 'desk':
+      Dialogue.say([{ text: 'A desk, squared away. Pen lined up with the edge.', speaker: 'system' },
+                    { text: 'Somebody signed every one of those notices from this chair.', speaker: 'system' },
+                    { text: 'Then somebody signed theirs.', speaker: 'system' }]);
       return;
     case 'door7':
       if (Player.flags.roomSeven) {
@@ -4850,6 +5838,7 @@ const Game = {
   startNewGame() {
     Player.level = 1; Player.exp = 0; Player.money = 0;
     Player.bag = {}; Player.flags = {}; Player.notes = []; Player.collectibles = 0;
+    Player.seen = [];
     Player.restore();
     Player.addItem('Spray', 2);
     Save.clear();
@@ -4882,8 +5871,10 @@ const Game = {
       if (Input.hit('ok')) { this.mode = 'title'; Title.enter(); }
       return;
     }
-    if (this.mode === 'shop') { Shop.update(dt); if (!Shop.open) this.mode = 'field'; return; }
-    if (this.mode === 'menu') { Menu.update(dt); if (!Menu.open) this.mode = 'field'; return; }
+    if (this.mode === 'shop') { Shop.update(dt); if (!Shop.open && this.mode === 'shop') this.mode = 'field'; return; }
+    // The mode check matters: OPTIONS closes the menu *and* sets mode itself, so
+    // an unconditional fall-back to 'field' here would immediately undo it.
+    if (this.mode === 'menu') { Menu.update(dt); if (!Menu.open && this.mode === 'menu') this.mode = 'field'; return; }
     if (this.mode === 'battle') { Battle.update(dt); return; }
 
     // field

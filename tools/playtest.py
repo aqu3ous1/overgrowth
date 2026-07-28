@@ -513,7 +513,19 @@ def main():
             errors.append("the winter road does not reach Kestrel Works")
         shot("25-kestrel-yard")
 
-        idle(page); put(page, "kestrel_yard", 12, 6, "up")
+        # A player walking the wall must be able to find the way in. The first
+        # build of this yard had one working tile out of nineteen, and the
+        # report was "there is nowhere to go".
+        ways_in = 0
+        for wx in range(2, 21):
+            put(page, "kestrel_yard", wx, 6, "up")
+            hold(page, "ArrowUp", 420)
+            if page.evaluate("() => World.id === 'kestrel_f1'"):
+                ways_in += 1
+        if ways_in < 3:
+            errors.append(f"the factory entrance is findable from only {ways_in} tile(s)")
+
+        idle(page); put(page, "kestrel_yard", 11, 6, "up")
         walk(page, "ArrowUp", 700, "kestrel_f1")
         if not page.evaluate("() => World.id === 'kestrel_f1'"):
             errors.append("the factory door does not open")
@@ -521,11 +533,11 @@ def main():
 
         # every layoff note must be readable, in order
         notes = [("kestrel_f1", 4, 5, "notice_year_one"),
-                 ("kestrel_f2", 6, 5, "notice_year_four"),
-                 ("kestrel_f2", 14, 8, "shift_schedule"),
+                 ("kestrel_boiler", 11, 4, "safety_inspection"),
+                 ("kestrel_f2", 6, 4, "notice_year_four"),
+                 ("kestrel_office", 3, 5, "shift_schedule"),
                  ("kestrel_f3", 5, 5, "in_a_locker"),
-                 ("kestrel_f3", 11, 5, "safety_inspection"),
-                 ("kestrel_f3", 17, 5, "last_one_out")]
+                 ("kestrel_locker", 12, 7, "last_one_out")]
         for room, tx, ty, note in notes:
             idle(page); put(page, room, tx, ty, "up")
             press(page, "z"); page.wait_for_timeout(250)
@@ -545,7 +557,7 @@ def main():
 
         # sidequest 13: the breaker by the gate, which nobody asks about and
         # nobody thanks him for. Only readable after the last note.
-        idle(page); put(page, "kestrel_yard", 11, 7, "up"); press(page, "z"); advance(page)
+        idle(page); put(page, "kestrel_yard", 8, 7, "up"); press(page, "z"); advance(page)
         if not page.evaluate("() => !!Player.flags.kestrelDark"):
             errors.append("the yard lights cannot be switched off")
 
@@ -578,7 +590,9 @@ def main():
                  ("ondo", "boarding_house"), ("ondo", "records_room"),
                  ("ondo", "winter_road"), ("winter_road", "kestrel_yard"),
                  ("kestrel_yard", "kestrel_f1"), ("kestrel_f1", "kestrel_f2"),
-                 ("kestrel_f2", "kestrel_f3")]
+                 ("kestrel_f2", "kestrel_f3"), ("kestrel_f1", "kestrel_boiler"),
+                 ("kestrel_f2", "kestrel_office"), ("kestrel_f3", "kestrel_locker"),
+                 ("ondo", "ondo_grocer")]
         for a, b in pairs:
             for src, dst in ((a, b), (b, a)):
                 ok = page.evaluate("""([src, dst]) => {
@@ -629,15 +643,86 @@ def main():
             errors.append(f"title menu is wrong: {opts}")
 
         # --- menus
-        page.evaluate("() => { Game.mode='field'; World.load('okobo'); }")
+        page.evaluate("() => { Game.mode='field'; World.load('ondo'); }")
         page.wait_for_timeout(300)
         press(page, "c")
         page.wait_for_timeout(300)
         shot("17-menu")
-        press(page, "ArrowRight")
-        page.wait_for_timeout(200)
-        shot("18-menu-bag")
+
+        def to_tab(want):
+            for _ in range(len(page.evaluate("() => Menu.tabs"))):
+                if page.evaluate("() => Menu.tab") == want:
+                    return True
+                press(page, "ArrowRight")
+                page.wait_for_timeout(140)
+            return False
+
+        to_tab(1); shot("18-menu-bag")
+
+        # Every restorative must be usable out here, and nothing else.
+        page.evaluate("() => { Player.addItem('Spray', 2); Player.addItem('Knuckle Wrap', 1);"
+                      " Player.hp = 5; Menu.cursor = 0; }")
+        idx = page.evaluate("() => Object.keys(Player.bag).indexOf('Spray')")
+        for _ in range(idx):
+            press(page, "ArrowDown")
+        press(page, "z")
+        page.wait_for_timeout(300)
+        if page.evaluate("() => Player.hp") <= 5:
+            errors.append("a healing item cannot be used from the field menu")
+        page.evaluate("() => { Player.bag = {'Knuckle Wrap': 1}; Menu.cursor = 0; }")
+        press(page, "z")
+        page.wait_for_timeout(250)
+        if page.evaluate("() => (Player.bag['Knuckle Wrap'] || 0)") != 1:
+            errors.append("a battle-only item was spent from the field menu")
+
+        to_tab(2); shot("31-menu-moves")
+        if not page.evaluate("() => Menu.list().length"):
+            errors.append("the MOVES tab lists nothing")
+        to_tab(3); shot("32-menu-map")
+        if not page.evaluate("() => Player.seen.length"):
+            errors.append("the map recorded nowhere the player has been")
+
+        # OPTIONS from the pause menu must open options, not close the menu.
+        to_tab(5)
+        press(page, "z")
+        page.wait_for_timeout(300)
+        if page.evaluate("() => Game.mode") != "options":
+            errors.append("Z on the pause menu's OPTIONS tab does not open options")
+        press(page, "x")
+        page.wait_for_timeout(300)
+        if page.evaluate("() => Game.mode") != "menu":
+            errors.append("leaving options does not return to the pause menu")
         press(page, "c")
+
+        # --- turn order. SPD decides, and a move's priority overrides it.
+        page.evaluate("""() => {
+          Game.mode = 'field'; World.load('okobo');
+          Player.level = 12; Player.exp = Player.expToReach(12); Player.restore();
+          const e = Battle.makeEnemy('Yard Dog', {level: 2});
+          Game.mode = 'battle'; Battle.start(e, null, () => { Game.mode = 'field'; });
+        }""")
+        page.wait_for_timeout(400)
+        order = page.evaluate("""() => {
+          const wind = DATA.moves.physical.find(m => m.priority === 'last');
+          const rush = DATA.moves.physical.find(m => m.priority === 'first');
+          const plain = DATA.moves.physical.find(m => !m.priority);
+          Battle.enemy.spd = 1;                       // player is far faster
+          const fastWins = Battle.playerFirst(plain);
+          Battle.enemy.spd = 9999;                    // player is far slower
+          const slowLoses = Battle.playerFirst(plain);
+          return { fastWins, slowLoses,
+                   windLast: wind ? Battle.playerFirst(wind) : null,
+                   rushFirst: rush ? Battle.playerFirst(rush) : null };
+        }""")
+        if not order["fastWins"]:
+            errors.append("SPD does not win the turn: the faster side did not act first")
+        if order["slowLoses"]:
+            errors.append("SPD is ignored: the slower player still acted first")
+        if order["windLast"] is not False:
+            errors.append("a 'last' priority move did not act last")
+        if order["rushFirst"] is not True:
+            errors.append("a 'first' priority move did not act first")
+        page.evaluate("() => { Battle.active = false; Game.mode = 'field'; }")
 
         browser.close()
 

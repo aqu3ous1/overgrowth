@@ -9,7 +9,7 @@ const Save = {
     const d = {
       name: Player.name, level: Player.level, exp: Player.exp,
       hp: Player.hp, pp: Player.pp, sp: Player.sp, money: Player.money,
-      bag: Player.bag, flags: Player.flags, notes: Player.notes,
+      bag: Player.bag, flags: Player.flags, notes: Player.notes, seen: Player.seen,
       collectibles: Player.collectibles, room: World.id,
       x: Math.round(Player.x), y: Math.round(Player.y), stamp: Date.now(),
     };
@@ -25,7 +25,7 @@ const Save = {
     Object.assign(Player, {
       name: d.name, level: d.level, exp: d.exp, hp: d.hp, pp: d.pp, sp: d.sp,
       money: d.money, bag: d.bag || {}, flags: d.flags || {}, notes: d.notes || [],
-      collectibles: d.collectibles || 0,
+      collectibles: d.collectibles || 0, seen: d.seen || [],
     });
     World.load(d.room || 'okobo');
     Player.x = d.x; Player.y = d.y;
@@ -121,6 +121,9 @@ const Options = {
       this.save();
       Audio_.sfx('cancel');
       if (this.from === 'title') { Game.mode = 'title'; Title.enter(); }
+      // Back to where they were, not to the field - they opened this from the
+      // pause menu and expect to land there again.
+      else if (this.from === 'menu') { Menu.open = true; Game.mode = 'menu'; }
       else { Game.mode = 'field'; }
     };
     if (Input.hit('no')) { leave(); return; }
@@ -209,44 +212,246 @@ const NameEntry = {
   },
 };
 
+// The route, in the order it is walked, and where each leg sits on the map of
+// Limpo. `at` is in map space (288x112); `kind` picks the marker. The first two
+// legs have no `at` on purpose — the bedroom and the Gallery are not places in
+// this world, and the map does not pretend otherwise.
+const ROUTE = [
+  { label: 'HOME',            rooms: ['bedroom'] },
+  { label: 'THE GALLERY',     rooms: ['void', 'gallery_ext', 'gallery_hall', 'gallery_room',
+                                      'gallery_corridor'] },
+  { label: 'OKOBO',           rooms: ['arrival', 'okobo', 'shop', 'inn', 'house'],
+    at: [56, 82], kind: 'town', short: 'OKOBO' },
+  { label: 'THE NORTH ROAD',  rooms: ['north_road'], at: [74, 70], kind: 'road' },
+  { label: 'SUNKEN ORCHARD',  rooms: ['orchard1', 'orchard2', 'orchard3', 'clearing'],
+    at: [100, 60], kind: 'orchard', short: 'ORCHARD' },
+  { label: 'THE ROAD TO ONDO', rooms: ['road_ondo'], at: [124, 50], kind: 'road' },
+  { label: 'ONDO',            rooms: ['ondo', 'ondo_shop', 'ondo_inn', 'ondo_grocer',
+                                      'boarding_house', 'records_room'],
+    at: [148, 40], kind: 'city', short: 'ONDO' },
+  { label: 'THE WINTER ROAD', rooms: ['winter_road'], at: [162, 24], kind: 'road' },
+  { label: 'KESTREL WORKS',   rooms: ['kestrel_yard', 'kestrel_f1', 'kestrel_f2', 'kestrel_f3',
+                                      'kestrel_boiler', 'kestrel_office', 'kestrel_locker'],
+    at: [190, 13], kind: 'works', short: 'KESTREL' },
+];
+function routeIndexOf(roomId) {
+  return ROUTE.findIndex(a => a.rooms.includes(roomId));
+}
+
+// --- the map of Limpo --------------------------------------------------
+// Painted once into an offscreen canvas and blitted, because the terrain is
+// thousands of little rects and redrawing it every frame to show a static
+// picture would be silly.
+const MAP_W = 288, MAP_H = 112;
+const MAP_SNOW = 30;                 // everything north of this line is winter
+
+const WorldMap = {
+  cv: null, cx: null, built: 0,
+
+  // Limpo is a lumpy peninsula. Ellipses rather than a traced outline: this has
+  // to read as a coastline at 288 pixels, not survive being zoomed in on.
+  land(x, y) {
+    const blob = (cx_, cy_, rx, ry) => {
+      const dx = (x - cx_) / rx, dy = (y - cy_) / ry;
+      return dx * dx + dy * dy <= 1;
+    };
+    return blob(96, 74, 86, 40) || blob(150, 46, 78, 34) ||
+           blob(196, 20, 62, 22) || blob(64, 52, 44, 26) || blob(120, 30, 46, 22);
+  },
+
+  build() {
+    if (!this.cv) {
+      this.cv = document.createElement('canvas');
+      this.cv.width = MAP_W; this.cv.height = MAP_H;
+      this.cx = this.cv.getContext('2d');
+    }
+    const c = this.cx;
+    c.clearRect(0, 0, MAP_W, MAP_H);
+    c.fillStyle = '#13202b'; c.fillRect(0, 0, MAP_W, MAP_H);      // the sea
+
+    // Terrain, two pixels at a time. Snow in the north, marsh where the orchard
+    // drowned, and a coastal band so the edge is not a hard cut.
+    for (let y = 0; y < MAP_H; y += 2) {
+      for (let x = 0; x < MAP_W; x += 2) {
+        if (!this.land(x, y)) continue;
+        const n = hash2(x * 3 + 1, y * 7 + 2);
+        const edge = !this.land(x + 4, y) || !this.land(x - 4, y)
+                  || !this.land(x, y + 4) || !this.land(x, y - 4);
+        const marsh = Math.hypot(x - 100, (y - 62) * 1.7) < 22;
+        // The snowline wanders. A straight one reads as a stripe of paint
+        // rather than as the point where the country stops thawing.
+        const snowAt = MAP_SNOW + Math.sin(x * 0.055) * 7 + Math.sin(x * 0.017) * 6
+                     + (n > 0.7 ? 2 : 0);
+        let col;
+        if (edge) col = n > 0.5 ? '#5f5a44' : '#6d6650';           // sand
+        else if (y < snowAt) col = n > 0.55 ? '#c2ccd6' : '#a8b3bf';
+        else if (y < snowAt + 11) col = n > 0.5 ? '#6f7a68' : '#5e6a5a';  // thaw
+        else if (marsh) col = n > 0.5 ? '#3c6274' : '#33566a';
+        else col = n > 0.62 ? '#4c7d3e' : (n > 0.28 ? '#3f6a34' : '#375c2d');
+        c.fillStyle = col; c.fillRect(x, y, 2, 2);
+      }
+    }
+
+    // The road, drawn as the walk itself: leg to leg, in order.
+    const pts = ROUTE.filter(a => a.at).map(a => a.at);
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
+      const steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+      for (let s = 0; s <= steps; s++) {
+        if (s % 4 === 3) continue;                                 // dashed
+        const px = Math.round(x0 + (x1 - x0) * s / steps);
+        const py = Math.round(y0 + (y1 - y0) * s / steps);
+        // A dark pixel under each dash, so the road stays legible crossing
+        // both the green and the snow.
+        c.fillStyle = 'rgba(24,20,12,0.55)'; c.fillRect(px, py + 1, 1, 1);
+        c.fillStyle = '#b09a62'; c.fillRect(px, py, 1, 1);
+      }
+    }
+
+    // Yettallia, across the water. No label: he has only heard about it.
+    c.fillStyle = '#232a33';
+    for (let y = 0; y < MAP_H; y += 2) {
+      const w = 16 + Math.round(Math.sin(y * 0.09) * 5);
+      c.fillRect(MAP_W - w, y, w, 2);
+    }
+    c.fillStyle = '#2c343e'; c.fillRect(MAP_W - 3, 0, 3, MAP_H);
+    this.built = 1;
+  },
+
+  // Markers are drawn live, not baked, because which ones are visible changes.
+  marker(px, py, kind) {
+    switch (kind) {
+      case 'town':
+        rect(px - 5, py - 3, 4, 5, '#c8bda0'); rect(px - 5, py - 4, 4, 1, '#8a6a4a');
+        rect(px, py - 5, 5, 7, '#d8cdb0');     rect(px, py - 6, 5, 1, '#8a6a4a');
+        break;
+      case 'city':
+        for (let i = 0; i < 4; i++) {
+          const h = 5 + (i % 2) * 4;
+          rect(px - 7 + i * 4, py + 2 - h, 3, h, '#ded4c0');
+          rect(px - 7 + i * 4, py + 1 - h, 3, 1, '#9a8a6a');
+        }
+        break;
+      case 'orchard':
+        for (const [ox, oy] of [[-5, 0], [0, -3], [5, 1]]) {
+          rect(px + ox - 2, py + oy - 4, 5, 4, '#2f6a52');
+          rect(px + ox - 1, py + oy, 2, 3, '#4a3a24');
+        }
+        break;
+      case 'works':
+        rect(px - 7, py - 4, 14, 6, '#5b5f66');
+        rect(px - 7, py - 4, 14, 1, '#767b83');
+        rect(px + 2, py - 11, 3, 8, '#4a4e55');
+        rect(px + 2, py - 12, 3, 1, '#767b83');
+        break;
+      default:                                   // a road, and nothing on it
+        rect(px - 1, py - 1, 3, 3, '#9a8a5a');
+        rect(px, py, 1, 1, '#2a2418');
+    }
+  },
+};
+
 // --- pause menu --------------------------------------------------------
+const TAB_STATUS = 0, TAB_BAG = 1, TAB_MOVES = 2, TAB_MAP = 3, TAB_NOTES = 4, TAB_OPTIONS = 5;
+
 const Menu = {
-  open: false, tab: 0, cursor: 0, rep: {}, tabs: ['STATUS', 'BAG', 'NOTES', 'OPTIONS'],
-  toggle() { this.open = !this.open; this.cursor = 0; Audio_.sfx(this.open ? 'ok' : 'cancel'); },
+  open: false, tab: 0, cursor: 0, rep: {},
+  tabs: ['STATUS', 'BAG', 'MOVES', 'MAP', 'NOTES', 'OPTIONS'],
+  message: '', messageT: 0,
+  toggle() { this.open = !this.open; this.cursor = 0; this.messageT = 0; Audio_.sfx(this.open ? 'ok' : 'cancel'); },
   update(dt) {
+    this.messageT = Math.max(0, this.messageT - dt);
     if (Input.hit('menu') || Input.hit('no')) { this.toggle(); return; }
-    if (Input.repeat('left', this.rep)) { this.tab = (this.tab + 3) % 4; this.cursor = 0; Audio_.sfx('blip'); }
-    if (Input.repeat('right', this.rep)) { this.tab = (this.tab + 1) % 4; this.cursor = 0; Audio_.sfx('blip'); }
-    if (this.tab === 3 && Input.hit('ok')) {
-      this.open = false; Options.enter('field'); Game.mode = 'options'; Audio_.sfx('ok'); return;
+    const n = this.tabs.length;
+    if (Input.repeat('left', this.rep)) { this.tab = (this.tab + n - 1) % n; this.cursor = 0; this.messageT = 0; Audio_.sfx('blip'); }
+    if (Input.repeat('right', this.rep)) { this.tab = (this.tab + 1) % n; this.cursor = 0; this.messageT = 0; Audio_.sfx('blip'); }
+    // Read the confirm key ONCE. Input.hit consumes, so a second call in a
+    // later branch always sees false - that is how the BAG tab ended up doing
+    // nothing while the NOTES branch above it silently ate the press.
+    const ok = Input.hit('ok');
+    if (this.tab === TAB_OPTIONS && ok) {
+      this.open = false; Options.enter('menu'); Game.mode = 'options'; Audio_.sfx('ok'); return;
     }
     const list = this.list();
     if (list.length) {
       if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + list.length) % list.length; Audio_.sfx('blip'); }
       if (Input.repeat('down', this.rep)) { this.cursor = (this.cursor + 1) % list.length; Audio_.sfx('blip'); }
-      if (Input.hit('ok') && this.tab === 2) {
+      if (ok && this.tab === TAB_NOTES) {
         const note = list[this.cursor];
         Audio_.sfx('ok');
         this.open = false;
         Dialogue.say(NOTES[note].pages.map(t => ({ text: t, speaker: 'system' })));
       }
+      if (ok && this.tab === TAB_BAG) this.useFromBag(list[this.cursor]);
     }
   },
+
+  // Restoratives work out here too. Everything else in the bag is either a
+  // stat stage, which does not survive leaving a fight, or a debuff with
+  // nothing to aim at.
+  useFromBag(name) {
+    const it = DATA.items[name];
+    if (!it) return;
+    if (!it.field) {
+      this.message = it.battle ? 'Only in a fight.' : 'Nothing to use it on.';
+      this.messageT = 1.6;
+      Audio_.sfx('wrong');
+      return;
+    }
+    const full = (it.heal && Player.hp >= Player.maxHp)
+              || (it.pp && Player.pp >= Player.maxPp)
+              || (it.sp && Player.sp >= Player.maxSp);
+    if (full) {
+      this.message = 'He does not need it yet.';
+      this.messageT = 1.6;
+      Audio_.sfx('wrong');
+      return;
+    }
+    Player.useItem(name);
+    let got = 0, pool = 'HP';
+    if (it.heal) {
+      const before = Player.hp;
+      Player.hp = Math.min(Player.maxHp, Player.hp + (it.heal === 'full' ? Player.maxHp : it.heal));
+      got = Player.hp - before;
+    } else if (it.pp) {
+      const before = Player.pp;
+      Player.pp = Math.min(Player.maxPp, Player.pp + it.pp);
+      got = Player.pp - before; pool = 'PP';
+    } else if (it.sp) {
+      const before = Player.sp;
+      Player.sp = Math.min(Player.maxSp, Player.sp + it.sp);
+      got = Player.sp - before; pool = 'SP';
+    }
+    Audio_.sfx('heal');
+    this.message = `Recovered ${got} ${pool}.`;
+    this.messageT = 1.6;
+    // The list just got shorter; do not leave the cursor past the end.
+    const n = this.list().length;
+    if (this.cursor >= n) this.cursor = Math.max(0, n - 1);
+  },
   list() {
-    if (this.tab === 1) return Object.keys(Player.bag);
-    if (this.tab === 2) return Player.notes;
+    if (this.tab === TAB_BAG) return Object.keys(Player.bag);
+    if (this.tab === TAB_MOVES) return Player.moves('physical').concat(Player.moves('special'));
+    if (this.tab === TAB_NOTES) return Player.notes;
     return [];
   },
   draw() {
     rect(0, 0, W, H, 'rgba(4,4,8,0.88)');
-    for (let i = 0; i < 4; i++) {
-      const x = 10 + i * 76;
-      if (i === this.tab) rect(x - 4, 8, 70, 12, '#1e2630');
-      text(this.tabs[i], x, 11, i === this.tab ? '#f0ece2' : '#70707c');
+    // Laid out by measured width rather than a fixed pitch: six labels of very
+    // different lengths do not sit on a grid without gaps you can drive a bus
+    // through.
+    let tx = 8;
+    for (let i = 0; i < this.tabs.length; i++) {
+      const w = textWidth(this.tabs[i]) + 8;
+      if (i === this.tab) rect(tx - 2, 8, w, 12, '#1e2630');
+      text(this.tabs[i], tx + 2, 11, i === this.tab ? '#f0ece2' : '#70707c');
+      tx += w + 2;
     }
     rect(8, 22, W - 16, 1, '#3a3a44');
 
-    if (this.tab === 0) {
+    if (this.tab === TAB_MAP) { this.drawMap(); }
+    else if (this.tab === TAB_MOVES) { this.drawMoves(); }
+    else if (this.tab === 0) {
       const rows = [
         ['NAME', Player.name], ['LEVEL', Player.level],
         ['HP', `${Player.hp} / ${Player.maxHp}`],
@@ -263,26 +468,120 @@ const Menu = {
         text(rows[i][0], x, y, '#8a8a94');
         text(String(rows[i][1]), x + 52, y, '#e8e8ee');
       }
-    } else if (this.tab === 3) {
+    } else if (this.tab === TAB_OPTIONS) {
       text('PRESS Z TO OPEN OPTIONS.', 14, 32, '#9a9aa4');
     } else {
       const list = this.list();
       if (!list.length) {
-        text(this.tab === 1 ? 'NOTHING IN THE BAG.' : 'NOTHING READ YET.', 14, 32, '#70707c');
+        text(this.tab === TAB_BAG ? 'NOTHING IN THE BAG.' : 'NOTHING READ YET.', 14, 32, '#70707c');
       }
       for (let i = 0; i < Math.min(11, list.length); i++) {
         const y = 30 + i * 11;
-        const name = this.tab === 1 ? list[i] : NOTES[list[i]].title;
-        text(name, 20, y, i === this.cursor ? '#f0ece2' : '#9a9aa4');
-        if (this.tab === 1) text('x' + Player.bag[list[i]], W - 34, y, '#8a8a94');
+        const name = this.tab === TAB_BAG ? list[i] : NOTES[list[i]].title;
+        // In the bag, what you cannot use out here is dimmed - the same tell
+        // the battle menu uses for a move you cannot pay for.
+        const usable = this.tab !== TAB_BAG || (DATA.items[list[i]] || {}).field;
+        const lit = i === this.cursor;
+        text(name, 20, y, usable ? (lit ? '#f0ece2' : '#9a9aa4') : (lit ? '#9a9aa4' : '#63636e'));
+        if (this.tab === TAB_BAG) text('x' + Player.bag[list[i]], W - 34, y, '#8a8a94');
         if (i === this.cursor) text('>', 12, y, '#e8d24a');
       }
-      if (this.tab === 1 && list.length) {
+      if (this.tab === TAB_BAG && list.length) {
         const it = DATA.items[list[this.cursor]];
         if (it) text(wrap(it.effect || '', W - 30)[0], 14, H - 16, '#8a8a94');
+        text(`HP ${Player.hp}/${Player.maxHp}   PP ${Player.pp}/${Player.maxPp}`
+             + `   SP ${Player.sp}/${Player.maxSp}`, 14, H - 27, '#6e6e7a');
       }
     }
-    text('C / X  CLOSE', W - textWidth('C / X  CLOSE') - 10, H - 12, '#5a5a66');
+    if (this.messageT > 0) {
+      const w = textWidth(this.message) + 12;
+      rect((W - w) / 2, H - 46, w, 13, '#12121a');
+      text(this.message, (W - w) / 2 + 6, H - 43, '#e8d24a');
+    }
+    const hint = this.tab === TAB_BAG ? 'Z  USE     C / X  CLOSE'
+               : this.tab === TAB_MAP ? '' : 'C / X  CLOSE';
+    if (hint) text(hint, W - textWidth(hint) - 10, H - 12, '#5a5a66');
+  },
+
+  // Every move he knows, with what it costs and what it does. This is the only
+  // place that prose lives now - a fight is not the moment to read.
+  drawMoves() {
+    const list = this.list();
+    const phys = Player.moves('physical').length;
+    for (let i = 0; i < Math.min(11, list.length); i++) {
+      const m = list[i], y = 29 + i * 11;
+      const lit = i === this.cursor;
+      const pool = i < phys ? 'PP' : 'SP';
+      const afford = (i < phys ? Player.pp : Player.sp) >= m.cost;
+      text(m.name.toUpperCase(), 18, y, lit ? '#f0ece2' : (afford ? '#9a9aa4' : '#63636e'));
+      const cost = `${m.cost} ${pool}`;
+      // Columns are tight: COUNTER STANCE is the longest name and Multi-Jab has
+      // the longest stat line, and all three have to fit across 320 pixels. The
+      // cost is right-aligned to its column so the names never collide with it.
+      text(cost, 128 - textWidth(cost), y, afford ? '#b8b8c2' : '#63636e');
+      text(moveStatLine(m), 136, y, lit ? '#b0b0ba' : '#7a7a86');
+      if (lit) text('>', 10, y, '#e8d24a');
+    }
+    const sel = list[this.cursor];
+    if (sel && sel.notes) {
+      const lines = wrap(sel.notes, W - 28);
+      for (let i = 0; i < Math.min(2, lines.length); i++)
+        text(lines[i], 14, H - 24 + i * 10, '#8a8a94');
+    }
+  },
+
+  // A map of Limpo, in the town-map idiom: terrain, a road, and a marker for
+  // every place he has actually been. Everywhere he has not is under cloud.
+  drawMap() {
+    if (!WorldMap.built) WorldMap.build();
+    const ox = 16, oy = 26;
+    cx.drawImage(WorldMap.cv, ox, oy);
+
+    const here = routeIndexOf(World.id);
+    // Cloud over the legs not yet walked, cut back leg by leg as he goes. It is
+    // a ragged edge rather than a straight one, so it reads as weather.
+    const reached = Player.seen.filter(i => ROUTE[i] && ROUTE[i].at);
+    const frontier = reached.length
+      ? Math.max(...reached.map(i => ROUTE[i].at[0])) + 26 : 0;
+    cx.save();
+    cx.beginPath(); cx.rect(ox, oy, MAP_W, MAP_H); cx.clip();
+    for (let y = 0; y < MAP_H; y += 2) {
+      const jag = Math.round(Math.sin(y * 0.21) * 5 + Math.sin(y * 0.07) * 4);
+      const x0 = frontier + jag;
+      if (x0 >= MAP_W) continue;
+      rect(ox + x0, oy + y, MAP_W - x0, 2, 'rgba(10,12,18,0.95)');
+      rect(ox + x0, oy + y, 2, 2, 'rgba(70,76,90,0.6)');
+    }
+    cx.restore();
+    rect(ox - 1, oy - 1, MAP_W + 2, 1, '#3a3a44');
+    rect(ox - 1, oy + MAP_H, MAP_W + 2, 1, '#3a3a44');
+    rect(ox - 1, oy - 1, 1, MAP_H + 2, '#3a3a44');
+    rect(ox + MAP_W, oy - 1, 1, MAP_H + 2, '#3a3a44');
+
+    for (let i = 0; i < ROUTE.length; i++) {
+      const a = ROUTE[i];
+      if (!a.at || !Player.seen.includes(i)) continue;
+      const px = ox + a.at[0], py = oy + a.at[1];
+      WorldMap.marker(px, py, a.kind);
+      if (a.short) {
+        const w = textWidth(a.short), ly = py + (a.kind === 'orchard' ? 6 : 4);
+        rect(px - w / 2 - 2, ly, w + 4, 9, 'rgba(8,10,14,0.76)');
+        text(a.short, px - w / 2, ly + 1, i === here ? '#f0ece2' : '#b6b2a6');
+      }
+      if (i === here && Math.sin(Time.t * 5) > -0.2) {
+        rect(px - 6, py - 12, 3, 1, '#e8d24a'); rect(px - 6, py - 12, 1, 3, '#e8d24a');
+        rect(px + 4, py - 12, 3, 1, '#e8d24a'); rect(px + 6, py - 12, 1, 3, '#e8d24a');
+        rect(px - 6, py + 3, 3, 1, '#e8d24a');  rect(px - 6, py + 1, 1, 3, '#e8d24a');
+        rect(px + 4, py + 3, 3, 1, '#e8d24a');  rect(px + 6, py + 1, 1, 3, '#e8d24a');
+      }
+    }
+
+    // The one place on his walk that this map has no square for.
+    const label = here >= 0 && ROUTE[here].at ? ROUTE[here].label
+                : here >= 0 ? 'NOT ON ANY MAP' : '';
+    if (label) text(label, 16, H - 12, here >= 0 && ROUTE[here].at ? '#e8d24a' : '#8a7a4a');
+    const count = `${reached.length} / ${ROUTE.filter(a => a.at).length}`;
+    text(count, W - textWidth(count) - 16, H - 12, '#5a5a66');
   },
 };
 

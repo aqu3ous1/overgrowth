@@ -105,6 +105,20 @@ def best_attack(moves, stat, target_def, pp):
     return best
 
 
+def enemy_acts(enemy, boss, ehp, hp, hp_max, ps, afflicted):
+    """One enemy action plus the Homesick tick. Returns the player's new HP."""
+    falloff = 1.0
+    if boss and boss.get("damage_falloff_per_phase"):
+        phases = boss.get("phases", 1)
+        done = min(phases - 1, int((1 - ehp / enemy["HP"]) * phases))
+        falloff = max(0.4, 1 - boss["damage_falloff_per_phase"] * done)
+    if random.random() >= enemy.get("inaction_rate", 0.0):
+        hp -= damage(enemy["ATK"] * falloff, enemy["power"], ps["DEF"])
+    if afflicted:
+        hp -= hp_max * 0.05
+    return hp
+
+
 def fight(level, enemy, heal_items, homesick=False, boss=None, max_turns=60):
     """One fight. Returns (won, turns, attrition_fraction).
 
@@ -135,6 +149,19 @@ def fight(level, enemy, heal_items, homesick=False, boss=None, max_turns=60):
 
     while turns < max_turns:
         turns += 1
+
+        # Turn order: SPD decides, ties by a coin flip (docs/04). The player no
+        # longer always acts first, so on a slow build the enemy gets the
+        # opening hit and every fight costs a little more than it used to.
+        p_spd, e_spd = ps["SPD"], enemy["SPD"]
+        player_first = random.random() < 0.5 if p_spd == e_spd else p_spd > e_spd
+        if not player_first:
+            hp = enemy_acts(enemy, boss, ehp, hp, hp_max, ps, afflicted)
+            if hp <= 0:
+                return False, turns, (hp_max - hp + healed) / hp_max, stuck
+            enemy_done = True
+        else:
+            enemy_done = False
 
         # --- player acts
         acted = False
@@ -206,15 +233,10 @@ def fight(level, enemy, heal_items, homesick=False, boss=None, max_turns=60):
                 enemy["DEF"] = base_def * t["def_multiplier"][tier - 1]
                 enemy["ATK"] = base_atk * t["atk_multiplier"][tier - 1]
 
-        # --- enemy acts
-        falloff = 1.0
-        if boss and boss.get("damage_falloff_per_phase"):
-            phases = boss.get("phases", 1)
-            done = min(phases - 1, int((1 - ehp / enemy["HP"]) * phases))
-            falloff = max(0.4, 1 - boss["damage_falloff_per_phase"] * done)
-        if random.random() >= enemy.get("inaction_rate", 0.0):
-            hp -= damage(enemy["ATK"] * falloff, enemy["power"], ps["DEF"])
-        if afflicted:
+        # --- enemy acts, unless it already went first this turn
+        if not enemy_done:
+            hp = enemy_acts(enemy, boss, ehp, hp, hp_max, ps, afflicted)
+        elif afflicted:
             hp -= hp_max * 0.05
         if hp <= 0:
             return False, turns, 1.0, stuck

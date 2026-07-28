@@ -1,6 +1,6 @@
 # 19 — The Playable Build
 
-**0.3.0 — Acts 0 through 2, playable.** Title screen through **Main Boss 1**, in a browser, in one
+**0.3.1 — Acts 0 through 2, playable.** Title screen through **Main Boss 1**, in a browser, in one
 self-contained HTML file with no assets and no dependencies.
 
 ```
@@ -9,6 +9,62 @@ python3 tools/build_game.py     # game/src/*.js + data/*.json -> game/overgrowth
 python3 tools/playtest.py       # drives it in a real browser, fails on any error
 python3 tools/playtest.py --shots
 ```
+
+## 0.3.1 — turn order, and a map
+
+**Turn order was never implemented.** Every action sorted the same way: the player, then the enemy.
+SPD did nothing outside the crit roll, `Rush Down`'s "always acts first" was decoration, and
+`Wind-Up Punch` — a move whose entire identity is *hits harder but goes last* — was a more expensive
+Punch that lied about it in its own description. Actions now sort by SPD with ties on a coin flip,
+and a move's own priority overrides both ([04](04-battle-system.md)). Losing the roll says so:
+`KID winds up.` or `Fence Post moves first.`, because an action that silently happens later reads as
+a dropped input.
+
+`simulate.py` models it too, and it is not free — **attrition across the 49 regular matchups went
+from 15% to 19%.** Every matchup still lands inside target, so nothing needed retuning, but the
+figure is the honest cost of a rule the sim had also never been modelling.
+
+**A map of Limpo,** in the pause menu, in the town-map idiom: coastline, a snowline that wanders,
+the drowned patch where the orchard is, a dashed road, and a marker for every leg he has actually
+walked. Everywhere else is under cloud. It is painted once into an offscreen canvas and blitted,
+because it is a few thousand two-pixel rectangles and it does not move.
+
+The bedroom and the Gallery are on the route but have no square on it. Open the map in either and it
+says **NOT ON ANY MAP**.
+
+**Battle stopped explaining itself.** The move list is names and costs, with one line of numbers —
+`34 BASE POWER, 1 HIT` — and no prose. What a move actually *does* now lives in a **MOVES** tab in
+the pause menu, which is where there is time to read it.
+
+**Restoratives work outside battle.** Sprays, Chalk Tablets and Bitter Tonics can be used from the
+bag in the pause menu; boosters and debuffs are dimmed there and say `Only in a fight.`, because a
+stat stage does not survive leaving one. The split is derived in `build_game.py` from whether an
+item has a restore effect at all, not from a hand-kept list.
+
+**Walk cycle.** Three frames per facing — two strides and a contact pose — with the body lifting a
+pixel on the strides and the arms swinging opposite the legs. The cycle and the footstep sound are
+driven by the same counter, so a footfall always lands on a stride.
+
+**Every NPC is a different person.** One parametric builder, eighteen sets of arguments: hair,
+hat, glasses, beard, build, stoop, apron, coat, satchel. Distinctness comes from silhouette first
+and colour second — two people who differ only in shirt hue read as the same person twice.
+
+**He has a print on his shirt.** A small pale diamond with a gold centre. It is not explained.
+
+### Bugs closed in 0.3.1
+
+- **Kestrel Works had one way in, and it was one tile wide.** The factory door sat in the middle of
+  a fifteen-tile concrete wall with nothing leading to it; a player walking the yard found it from
+  exactly one of nineteen approaches, and reported the area as a dead end. The entrance is three
+  tiles wide with a path laid up to it, and the playtest now sweeps the whole wall and fails if
+  fewer than three approaches work.
+- **Ondo's bottom-right house opened into the shop**, which already had a door on the market row.
+  It is the grocer now — the other end of the baker's grievance, which until this was a feud with
+  nobody on the other side of it.
+- **`Z` on the pause menu's OPTIONS tab closed the menu instead.** `Menu.update` set the mode to
+  `options` and the line immediately after it in `Game.update` overwrote that with `field`.
+- **The BAG tab's confirm key was being eaten** by the NOTES branch above it: `Input.hit` consumes,
+  so the second call in the same frame always saw false. The key is read once now.
 
 ## 0.3.0 — Act 2
 
@@ -41,9 +97,10 @@ better." Walk out and back in and he is not there — NPCs can now carry a `once
 does not remark on the empty landing any more than it remarks on the empty room.
 
 **Kestrel Works.** Permanent winter, reached by a road nobody has walked since the works closed.
-Three floors, encounter band 4 — `Frostbitten Glove`, `Coil`, `Conveyor`, `Yard Light`,
-`Second Shift`. The lore is the six-part layoff sequence from [15](15-lore-notes.md), found floor by
-floor, ending with `Last One Out` in the far corner of the third floor. The **second Custodian
+Three floors plus a boiler room, the foreman's office and the changing room; encounter band 4 —
+`Frostbitten Glove`, `Coil`, `Conveyor`, `Yard Light`, `Second Shift`. The lore is the six-part
+layoff sequence from [15](15-lore-notes.md), found room by room, ending with `Last One Out` in the
+changing room — the last place anybody used. The **second Custodian
 sighting** is on the way back out, standing in a room the player has already cleared, and it is gone
 if they leave and re-enter.
 
@@ -173,7 +230,7 @@ No image files, no audio files, no fonts.
   for footsteps and hits, and sustained drones for the liminal rooms — the Gallery and Kestrel
   Works — which have no melody at all.
 
-The whole build is about 160 KB.
+The whole build is about 200 KB.
 
 ## The data is not copied, it is generated
 
@@ -198,8 +255,9 @@ Stated plainly, because 0.3.0 is the first three acts and not a demo of the fini
 | 2D sprites inside low-poly 3D rooms | Top-down 2D throughout | The mismatch is the horror engine and it is the single biggest thing this build does not prove. Lighting, palette and grain carry the mood instead. |
 | Battle camera behind the shoulder | Approximated — the top of his head at the bottom of frame | Correct framing, flat backdrop. |
 | Stat stages, Fog/Static/Numb/Drained | Only `Homesick` is implemented | Ondo and Kestrel enemies that should inflict the rest hit for damage instead. The first real gap in the build. |
+| Turn order sorts by SPD | Implemented in 0.3.1 | Including `first` / `last` move priority. |
 | Multi-enemy encounters | One enemy at a time | Same. |
-| Eight Ondo sidequests | Six — fountain, ledger, delivery, records, bench, plus Kestrel's yard lights | The two cut (the lost dog, the market bird) are the comic ones. They are pure NPC writing, add no systems, and the bakery feud survives as flavour without its errand. |
+| Eight Ondo sidequests | Six — fountain, ledger, delivery, records, bench, plus Kestrel's yard lights | The two cut (the lost dog, the market bird) are the comic ones. They are pure NPC writing and add no systems; the bakery feud survives as flavour, with both ends of it now standing in their own shops. |
 | Equipment | Not in the build | Act 2 is where the first meaningful choice lands ([06](06-items-and-equipment.md)), and it is the next thing to add. |
 | Warp devices, collectible counter UI | Absent | Midpoint and later systems. |
 | Accessibility toggles | Present — text speed, volume, flashing, grain | Added in 0.2.0. |

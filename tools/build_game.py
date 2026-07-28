@@ -53,6 +53,10 @@ for group_name, group in items["battle_items"].items():
         entry = {"price": it["price"], "effect": it["effect"], "battle": True}
         if key:
             entry[key] = value
+            # Restoratives also work out of battle. Boosters and debuffs do not:
+            # stat stages reset when a fight ends, so using one in a corridor
+            # would spend the item on nothing.
+            entry["field"] = True
         game_items[it["name"]] = entry
 
 # Special items the game hands out that are not sold anywhere.

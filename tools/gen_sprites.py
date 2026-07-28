@@ -115,59 +115,214 @@ def head(s, cx, cy, rx, ry, mid, light, dark):
 SPRITES = {}
 
 
-def make_player(face):
-    """The head is kept clear of the canvas edge so the outline pass has room."""
+def make_player(face, step=0):
+    """The head is kept clear of the canvas edge so the outline pass has room.
+
+    `step` is the walk frame: 0 is the contact pose used standing still, 1 and 2
+    are the two strides. The whole upper body lifts a pixel on the strides, which
+    is what sells the walk far more than the legs do — without it the sprite
+    reads as a torso sliding along with its feet scissoring underneath.
+    """
     s = Spr(14, 18)
-    head(s, 6.5, 5.4, 5.2, 4.9, "1", "2", "3")
+    lift = 1 if step else 0                   # body rises on the passing pose
+    head(s, 6.5, 5.4 - lift, 5.2, 4.9, "1", "2", "3")
     if face == "down":
         for ex in (3, 8):
-            s.rect(ex, 4, 3, 3, "5")          # sclera
-            s.rect(ex + 1, 5, 1, 1, "6")      # pupil
-        s.rect(5, 9, 4, 1, "3")               # one expression, forever
+            s.rect(ex, 4 - lift, 3, 3, "5")   # sclera
+            s.rect(ex + 1, 5 - lift, 1, 1, "6")   # pupil
+        s.rect(5, 9 - lift, 4, 1, "3")        # one expression, forever
     elif face == "side":
         # The base sprite faces RIGHT; the renderer mirrors it for left.
         for ex in (5, 9):
-            s.rect(ex, 4, 3, 3, "5")
-            s.rect(ex + 2, 5, 1, 1, "6")
-        s.rect(9, 9, 3, 1, "3")
-    # torso
-    s.rect(3, 11, 8, 5, "7")
-    s.rect(3, 11, 3, 5, "8")                  # lit left third
-    s.rect(2, 12, 1, 3, "7")                  # sleeves
-    s.rect(11, 12, 1, 3, "7")
-    s.rect(2, 14, 2, 2, "1")                  # hands
-    s.rect(10, 14, 2, 2, "1")
-    s.rect(4, 16, 2, 2, "a")                  # legs
-    s.rect(8, 16, 2, 2, "a")
-    s.rect(4, 17, 2, 1, "b")                  # shoes
-    s.rect(8, 17, 2, 1, "b")
+            s.rect(ex, 4 - lift, 3, 3, "5")
+            s.rect(ex + 2, 5 - lift, 1, 1, "6")
+        s.rect(9, 9 - lift, 3, 1, "3")
+
+    top = 11 - lift
+    s.rect(3, top, 8, 5, "7")                 # torso
+    s.rect(3, top, 3, 5, "8")                 # lit left third
+
+    # The print on his shirt. Small, off-centre-proof, and never explained.
+    s.rect(6, top + 1, 2, 1, "c")
+    s.rect(5, top + 2, 1, 1, "c")
+    s.rect(8, top + 2, 1, 1, "c")
+    s.rect(6, top + 2, 2, 1, "d")
+    s.rect(6, top + 3, 2, 1, "c")
+
+    # Arms swing opposite the legs; facing sideways they swing fore and aft
+    # instead of hanging, or the walk looks like a shuffle.
+    if face == "side":
+        fwd, back = (0, 0) if step == 0 else ((1, -1) if step == 1 else (-1, 1))
+        s.rect(2, top + 1 + back, 1, 3, "7")
+        s.rect(11, top + 1 + fwd, 1, 3, "7")
+        s.rect(2, top + 3 + back, 2, 2, "1")
+        s.rect(10, top + 3 + fwd, 2, 2, "1")
+    else:
+        swing = 0 if step == 0 else (1 if step == 1 else -1)
+        s.rect(2, top + 1, 1, 3, "7")
+        s.rect(11, top + 1, 1, 3, "7")
+        s.rect(2, top + 3 + swing, 2, 2, "1")
+        s.rect(10, top + 3 - swing, 2, 2, "1")
+
+    # Legs. Frame 0 stands square; 1 and 2 are mirror strides with one leg
+    # planted on the ground row and the other lifted a pixel clear of it.
+    # (x, top, bottom) - the shoe is always the leg's own last row.
+    if step == 0:
+        legs = [(4, 16, 17), (8, 16, 17)]
+    elif step == 1:
+        legs = [(3, 16, 17), (9, 15, 16)]
+    else:
+        legs = [(9, 16, 17), (3, 15, 16)]
+    for lx, ly, lb in legs:
+        s.rect(lx, ly, 2, lb - ly + 1, "a")
+        s.rect(lx, lb, 2, 1, "b")
+
     s.outline("9", targets={"7", "8"})
     s.outline("4", targets={"1", "2", "3"})
     s.outline("b", targets={"a"})
+    # The outline pass closes the gap between the legs from both sides and welds
+    # them into one block, which kills the whole stride. Re-open it.
+    left, right = min(l[0] for l in legs), max(l[0] for l in legs)
+    for gy in range(min(l[1] for l in legs), 18):
+        for gx in range(left + 2, right):
+            s.set(gx, gy, EMPTY)
     return s.rows()
 
 
-def make_villager(hat=False):
-    s = Spr(12, 16)
-    head(s, 5.5, 4.4, 4.3, 4.0, "1", "2", "3")
+def make_person(hair=None, hat=None, glasses=False, beard=False, child=False,
+                stout=False, apron=False, coat=False, satchel=False, stoop=False):
+    """One villager body, dressed. Every NPC in the game is a call to this.
+
+    Twelve by sixteen leaves about five usable pixels of face and four of torso,
+    so distinctness has to come from silhouette first — hat brim, hair falling
+    past the jaw, a stoop, a wider build — and only then from colour. Two people
+    who differ only in shirt hue read as the same person twice.
+
+    Palette: 1/2/3 skin, 4 sclera, 5 pupil, 6/7/8 shirt mid/light/dark,
+    9 hair, a hat, b accent (apron, strap, buttons), c trousers, d shoes.
+    """
+    h = 15 if child else 17
+    s = Spr(12, h)
+    hy = 4.2 if child else 4.4
+    hrx, hry = (3.9, 3.7) if child else (4.3, 4.0)
+    drop = 1 if stoop else 0                  # shoulders and head sit lower
+    hy += drop
+
+    head(s, 5.5, hy, hrx, hry, "1", "2", "3")
+    eye_y = int(hy - 1)
     for ex in (3, 6):
-        s.rect(ex, 3, 2, 2, "4")
-        s.rect(ex, 4, 1, 1, "5")
-    s.rect(4, 7, 3, 1, "3")
-    if hat:
-        s.rect(1, 1, 10, 1, "8")
-        s.rect(3, 0, 6, 2, "8")
-    s.rect(3, 10, 6, 4, "6")                  # torso
-    s.rect(3, 10, 2, 4, "7")
-    s.rect(2, 11, 1, 2, "6")
-    s.rect(9, 11, 1, 2, "6")
-    s.rect(2, 12, 1, 2, "1")                  # hands
-    s.rect(9, 12, 1, 2, "1")
-    s.rect(4, 14, 2, 2, "8")                  # legs
-    s.rect(7, 14, 2, 2, "8")
+        s.rect(ex, eye_y, 2, 2, "4")
+        s.rect(ex, eye_y + 1, 1, 1, "5")
+    if glasses:
+        # Rims around the eyes, not across them. A solid bar at this size reads
+        # as a blindfold — the lenses have to keep showing sclera.
+        s.rect(2, eye_y - 1, 8, 1, "5")       # brow bar
+        s.rect(2, eye_y + 2, 3, 1, "5")       # under each lens
+        s.rect(6, eye_y + 2, 3, 1, "5")
+        for fx in (2, 5, 9):                  # outer posts and the bridge
+            s.rect(fx, eye_y, 1, 2, "5")
+    s.rect(4, int(hy + 2.6), 3, 1, "3")       # mouth
+    if beard:
+        s.rect(3, int(hy + 2), 6, 2, "9")
+        s.rect(4, int(hy + 4), 4, 1, "9")
+
+    if hair == "short":
+        s.rect(2, int(hy - 3), 8, 2, "9")
+        s.rect(1, int(hy - 2), 1, 2, "9")
+        s.rect(10, int(hy - 2), 1, 2, "9")
+    elif hair == "long":
+        s.rect(2, int(hy - 3), 8, 2, "9")
+        s.rect(1, int(hy - 2), 1, 6, "9")     # falls past the jaw on both sides
+        s.rect(10, int(hy - 2), 1, 6, "9")
+    elif hair == "bun":
+        s.rect(2, int(hy - 3), 8, 2, "9")
+        s.rect(4, int(hy - 5), 4, 2, "9")     # knot above the crown
+    elif hair == "wild":
+        s.rect(2, int(hy - 3), 8, 2, "9")
+        for tx in (1, 4, 7, 10):              # tufts, deliberately uneven
+            s.rect(tx, int(hy - 5), 1, 2, "9")
+    elif hair == "thin":                      # a fringe of it, and scalp
+        s.rect(1, int(hy - 1), 1, 3, "9")
+        s.rect(10, int(hy - 1), 1, 3, "9")
+
+    if hat == "cap":                          # peaked, and the peak faces us
+        s.rect(2, int(hy - 4), 8, 3, "a")
+        s.rect(2, int(hy - 1), 8, 1, "a")
+    elif hat == "brim":                       # wide, flat, farmer's
+        s.rect(0, int(hy - 2), 12, 1, "a")
+        s.rect(3, int(hy - 5), 6, 3, "a")
+    elif hat == "wool":                       # pulled down over the ears
+        s.rect(2, int(hy - 4), 8, 4, "a")
+        s.rect(1, int(hy - 1), 10, 1, "b")
+    elif hat == "baker":                      # tall and soft
+        s.rect(3, int(hy - 6), 6, 4, "a")
+        s.rect(2, int(hy - 2), 8, 1, "a")
+
+    # Legs are pinned to the bottom rows and the torso fills what is left, so a
+    # coat lengthens the coat rather than eating the legs.
+    top = (9 if child else 10) + drop
+    leg_y = h - (2 if child else 3) + (1 if coat else 0)
+    tw = 8 if stout else 6
+    tx = (12 - tw) // 2
+    th = leg_y - top
+    s.rect(tx, top, tw, th, "6")
+    s.rect(tx, top, max(2, tw // 3), th, "7")
+    if coat:                                  # lapels down the front
+        s.rect(tx + 1, top, 1, th - 1, "8")
+        s.rect(tx + tw - 2, top, 1, th - 1, "8")
+    if apron:                                 # a pale panel from chest to hem
+        s.rect(tx + 1, top + 1, tw - 2, th - 1, "b")
+    if satchel:                               # strap one way, bag on the hip
+        for i in range(th - 1):
+            s.set(tx + 1 + i, top + i, "b")
+        s.rect(tx + tw - 2, top + th - 2, 3, 2, "b")
+
+    arm_y = top + 1
+    s.rect(tx - 1, arm_y, 1, 2, "6")
+    s.rect(tx + tw, arm_y, 1, 2, "6")
+    s.rect(tx - 1, arm_y + 2, 1, 2, "1")      # hands
+    s.rect(tx + tw, arm_y + 2, 1, 2, "1")
+
+    # Trousers and shoes get their own tones. Drawn in the shirt's dark they
+    # vanished into the torso's own outline, which read as a legless block.
+    for lx in (3, 7):
+        s.rect(lx, leg_y, 2, h - leg_y - 1, "c")
+        s.rect(lx, h - 1, 2, 1, "d")
+
     s.outline("8", targets={"6", "7"})
+    s.outline("d", targets={"c"})
     s.outline("3", targets={"1", "2"})
+    # The outline pass fills the gap between the legs from both sides, which
+    # welds them back into one block. Re-open it.
+    for gy in range(leg_y, h):
+        for gx in (5, 6):
+            s.set(gx, gy, EMPTY)
     return s.rows()
+
+
+# Every speaking NPC, by silhouette first. The comment on each is the read the
+# player should get in the half-second before the text box opens.
+PEOPLE = {
+    "vlg_woman":    dict(hair="long"),                          # unremarkable, kind
+    "vlg_man":      dict(hat="brim", hair="short"),             # out in the sun all day
+    "vlg_child":    dict(child=True, hair="wild"),              # small, scruffy
+    "vlg_elder":    dict(hat="brim", hair="thin", beard=True, stoop=True),
+    "vlg_shop":     dict(hair="bun", apron=True, stout=True),   # behind a counter
+    "vlg_inn":      dict(hair="short", apron=True),
+    "vlg_hess":     dict(hair="long", coat=True),               # dressed to travel
+    "ond_clerk":    dict(hair="short", glasses=True, coat=True),  # municipal
+    "ond_baker":    dict(hat="baker", apron=True, stout=True),
+    "ond_bench":    dict(hair="thin", beard=True, stoop=True, coat=True),
+    "ond_courier":  dict(hat="cap", satchel=True),
+    "ond_shop":     dict(hair="bun", apron=True),
+    "ond_inn":      dict(hair="short", stout=True),
+    "boarder":      dict(hair="wild", coat=True),               # not quite kept
+    "landlady":     dict(hair="bun", stout=True, glasses=True),
+    "tenant_three": dict(hair="short", stoop=True),             # braced for an argument
+    "tenant_five":  dict(hat="wool", hair="thin"),              # dressed for indoors
+    "records":      dict(hair="long", glasses=True, apron=True),
+    "ond_grocer":   dict(hair="thin", stout=True, apron=True, beard=True),
+}
 
 
 def make_custodian():
@@ -432,11 +587,12 @@ def make_memorial():
     return s.rows()
 
 
-SPRITES["player_down"] = make_player("down")
-SPRITES["player_up"] = make_player("up")
-SPRITES["player_side"] = make_player("side")
-SPRITES["villager"] = make_villager(False)
-SPRITES["villager_hat"] = make_villager(True)
+for _face in ("down", "up", "side"):
+    for _step in (0, 1, 2):
+        SPRITES[f"player_{_face}" + ("" if _step == 0 else f"_{_step}")] = \
+            make_player(_face, _step)
+for _key, _kw in PEOPLE.items():
+    SPRITES[_key] = make_person(**_kw)
 SPRITES["custodian"] = make_custodian()
 SPRITES["dog"] = make_dog()
 SPRITES["postbox"] = make_postbox()
@@ -450,24 +606,14 @@ SPRITES["bigtree"] = make_tree(20, 22, 8.4, 5)
 PALETTES = {
     # 1 mid, 2 light, 4 outline, 5 sclera, 6 pupil, 7 shirt, 8 shirt light,
     # 9 shirt outline, a trouser, b shoe
+    # c/d are the print on his shirt — see make_player.
     "player": {
         1: "#4a7fc1", 2: "#79a8dd", 3: "#35618f", 4: "#1d3757", 5: "#f2f4f8",
         6: "#12121a", 7: "#4f9440", 8: "#77c064", 9: "#2c5c26",
-        "a": "#3b4359", "b": "#171a24",
-    },
-    "villager": {
-        1: "#c98b6a", 2: "#e2ab89", 3: "#6f4630", 4: "#f2f4f8", 5: "#12121a",
-        6: "#a05a8c", 7: "#c47cae", 8: "#5e3050", 9: "#2c2430",
-    },
-    "villager2": {
-        1: "#9fbe74", 2: "#c3dc9a", 3: "#4e6238", 4: "#f2f4f8", 5: "#12121a",
-        6: "#d0a24a", 7: "#eec473", 8: "#7d5f22", 9: "#2c2430",
-    },
-    "villager3": {
-        1: "#7fb6c6", 2: "#a8d6e2", 3: "#3d626e", 4: "#f2f4f8", 5: "#12121a",
-        6: "#c56a5a", 7: "#e08e7c", 8: "#77362b", 9: "#2c2430",
+        "a": "#3b4359", "b": "#171a24", "c": "#eef2e4", "d": "#e8c24a",
     },
     "custodian": {1: "#f0f0f0", 2: "#08080a"},
+    # People are built by person_pal below; these are only the non-people.
     "dog":      {1: "#8a7256", 2: "#a9906e", 3: "#3d3122", 4: "#f2f4f8"},
     "postbox":  {1: "#9a5a4a", 2: "#bc7565", 3: "#241a18", 4: "#5a5a62", 5: "#241a18"},
     "melon":    {1: "#c8a83c", 2: "#e6cb63", 3: "#8a7020", 4: "#5c4a16", 5: "#3d3110"},
@@ -485,6 +631,54 @@ PALETTES = {
     "winter":   {1: "#57545c", 2: "#6e6b74", 3: "#4a4048", 4: "#7c7982",
                  5: "#5e5158", 6: "#2b2830"},
 }
+
+
+def _shade(hexstr, f):
+    """Lighten (f > 1) or darken (f < 1) a hex colour, clamped."""
+    r, g, b = (int(hexstr[i:i + 2], 16) for i in (1, 3, 5))
+    return "#%02x%02x%02x" % tuple(min(255, max(0, round(v * f))) for v in (r, g, b))
+
+
+def person_pal(skin, shirt, hair, hat="#3a3a44", accent="#e6e2d4", trousers="#3e3a46"):
+    """Three tones each for skin and shirt, derived so nobody is flat.
+
+    Limpo's people are meant to look slightly wrong rather than sickly, so the
+    skins here run through greens and blues on purpose — see 07. What keeps it
+    from reading as a bug is that the shading is consistent with everything else
+    in the frame.
+    """
+    return {
+        1: skin, 2: _shade(skin, 1.18), 3: _shade(skin, 0.62),
+        4: "#f2f4f8", 5: "#12121a",
+        6: shirt, 7: _shade(shirt, 1.2), 8: _shade(shirt, 0.52),
+        9: hair, "a": hat, "b": accent,
+        "c": trousers, "d": _shade(trousers, 0.55),
+    }
+
+
+# Skin, shirt, hair, hat, accent. Chosen so no two people standing in the same
+# room share a silhouette *and* a colour.
+PALETTES.update({
+    "vlg_woman":    person_pal("#c98b6a", "#a05a8c", "#4a3324"),
+    "vlg_man":      person_pal("#9fbe74", "#d0a24a", "#3f4a2a", "#9a7c4a", "#5c5340"),
+    "vlg_child":    person_pal("#7fb6c6", "#c56a5a", "#2f4650", "#4a4258"),
+    "vlg_elder":    person_pal("#b8a48c", "#6f7a86", "#d8d4cc", "#8a7c62", "#4c4640"),
+    "vlg_shop":     person_pal("#c98b6a", "#5f8f7a", "#54321f", "#3a3a44", "#e4e0d2"),
+    "vlg_inn":      person_pal("#9fbe74", "#7a6ba8", "#3f4a2a", "#3a3a44", "#dcd6c4"),
+    "vlg_hess":     person_pal("#c98b6a", "#8a5a3a", "#3a2a1c"),
+    "ond_clerk":    person_pal("#b9a58e", "#4a5a7a", "#3a3730"),
+    "ond_baker":    person_pal("#c98b6a", "#b06a4a", "#442d1c", "#efe9dc", "#efe9dc"),
+    "ond_bench":    person_pal("#b8a48c", "#5a5f52", "#ded9d0", "#494438"),
+    "ond_courier":  person_pal("#9fbe74", "#38607a", "#3f4a2a", "#2c4658", "#c2a25a", "#2f3a48"),
+    "ond_shop":     person_pal("#7fb6c6", "#8a5f8f", "#2f4650", "#3a3a44", "#e4e0d2"),
+    "ond_inn":      person_pal("#c98b6a", "#6a7f4a", "#4a3324"),
+    "boarder":      person_pal("#a8a094", "#4c4a54", "#5a5650", "#39373e"),
+    "landlady":     person_pal("#c98b6a", "#7a3f4a", "#8e8478", "#4a3a40"),
+    "tenant_three": person_pal("#9fbe74", "#7a5a3a", "#3f4a2a"),
+    "tenant_five":  person_pal("#b9a58e", "#4a6a6a", "#7a6a58", "#9a4a44", "#6a2f2c", "#43413a"),
+    "records":      person_pal("#7fb6c6", "#5a5a6e", "#2f4650", "#3a3a44", "#d6d2c6"),
+    "ond_grocer":   person_pal("#9fbe74", "#4a6a4a", "#c8c0b0", "#3a3a44", "#dcd6c4"),
+})
 
 
 SPRITES["milepost"] = make_milepost()

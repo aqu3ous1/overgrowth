@@ -1,14 +1,57 @@
 # 19 — The Playable Build
 
-**0.3.1 — Acts 0 through 2, playable.** Title screen through **Main Boss 1**, in a browser, in one
-self-contained HTML file with no assets and no dependencies.
+**0.3.2 — Acts 0 through 2, playable, on a desktop or a phone.** Title screen through
+**Main Boss 1**, in a browser, in one self-contained HTML file with no assets and no dependencies.
 
 ```
-python3 tools/gen_sprites.py    # shape primitives -> game/src/15_sprites.js
-python3 tools/build_game.py     # game/src/*.js + data/*.json -> game/overgrowth.html
-python3 tools/playtest.py       # drives it in a real browser, fails on any error
-python3 tools/playtest.py --shots
+python3 tools/gen_sprites.py       # shape primitives -> game/src/15_sprites.js
+python3 tools/build_game.py        # game/src/*.js + data/*.json -> game/overgrowth.html
+python3 tools/playtest.py          # drives it with a keyboard, fails on any error
+python3 tools/playtest_mobile.py   # drives it with a thumb, on an emulated phone
 ```
+
+## 0.3.2 — save anywhere, and a phone
+
+**Saving from the pause menu.** A `SAVE` tab showing what the slot currently holds — name, level,
+which leg of the walk, collectibles, and how long ago it was written — so the player can see what
+they are about to write over. `CONTINUE` on the title resumes it exactly: room, position, bag,
+notes, flags, and the map of where he has been.
+
+Writing it down is **not** resting. An inn bed still restores HP, PP and SP; the menu save only
+records. Healing here would mean the player never needs an inn again, and attrition is the shape of
+this game's difficulty ([11](11-pacing-and-systems.md)).
+
+**It plays on a phone.** An on-screen pad and Z / X / C buttons, drawn inside the game's own 320×180
+frame so they scale with it and land where they look like they are, plus a `CONTROLS` option —
+`AUTO` / `KEYBOARD` / `TOUCH`. AUTO shows the pad on anything with a touchscreen.
+
+Two decisions did most of the work:
+
+- **The controls run up the sides, not along the bottom.** Every text box in this game is anchored
+  to the bottom edge; a thumb pad down there sits on the words. The first pass had the battle move
+  list unreadable behind the pad.
+- **While a text box is up, the whole screen is the advance button** and the pad is hidden. There is
+  nothing to walk to and one thing to do.
+
+Where the pad still lands on text — the pause menu is full-screen — the lists indent past it, and
+the move list drops its stat column to a line of its own rather than showing a truncated one.
+
+The shell gives the canvas the whole viewport on a phone and hides the keyboard legend, which is
+meaningless on touch.
+
+`tools/playtest_mobile.py` plays the game on an emulated phone using only taps: start a new game,
+name him, walk with the pad, open and close the menu, advance a text box by tapping anywhere, and
+win a fight. It fails if any of that stops working.
+
+**Items always act first**, whatever the speed roll. Reaching for a spray and dying before it opens
+reads as the game cheating, and being slow has no counterplay. Losing a speed roll is no longer
+narrated either — the enemy's attack landing before yours already says it, and a caption saying so
+as well turned every slow turn into two text boxes. A move that delays *itself* still announces it
+(`KID winds up.`).
+
+One name collision worth recording: the touch handler was called `Touch`, and a top-level
+`const Touch` **shadows the DOM's own `Touch` constructor** for everything else in the global scope.
+It is `TouchPad` now.
 
 ## 0.3.1 — turn order, and a map
 
@@ -16,9 +59,10 @@ python3 tools/playtest.py --shots
 SPD did nothing outside the crit roll, `Rush Down`'s "always acts first" was decoration, and
 `Wind-Up Punch` — a move whose entire identity is *hits harder but goes last* — was a more expensive
 Punch that lied about it in its own description. Actions now sort by SPD with ties on a coin flip,
-and a move's own priority overrides both ([04](04-battle-system.md)). Losing the roll says so:
-`KID winds up.` or `Fence Post moves first.`, because an action that silently happens later reads as
-a dropped input.
+and a move's own priority overrides both ([04](04-battle-system.md)). **Items are exempt** and always
+resolve first: reaching for a spray and dying before it opens reads as the game cheating, and being
+slow has no counterplay. Losing a speed roll is not narrated — the enemy's attack landing first says
+it — but a move that delays *itself* still does (`KID winds up.`).
 
 `simulate.py` models it too, and it is not free — **attrition across the 49 regular matchups went
 from 15% to 19%.** Every matchup still lands inside target, so nothing needed retuning, but the

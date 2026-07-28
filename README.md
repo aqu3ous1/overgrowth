@@ -36,24 +36,26 @@ one long walk out.
 | [16 — Combat Math](docs/16-combat-math.md) | Enemy stat derivation, damage formula, measured difficulty |
 | [17 — Economy](docs/17-economy.md) | Shops, prices, and the per-act ledger |
 | [18 — Vertical Slice](docs/18-vertical-slice.md) | What to build first, and how to know it worked |
-| [19 — The Playable Build](docs/19-build.md) | What 0.3.1 contains, and where it deviates |
+| [19 — The Playable Build](docs/19-build.md) | What 0.3.2 contains, and where it deviates |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
 
 ## Play it
 
-**0.3.1 is playable — Acts 0 through 2.** `game/overgrowth.html` is the title screen, the bedroom,
-the Gallery, Okobo, the Sunken Orchard, the road, Ondo, Kestrel Works, and both bosses through
-**The Memorial** — in one self-contained file with no assets and no dependencies. Thirty-one
-rooms, an illustrated world map, and a walk cycle. Every sprite is drawn pixel by pixel at runtime, every tile texture is procedural, the font
+**0.3.2 is playable — Acts 0 through 2, on a desktop or a phone.** `game/overgrowth.html` is the
+title screen, the bedroom, the Gallery, Okobo, the Sunken Orchard, the road, Ondo, Kestrel Works,
+and both bosses through **The Memorial** — in one self-contained file with no assets and no
+dependencies. Thirty-one rooms, an illustrated world map, save anywhere, and touch controls. Every sprite is drawn pixel by pixel at runtime, every tile texture is procedural, the font
 is a 5x7 bitmap defined inline, and all the audio is WebAudio synthesis.
 
 ```
-python3 tools/gen_sprites.py    # shape primitives -> the pixel art
-python3 tools/build_game.py     # src + data -> game/overgrowth.html
-python3 tools/playtest.py       # drives it in a real browser, fails on any error
+python3 tools/gen_sprites.py       # shape primitives -> the pixel art
+python3 tools/build_game.py        # src + data -> game/overgrowth.html
+python3 tools/playtest.py          # drives it with a keyboard, fails on any error
+python3 tools/playtest_mobile.py   # drives it with a thumb, on an emulated phone
 ```
 
-**Arrows** move, **Z** confirms, **X** cancels, **C** opens the menu.
+**Arrows** move, **Z** confirms, **X** cancels, **C** opens the menu. On a touchscreen an on-screen
+pad appears instead; `CONTROLS` in the options forces either scheme.
 
 The build's balance tables are *generated* from `data/*.json`, not copied, so the game people play
 cannot drift from the game these documents describe — and `validate.py` fails if the checked-in
@@ -67,13 +69,14 @@ progression curve, move lists, enemy roster, boss table, items and equipment, wo
 Four tools keep the design honest, each checking a claim the documents make.
 
 ```
-python3 tools/validate.py       # 577 checks: do the data, docs and build agree?
+python3 tools/validate.py       # 578 checks: do the data, docs and build agree?
 python3 tools/simulate.py       # 57 matchups x 2000 trials: do fights feel right?
 python3 tools/economy.py        # per-act ledger: can the player afford them?
 python3 tools/curve.py          # levelling walk: does the player reach the levels
                                 #   everything else assumes? also the combat/playtime split
 python3 tools/build_game.py     # build the playable slice
 python3 tools/playtest.py       # play it in a browser and fail on any error
+python3 tools/playtest_mobile.py # play it on an emulated phone, taps only
 ```
 
 The four checkers are stdlib only. `playtest.py` needs `playwright`. Add `--verbose` to any of the
@@ -84,7 +87,7 @@ learned, that every boss shows `??` and no regular enemy does, that the Root is 
 band the player outclasses, that every act from 2 to 4 offers a trade-off item in both equipment
 slots, that the family's names are never rendered anywhere, that the scope table in
 [00](docs/00-overview.md) still matches the rosters, and that no doc links to a file that isn't
-there — 577 checks in total, including that the checked-in build is not stale.
+there — 578 checks in total, including that the checked-in build is not stale.
 
 **Run both after changing any number.** The validator caught four real inconsistencies on its first
 run, including two arithmetic errors in the EXP table and a boss the player could have fled from.

@@ -92,8 +92,9 @@ const Title = {
 const OPT_KEY = 'overgrowth.options.v1';
 const Options = {
   cursor: 0, rep: {}, from: 'title',
-  values: { textSpeed: 1, volume: 2, flashing: 1, grain: 1 },
+  values: { controls: 0, textSpeed: 1, volume: 2, flashing: 1, grain: 1 },
   rows: [
+    { key: 'controls',  label: 'CONTROLS',   opts: ['AUTO', 'KEYBOARD', 'TOUCH'] },
     { key: 'textSpeed', label: 'TEXT SPEED', opts: ['SLOW', 'NORMAL', 'FAST'] },
     { key: 'volume',    label: 'VOLUME',     opts: ['OFF', 'LOW', 'NORMAL', 'LOUD'] },
     { key: 'flashing',  label: 'FLASHING',   opts: ['REDUCED', 'NORMAL'] },
@@ -110,6 +111,13 @@ const Options = {
   save() { try { localStorage.setItem(OPT_KEY, JSON.stringify(this.values)); } catch (e) {} },
   apply() {
     if (Audio_.master) Audio_.master.gain.value = [0, 0.16, 0.34, 0.55][this.values.volume];
+    // AUTO means "show the pad on anything with a touchscreen". The explicit
+    // settings exist because AUTO gets it wrong on hybrids either way: a laptop
+    // with a touch display does not want a thumb pad over the art, and a tablet
+    // with a keyboard case might.
+    const c = this.values.controls;
+    TouchPad.on = c === 2 || (c === 0 && TouchPad.supported);
+    if (!TouchPad.on) { TouchPad.release(); TouchPad.ids = {}; }
   },
 
   enter(from) { this.from = from || 'title'; this.cursor = 0; },
@@ -145,13 +153,13 @@ const Options = {
     textCentered('OPTIONS', W / 2, 18, '#f0ece2', 2);
     rect(60, 30, W - 120, 1, '#2c2c36');
     for (let i = 0; i < this.rows.length; i++) {
-      const r = this.rows[i], y = 44 + i * 16, sel = this.cursor === i;
+      const r = this.rows[i], y = 40 + i * 15, sel = this.cursor === i;
       text(r.label, 58, y, sel ? '#f0ece2' : '#8a8a94');
       const v = r.opts[this.values[r.key]];
       text('< ' + v + ' >', W - 58 - textWidth('< ' + v + ' >'), y, sel ? '#e8d24a' : '#70707c');
       if (sel) text('>', 46, y, '#e8d24a');
     }
-    const by = 44 + this.rows.length * 16 + 8;
+    const by = 40 + this.rows.length * 15 + 8;
     const selBack = this.cursor === this.rows.length;
     textCentered('BACK', W / 2, by, selBack ? '#f0ece2' : '#70707c');
     if (selBack) text('>', W / 2 - textWidth('BACK') / 2 - 10, by, '#e8d24a');
@@ -351,13 +359,27 @@ const WorldMap = {
   },
 };
 
+// "JUST NOW" / "14 MINUTES AGO" / "3 DAYS AGO". Coarse on purpose: the exact
+// minute is never the thing the player wants to know off a save slot.
+function agoText(stamp) {
+  if (!stamp) return '';
+  const s = Math.max(0, (Date.now() - stamp) / 1000);
+  if (s < 90) return 'JUST NOW';
+  const units = [[60, 'MINUTE'], [3600, 'HOUR'], [86400, 'DAY']];
+  let [div, word] = units[0];
+  for (const u of units) if (s >= u[0]) [div, word] = u;
+  const n = Math.floor(s / div);
+  return `${n} ${word}${n === 1 ? '' : 'S'} AGO`;
+}
+
 // --- pause menu --------------------------------------------------------
-const TAB_STATUS = 0, TAB_BAG = 1, TAB_MOVES = 2, TAB_MAP = 3, TAB_NOTES = 4, TAB_OPTIONS = 5;
+const TAB_STATUS = 0, TAB_BAG = 1, TAB_MOVES = 2, TAB_MAP = 3, TAB_NOTES = 4,
+      TAB_SAVE = 5, TAB_OPTIONS = 6;
 
 const Menu = {
   open: false, tab: 0, cursor: 0, rep: {},
-  tabs: ['STATUS', 'BAG', 'MOVES', 'MAP', 'NOTES', 'OPTIONS'],
-  message: '', messageT: 0,
+  tabs: ['STATUS', 'BAG', 'MOVES', 'MAP', 'NOTES', 'SAVE', 'OPTIONS'],
+  message: '', messageT: 0, savedT: 0,
   toggle() { this.open = !this.open; this.cursor = 0; this.messageT = 0; Audio_.sfx(this.open ? 'ok' : 'cancel'); },
   update(dt) {
     this.messageT = Math.max(0, this.messageT - dt);
@@ -372,6 +394,7 @@ const Menu = {
     if (this.tab === TAB_OPTIONS && ok) {
       this.open = false; Options.enter('menu'); Game.mode = 'options'; Audio_.sfx('ok'); return;
     }
+    if (this.tab === TAB_SAVE && ok) { this.saveHere(); return; }
     const list = this.list();
     if (list.length) {
       if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + list.length) % list.length; Audio_.sfx('blip'); }
@@ -384,6 +407,22 @@ const Menu = {
       }
       if (ok && this.tab === TAB_BAG) this.useFromBag(list[this.cursor]);
     }
+  },
+
+  // Writing it down and resting are different things. An inn bed restores HP,
+  // PP and SP as well; this only records where he got to. Making the menu save
+  // heal too would mean the player never needs an inn again, and attrition is
+  // the whole shape of this game's difficulty (see docs/11).
+  saveHere() {
+    if (Save.write()) {
+      Audio_.sfx('found');
+      this.message = 'SAVED.';
+      this.savedT = 1.0;
+    } else {
+      Audio_.sfx('wrong');
+      this.message = 'IT WOULD NOT WRITE.';
+    }
+    this.messageT = 1.8;
   },
 
   // Restoratives work out here too. Everything else in the bag is either a
@@ -437,20 +476,21 @@ const Menu = {
   },
   draw() {
     rect(0, 0, W, H, 'rgba(4,4,8,0.88)');
-    // Laid out by measured width rather than a fixed pitch: six labels of very
-    // different lengths do not sit on a grid without gaps you can drive a bus
-    // through.
-    let tx = 8;
+    // Laid out by measured width rather than a fixed pitch: seven labels of
+    // very different lengths do not sit on a grid without gaps you can drive a
+    // bus through.
+    let tx = 6;
     for (let i = 0; i < this.tabs.length; i++) {
-      const w = textWidth(this.tabs[i]) + 8;
+      const w = textWidth(this.tabs[i]) + 6;
       if (i === this.tab) rect(tx - 2, 8, w, 12, '#1e2630');
-      text(this.tabs[i], tx + 2, 11, i === this.tab ? '#f0ece2' : '#70707c');
-      tx += w + 2;
+      text(this.tabs[i], tx + 1, 11, i === this.tab ? '#f0ece2' : '#70707c');
+      tx += w + 1;
     }
     rect(8, 22, W - 16, 1, '#3a3a44');
 
     if (this.tab === TAB_MAP) { this.drawMap(); }
     else if (this.tab === TAB_MOVES) { this.drawMoves(); }
+    else if (this.tab === TAB_SAVE) { this.drawSave(); }
     else if (this.tab === 0) {
       const rows = [
         ['NAME', Player.name], ['LEVEL', Player.level],
@@ -463,8 +503,10 @@ const Menu = {
         ['EXP', `${Player.exp} / ${Player.expToReach(Player.level + 1)}`],
         ['FOUND', `${Player.collectibles} / 10`],
       ];
+      // The left column runs down the same strip the thumb pad occupies.
+      const shift = TouchPad.on ? 46 : 0;
       for (let i = 0; i < rows.length; i++) {
-        const x = i < 7 ? 14 : W / 2 + 6, y = 30 + (i % 7) * 11;
+        const x = i < 7 ? 14 + shift : W / 2 + 6, y = 30 + (i % 7) * 11;
         text(rows[i][0], x, y, '#8a8a94');
         text(String(rows[i][1]), x + 52, y, '#e8e8ee');
       }
@@ -475,6 +517,7 @@ const Menu = {
       if (!list.length) {
         text(this.tab === TAB_BAG ? 'NOTHING IN THE BAG.' : 'NOTHING READ YET.', 14, 32, '#70707c');
       }
+      const inset = TouchPad.on ? 46 : 0;      // clear of the thumb pad
       for (let i = 0; i < Math.min(11, list.length); i++) {
         const y = 30 + i * 11;
         const name = this.tab === TAB_BAG ? list[i] : NOTES[list[i]].title;
@@ -482,9 +525,9 @@ const Menu = {
         // the battle menu uses for a move you cannot pay for.
         const usable = this.tab !== TAB_BAG || (DATA.items[list[i]] || {}).field;
         const lit = i === this.cursor;
-        text(name, 20, y, usable ? (lit ? '#f0ece2' : '#9a9aa4') : (lit ? '#9a9aa4' : '#63636e'));
-        if (this.tab === TAB_BAG) text('x' + Player.bag[list[i]], W - 34, y, '#8a8a94');
-        if (i === this.cursor) text('>', 12, y, '#e8d24a');
+        text(name, 20 + inset, y, usable ? (lit ? '#f0ece2' : '#9a9aa4') : (lit ? '#9a9aa4' : '#63636e'));
+        if (this.tab === TAB_BAG) text('x' + Player.bag[list[i]], W - 34 - inset, y, '#8a8a94');
+        if (i === this.cursor) text('>', 12 + inset, y, '#e8d24a');
       }
       if (this.tab === TAB_BAG && list.length) {
         const it = DATA.items[list[this.cursor]];
@@ -499,7 +542,7 @@ const Menu = {
       text(this.message, (W - w) / 2 + 6, H - 43, '#e8d24a');
     }
     const hint = this.tab === TAB_BAG ? 'Z  USE     C / X  CLOSE'
-               : this.tab === TAB_MAP ? '' : 'C / X  CLOSE';
+               : (this.tab === TAB_MAP || this.tab === TAB_SAVE) ? '' : 'C / X  CLOSE';
     if (hint) text(hint, W - textWidth(hint) - 10, H - 12, '#5a5a66');
   },
 
@@ -508,26 +551,68 @@ const Menu = {
   drawMoves() {
     const list = this.list();
     const phys = Player.moves('physical').length;
+    const inset = TouchPad.on ? 46 : 0;
     for (let i = 0; i < Math.min(11, list.length); i++) {
       const m = list[i], y = 29 + i * 11;
       const lit = i === this.cursor;
       const pool = i < phys ? 'PP' : 'SP';
       const afford = (i < phys ? Player.pp : Player.sp) >= m.cost;
-      text(m.name.toUpperCase(), 18, y, lit ? '#f0ece2' : (afford ? '#9a9aa4' : '#63636e'));
+      text(m.name.toUpperCase(), 18 + inset, y, lit ? '#f0ece2' : (afford ? '#9a9aa4' : '#63636e'));
       const cost = `${m.cost} ${pool}`;
       // Columns are tight: COUNTER STANCE is the longest name and Multi-Jab has
       // the longest stat line, and all three have to fit across 320 pixels. The
       // cost is right-aligned to its column so the names never collide with it.
-      text(cost, 128 - textWidth(cost), y, afford ? '#b8b8c2' : '#63636e');
-      text(moveStatLine(m), 136, y, lit ? '#b0b0ba' : '#7a7a86');
-      if (lit) text('>', 10, y, '#e8d24a');
+      text(cost, 128 + inset - textWidth(cost), y, afford ? '#b8b8c2' : '#63636e');
+      // The stat column is dropped on touch: 46 pixels of it are gone and a
+      // truncated line is worse than none. It is on the STATUS-side row anyway.
+      if (!inset) text(moveStatLine(m), 136, y, lit ? '#b0b0ba' : '#7a7a86');
+      if (lit) text('>', 10 + inset, y, '#e8d24a');
     }
     const sel = list[this.cursor];
+    if (inset && sel) text(moveStatLine(sel), 14, H - 34, '#b0b0ba');
     if (sel && sel.notes) {
       const lines = wrap(sel.notes, W - 28);
       for (let i = 0; i < Math.min(2, lines.length); i++)
         text(lines[i], 14, H - 24 + i * 10, '#8a8a94');
     }
+  },
+
+  // One slot, shown as what it currently holds. The player should be able to
+  // see what they are about to write over before they write over it.
+  drawSave() {
+    const d = Save.read();
+    const boxY = 34, boxH = 74;
+    rect(28, boxY, W - 56, boxH, 'rgba(10,12,18,0.7)');
+    rect(28, boxY, W - 56, 1, '#3a3a44'); rect(28, boxY + boxH - 1, W - 56, 1, '#3a3a44');
+    rect(28, boxY, 1, boxH, '#3a3a44'); rect(W - 29, boxY, 1, boxH, '#3a3a44');
+
+    if (!d) {
+      text('THE NOTEBOOK IS EMPTY.', 40, boxY + 14, '#70707c');
+      text('NOTHING HAS BEEN WRITTEN DOWN YET.', 40, boxY + 26, '#4e4e58');
+    } else {
+      const leg = routeIndexOf(d.room);
+      const rows = [
+        ['NAME', d.name || '-'],
+        ['LEVEL', String(d.level)],
+        ['WHERE', leg >= 0 ? ROUTE[leg].label : 'SOMEWHERE'],
+        ['FOUND', `${d.collectibles || 0} / 10`],
+        ['WRITTEN', agoText(d.stamp)],
+      ];
+      for (let i = 0; i < rows.length; i++) {
+        const y = boxY + 8 + i * 12;
+        text(rows[i][0], 40, y, '#7a7a86');
+        text(rows[i][1], 108, y, '#e8e8ee');
+      }
+    }
+
+    // The saved beat: the line flashes once and then sits there.
+    const fresh = this.savedT > 0;
+    if (fresh) this.savedT = Math.max(0, this.savedT - Time.dt);
+    const prompt = d ? 'Z  WRITE OVER IT' : 'Z  WRITE IT DOWN';
+    textCentered(prompt, W / 2, boxY + boxH + 10,
+                 fresh && Math.sin(Time.t * 22) > 0 ? '#f0ece2' : '#e8d24a');
+    textCentered('SAVING RECORDS WHERE HE GOT TO. IT DOES NOT REST HIM.',
+                 W / 2, H - 14, '#5a5a66');
   },
 
   // A map of Limpo, in the town-map idiom: terrain, a road, and a marker for

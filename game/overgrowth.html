@@ -94,8 +94,18 @@
   #audio-note { color: var(--ink-faint); }
   #audio-note[data-on="1"] { color: var(--grass); }
 
+  /* On a phone the screen is the whole point: give it the viewport and drop
+     the furniture around it. The keyboard legend is meaningless on touch. */
   @media (max-width: 560px) {
-    body { gap: 16px; padding: 16px 10px 24px; }
+    body { gap: 10px; padding: 8px 6px 12px; justify-content: flex-start; }
+    #wrap { max-width: none; }
+    canvas#screen { border-width: 0; box-shadow: none; }
+    footer { display: none; }
+  }
+  @media (max-width: 560px) and (orientation: landscape) {
+    body { padding: 0; gap: 0; justify-content: center; }
+    canvas#screen { max-height: 100vh; width: auto; margin: 0 auto; }
+    .meta { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -116,7 +126,7 @@
 </footer>
 
 <div class="meta">
-  <span>0.3.1</span><span>&middot;</span><span>Acts 0&ndash;2</span><span>&middot;</span>
+  <span>0.3.2</span><span>&middot;</span><span>Acts 0&ndash;2</span><span>&middot;</span>
   <span id="audio-note">Click the screen for sound</span>
 </div>
 
@@ -958,26 +968,150 @@ const Input = {
   endFrame() { for (const k in pressed) { pressed[k] = false; consumed[k] = false; } },
 };
 
-// Touch: drag the left half to move, tap the right half to confirm.
-let touchOrigin = null;
+// --- touch controls ----------------------------------------------------
+// An on-screen pad and buttons, drawn into the game's own 320x180 frame so
+// they scale with it and land where they look like they are. The previous
+// scheme — drag the left half, tap the right half — had no cancel and no menu,
+// so half the game was unreachable on a phone.
+//
+// Named TouchPad, not Touch: a top-level `const Touch` shadows the DOM's own
+// Touch constructor for everything else in the global scope.
+const TouchPad = {
+  on: false,                 // overlay live; set from Options
+  supported: ('ontouchstart' in window) || navigator.maxTouchPoints > 0,
+  ids: {},                   // touch identifier -> which control it grabbed
+  lit: {},                   // control -> seconds of highlight left
+  // Up the sides, not along the bottom. Every text box in this game is anchored
+  // to the bottom edge, so a thumb pad down there sits on top of the words -
+  // the move list was unreadable behind it. These positions clear the tallest
+  // bottom box (the battle move list, y 118 down) and the HUD in the corner.
+  padX: 32, padY: 90, padR: 27, dead: 7,
+  buttons: [
+    { k: 'ok',   x: 291, y: 100, r: 17, label: 'Z' },
+    { k: 'no',   x: 291, y: 60,  r: 14, label: 'X' },
+    { k: 'menu', x: 299, y: 24,  r: 12, label: 'C' },
+  ],
+
+  // Client space -> the game's 320x180 space, so a tap lands on what it hit.
+  local(t) {
+    const r = cv.getBoundingClientRect();
+    return [(t.clientX - r.left) / r.width * W, (t.clientY - r.top) / r.height * H];
+  },
+
+  buttonAt(x, y) {
+    for (const b of this.buttons) if (Math.hypot(x - b.x, y - b.y) <= b.r) return b;
+    return null;
+  },
+  onPad(x, y) {
+    return Math.abs(x - this.padX) <= this.padR && Math.abs(y - this.padY) <= this.padR;
+  },
+
+  // The pad is a stick, not four keys: direction comes from the offset, so
+  // diagonals work and a thumb sliding around the pad keeps steering.
+  steer(x, y) {
+    const dx = x - this.padX, dy = y - this.padY;
+    held.left = dx < -this.dead;  held.right = dx > this.dead;
+    held.up = dy < -this.dead;    held.down = dy > this.dead;
+    for (const k of ['left', 'right', 'up', 'down']) if (held[k]) this.lit[k] = 0.12;
+  },
+  release() { held.left = held.right = held.up = held.down = false; },
+
+  // While a text box is up there is nothing to steer and one thing to do, so
+  // the whole screen becomes the advance button. Every mobile RPG does this and
+  // it is the difference between readable and infuriating.
+  reading() {
+    return (typeof Dialogue !== 'undefined' && Dialogue.active)
+        || (typeof Game !== 'undefined' && Game.mode === 'cutscene')
+        || (typeof Battle !== 'undefined' && Battle.active && Battle.state === 'message');
+  },
+
+  start(t) {
+    const [x, y] = this.local(t);
+    const b = this.buttonAt(x, y);
+    if (b) {
+      this.ids[t.identifier] = b.k;
+      if (!held[b.k]) pressed[b.k] = true;
+      held[b.k] = true;
+      this.lit[b.k] = 0.16;
+      return;
+    }
+    if (!this.reading() && this.onPad(x, y)) {
+      this.ids[t.identifier] = 'pad'; this.steer(x, y); return;
+    }
+    if (this.reading()) {
+      this.ids[t.identifier] = 'ok';
+      if (!held.ok) pressed.ok = true;
+      held.ok = true;
+    }
+  },
+  move(t) {
+    if (this.ids[t.identifier] !== 'pad') return;
+    const [x, y] = this.local(t);
+    this.steer(x, y);
+  },
+  end(t) {
+    const which = this.ids[t.identifier];
+    delete this.ids[t.identifier];
+    if (!which) return;
+    if (which === 'pad') this.release();
+    else held[which] = false;
+  },
+  tick(dt) { for (const k in this.lit) this.lit[k] = Math.max(0, this.lit[k] - dt); },
+
+  draw() {
+    if (!this.on) return;
+    const a = (k, base) => (this.lit[k] > 0 ? Math.min(1, base * 2.1) : base);
+    // The pad is hidden while reading: it would sit on top of the text box, and
+    // there is nothing to walk to anyway.
+    // Every element is a light shape on its own dark plate. A single light
+    // shape disappears against snow; a single dark one disappears in the
+    // Gallery. Both together survive either.
+    if (!this.reading()) {
+      cx.globalAlpha = 0.42;
+      circle(this.padX, this.padY, this.padR, '#0a0c12');
+      cx.globalAlpha = 0.7;
+      ring(this.padX, this.padY, this.padR, '#9aa1b2');
+      const arms = [['up', 0, -1], ['down', 0, 1], ['left', -1, 0], ['right', 1, 0]];
+      for (const [k, dx, dy] of arms) {
+        const bx = this.padX + dx * 15, by = this.padY + dy * 15;
+        const w = dy ? 14 : 8, h = dy ? 8 : 14;
+        cx.globalAlpha = a(k, 0.55);
+        rect(bx - w / 2 - 1, by - h / 2 - 1, w + 2, h + 2, '#0a0c12');
+        cx.globalAlpha = a(k, 0.8);
+        rect(bx - w / 2, by - h / 2, w, h, '#e6e8ee');
+      }
+    }
+    for (const b of this.buttons) {
+      if (this.reading() && b.k !== 'ok') continue;
+      cx.globalAlpha = a(b.k, 0.42);
+      circle(b.x, b.y, b.r, '#0a0c12');
+      cx.globalAlpha = a(b.k, 0.72);
+      ring(b.x, b.y, b.r, '#c8ccd8');
+      cx.globalAlpha = a(b.k, 0.85);
+      text(b.label, b.x - 2, b.y - 3, '#f0f2f6');
+    }
+    cx.globalAlpha = 1;
+  },
+};
+
 cv.addEventListener('touchstart', e => {
-  e.preventDefault(); Audio_.unlock();
-  const t = e.changedTouches[0], r = cv.getBoundingClientRect();
-  if (t.clientX - r.left < r.width / 2) touchOrigin = { x: t.clientX, y: t.clientY };
-  else { pressed.ok = true; held.ok = true; setTimeout(() => held.ok = false, 60); }
+  Audio_.unlock();
+  if (!TouchPad.on) return;
+  e.preventDefault();
+  for (const t of e.changedTouches) TouchPad.start(t);
 }, { passive: false });
 cv.addEventListener('touchmove', e => {
+  if (!TouchPad.on) return;
   e.preventDefault();
-  if (!touchOrigin) return;
-  const t = e.changedTouches[0];
-  const dx = t.clientX - touchOrigin.x, dy = t.clientY - touchOrigin.y, dead = 14;
-  held.left = dx < -dead; held.right = dx > dead;
-  held.up = dy < -dead; held.down = dy > dead;
+  for (const t of e.changedTouches) TouchPad.move(t);
 }, { passive: false });
-cv.addEventListener('touchend', e => {
-  e.preventDefault(); touchOrigin = null;
-  held.left = held.right = held.up = held.down = false;
-}, { passive: false });
+for (const ev of ['touchend', 'touchcancel']) {
+  cv.addEventListener(ev, e => {
+    if (!TouchPad.on) return;
+    e.preventDefault();
+    for (const t of e.changedTouches) TouchPad.end(t);
+  }, { passive: false });
+}
 
 // --- time --------------------------------------------------------------
 const Time = { dt: 0, t: 0, frame: 0 };
@@ -1177,8 +1311,10 @@ function frame(now) {
   Time.dt = Math.min(0.05, (now - lastT) / 1000);
   lastT = now; Time.t += Time.dt; Time.frame++;
   Audio_.update(Time.dt);
+  TouchPad.tick(Time.dt);
   Game.update(Time.dt);
   Game.draw();
+  TouchPad.draw();
   Input.endFrame();
   requestAnimationFrame(frame);
 }
@@ -2269,6 +2405,15 @@ function wrap(str, maxPx, spacing = 1) {
 
 // --- drawing helpers ---------------------------------------------------
 function rect(x, y, w, h, c) { cx.fillStyle = c; cx.fillRect(x | 0, y | 0, w | 0, h | 0); }
+
+// Only the touch overlay uses these; everything in the world is rectangles.
+function circle(x, y, r, c) {
+  cx.fillStyle = c; cx.beginPath(); cx.arc(x, y, r, 0, Math.PI * 2); cx.fill();
+}
+function ring(x, y, r, c, w = 1) {
+  cx.strokeStyle = c; cx.lineWidth = w;
+  cx.beginPath(); cx.arc(x, y, r - w / 2, 0, Math.PI * 2); cx.stroke();
+}
 
 // Deterministic per-pixel noise, so texture never shimmers between frames.
 function hash2(x, y) {
@@ -3958,13 +4103,18 @@ const Battle = {
     return Player.spd > this.enemy.spd;
   },
 
-  // Queue the player's action behind the enemy's, and say why — an action that
-  // simply happens later with no explanation reads as a dropped input.
+  // Queue the player's action behind the enemy's. `why` is optional and is only
+  // used where the delay is the move's own doing; losing a speed roll is not
+  // announced, because the enemy's attack landing first says it already.
   yieldTo(act, why) {
     this.pending = act;
-    this.push(why);
-    this.state = 'message';
-    this.after = () => this.enemyTurn();
+    if (why) {
+      this.push(why);
+      this.state = 'message';
+      this.after = () => this.enemyTurn();
+      return;
+    }
+    this.enemyTurn();
   },
 
   // Where every player action lands once it has resolved.
@@ -3989,10 +4139,10 @@ const Battle = {
     Player[pool] -= move.cost;
     this.sub = null;
     if (!this.playerFirst(move)) {
+      // "Winds up" is the move describing itself, not a turn-order caption, so
+      // it stays. Losing on speed passes silently.
       this.yieldTo(() => this.resolveMove(kind, move),
-                   move.priority === 'last'
-                     ? `${Player.name} winds up.`
-                     : `${this.enemy.name} moves first.`);
+                   move.priority === 'last' ? `${Player.name} winds up.` : null);
       return;
     }
     this.resolveMove(kind, move);
@@ -4063,11 +4213,9 @@ const Battle = {
     if (!it) return;
     Player.useItem(name);
     this.sub = null;
-    // An item is an action like any other and sorts by SPD the same way.
-    if (!this.playerFirst(null)) {
-      this.yieldTo(() => this.resolveItem(name, it), `${this.enemy.name} moves first.`);
-      return;
-    }
+    // Items always resolve first, whatever the speed roll. Reaching for a spray
+    // and dying before it opens is the kind of loss a player reads as the game
+    // cheating, and there is no counterplay to being slow.
     this.resolveItem(name, it);
   },
 
@@ -4569,8 +4717,9 @@ const Title = {
 const OPT_KEY = 'overgrowth.options.v1';
 const Options = {
   cursor: 0, rep: {}, from: 'title',
-  values: { textSpeed: 1, volume: 2, flashing: 1, grain: 1 },
+  values: { controls: 0, textSpeed: 1, volume: 2, flashing: 1, grain: 1 },
   rows: [
+    { key: 'controls',  label: 'CONTROLS',   opts: ['AUTO', 'KEYBOARD', 'TOUCH'] },
     { key: 'textSpeed', label: 'TEXT SPEED', opts: ['SLOW', 'NORMAL', 'FAST'] },
     { key: 'volume',    label: 'VOLUME',     opts: ['OFF', 'LOW', 'NORMAL', 'LOUD'] },
     { key: 'flashing',  label: 'FLASHING',   opts: ['REDUCED', 'NORMAL'] },
@@ -4587,6 +4736,13 @@ const Options = {
   save() { try { localStorage.setItem(OPT_KEY, JSON.stringify(this.values)); } catch (e) {} },
   apply() {
     if (Audio_.master) Audio_.master.gain.value = [0, 0.16, 0.34, 0.55][this.values.volume];
+    // AUTO means "show the pad on anything with a touchscreen". The explicit
+    // settings exist because AUTO gets it wrong on hybrids either way: a laptop
+    // with a touch display does not want a thumb pad over the art, and a tablet
+    // with a keyboard case might.
+    const c = this.values.controls;
+    TouchPad.on = c === 2 || (c === 0 && TouchPad.supported);
+    if (!TouchPad.on) { TouchPad.release(); TouchPad.ids = {}; }
   },
 
   enter(from) { this.from = from || 'title'; this.cursor = 0; },
@@ -4622,13 +4778,13 @@ const Options = {
     textCentered('OPTIONS', W / 2, 18, '#f0ece2', 2);
     rect(60, 30, W - 120, 1, '#2c2c36');
     for (let i = 0; i < this.rows.length; i++) {
-      const r = this.rows[i], y = 44 + i * 16, sel = this.cursor === i;
+      const r = this.rows[i], y = 40 + i * 15, sel = this.cursor === i;
       text(r.label, 58, y, sel ? '#f0ece2' : '#8a8a94');
       const v = r.opts[this.values[r.key]];
       text('< ' + v + ' >', W - 58 - textWidth('< ' + v + ' >'), y, sel ? '#e8d24a' : '#70707c');
       if (sel) text('>', 46, y, '#e8d24a');
     }
-    const by = 44 + this.rows.length * 16 + 8;
+    const by = 40 + this.rows.length * 15 + 8;
     const selBack = this.cursor === this.rows.length;
     textCentered('BACK', W / 2, by, selBack ? '#f0ece2' : '#70707c');
     if (selBack) text('>', W / 2 - textWidth('BACK') / 2 - 10, by, '#e8d24a');
@@ -4828,13 +4984,27 @@ const WorldMap = {
   },
 };
 
+// "JUST NOW" / "14 MINUTES AGO" / "3 DAYS AGO". Coarse on purpose: the exact
+// minute is never the thing the player wants to know off a save slot.
+function agoText(stamp) {
+  if (!stamp) return '';
+  const s = Math.max(0, (Date.now() - stamp) / 1000);
+  if (s < 90) return 'JUST NOW';
+  const units = [[60, 'MINUTE'], [3600, 'HOUR'], [86400, 'DAY']];
+  let [div, word] = units[0];
+  for (const u of units) if (s >= u[0]) [div, word] = u;
+  const n = Math.floor(s / div);
+  return `${n} ${word}${n === 1 ? '' : 'S'} AGO`;
+}
+
 // --- pause menu --------------------------------------------------------
-const TAB_STATUS = 0, TAB_BAG = 1, TAB_MOVES = 2, TAB_MAP = 3, TAB_NOTES = 4, TAB_OPTIONS = 5;
+const TAB_STATUS = 0, TAB_BAG = 1, TAB_MOVES = 2, TAB_MAP = 3, TAB_NOTES = 4,
+      TAB_SAVE = 5, TAB_OPTIONS = 6;
 
 const Menu = {
   open: false, tab: 0, cursor: 0, rep: {},
-  tabs: ['STATUS', 'BAG', 'MOVES', 'MAP', 'NOTES', 'OPTIONS'],
-  message: '', messageT: 0,
+  tabs: ['STATUS', 'BAG', 'MOVES', 'MAP', 'NOTES', 'SAVE', 'OPTIONS'],
+  message: '', messageT: 0, savedT: 0,
   toggle() { this.open = !this.open; this.cursor = 0; this.messageT = 0; Audio_.sfx(this.open ? 'ok' : 'cancel'); },
   update(dt) {
     this.messageT = Math.max(0, this.messageT - dt);
@@ -4849,6 +5019,7 @@ const Menu = {
     if (this.tab === TAB_OPTIONS && ok) {
       this.open = false; Options.enter('menu'); Game.mode = 'options'; Audio_.sfx('ok'); return;
     }
+    if (this.tab === TAB_SAVE && ok) { this.saveHere(); return; }
     const list = this.list();
     if (list.length) {
       if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + list.length) % list.length; Audio_.sfx('blip'); }
@@ -4861,6 +5032,22 @@ const Menu = {
       }
       if (ok && this.tab === TAB_BAG) this.useFromBag(list[this.cursor]);
     }
+  },
+
+  // Writing it down and resting are different things. An inn bed restores HP,
+  // PP and SP as well; this only records where he got to. Making the menu save
+  // heal too would mean the player never needs an inn again, and attrition is
+  // the whole shape of this game's difficulty (see docs/11).
+  saveHere() {
+    if (Save.write()) {
+      Audio_.sfx('found');
+      this.message = 'SAVED.';
+      this.savedT = 1.0;
+    } else {
+      Audio_.sfx('wrong');
+      this.message = 'IT WOULD NOT WRITE.';
+    }
+    this.messageT = 1.8;
   },
 
   // Restoratives work out here too. Everything else in the bag is either a
@@ -4914,20 +5101,21 @@ const Menu = {
   },
   draw() {
     rect(0, 0, W, H, 'rgba(4,4,8,0.88)');
-    // Laid out by measured width rather than a fixed pitch: six labels of very
-    // different lengths do not sit on a grid without gaps you can drive a bus
-    // through.
-    let tx = 8;
+    // Laid out by measured width rather than a fixed pitch: seven labels of
+    // very different lengths do not sit on a grid without gaps you can drive a
+    // bus through.
+    let tx = 6;
     for (let i = 0; i < this.tabs.length; i++) {
-      const w = textWidth(this.tabs[i]) + 8;
+      const w = textWidth(this.tabs[i]) + 6;
       if (i === this.tab) rect(tx - 2, 8, w, 12, '#1e2630');
-      text(this.tabs[i], tx + 2, 11, i === this.tab ? '#f0ece2' : '#70707c');
-      tx += w + 2;
+      text(this.tabs[i], tx + 1, 11, i === this.tab ? '#f0ece2' : '#70707c');
+      tx += w + 1;
     }
     rect(8, 22, W - 16, 1, '#3a3a44');
 
     if (this.tab === TAB_MAP) { this.drawMap(); }
     else if (this.tab === TAB_MOVES) { this.drawMoves(); }
+    else if (this.tab === TAB_SAVE) { this.drawSave(); }
     else if (this.tab === 0) {
       const rows = [
         ['NAME', Player.name], ['LEVEL', Player.level],
@@ -4940,8 +5128,10 @@ const Menu = {
         ['EXP', `${Player.exp} / ${Player.expToReach(Player.level + 1)}`],
         ['FOUND', `${Player.collectibles} / 10`],
       ];
+      // The left column runs down the same strip the thumb pad occupies.
+      const shift = TouchPad.on ? 46 : 0;
       for (let i = 0; i < rows.length; i++) {
-        const x = i < 7 ? 14 : W / 2 + 6, y = 30 + (i % 7) * 11;
+        const x = i < 7 ? 14 + shift : W / 2 + 6, y = 30 + (i % 7) * 11;
         text(rows[i][0], x, y, '#8a8a94');
         text(String(rows[i][1]), x + 52, y, '#e8e8ee');
       }
@@ -4952,6 +5142,7 @@ const Menu = {
       if (!list.length) {
         text(this.tab === TAB_BAG ? 'NOTHING IN THE BAG.' : 'NOTHING READ YET.', 14, 32, '#70707c');
       }
+      const inset = TouchPad.on ? 46 : 0;      // clear of the thumb pad
       for (let i = 0; i < Math.min(11, list.length); i++) {
         const y = 30 + i * 11;
         const name = this.tab === TAB_BAG ? list[i] : NOTES[list[i]].title;
@@ -4959,9 +5150,9 @@ const Menu = {
         // the battle menu uses for a move you cannot pay for.
         const usable = this.tab !== TAB_BAG || (DATA.items[list[i]] || {}).field;
         const lit = i === this.cursor;
-        text(name, 20, y, usable ? (lit ? '#f0ece2' : '#9a9aa4') : (lit ? '#9a9aa4' : '#63636e'));
-        if (this.tab === TAB_BAG) text('x' + Player.bag[list[i]], W - 34, y, '#8a8a94');
-        if (i === this.cursor) text('>', 12, y, '#e8d24a');
+        text(name, 20 + inset, y, usable ? (lit ? '#f0ece2' : '#9a9aa4') : (lit ? '#9a9aa4' : '#63636e'));
+        if (this.tab === TAB_BAG) text('x' + Player.bag[list[i]], W - 34 - inset, y, '#8a8a94');
+        if (i === this.cursor) text('>', 12 + inset, y, '#e8d24a');
       }
       if (this.tab === TAB_BAG && list.length) {
         const it = DATA.items[list[this.cursor]];
@@ -4976,7 +5167,7 @@ const Menu = {
       text(this.message, (W - w) / 2 + 6, H - 43, '#e8d24a');
     }
     const hint = this.tab === TAB_BAG ? 'Z  USE     C / X  CLOSE'
-               : this.tab === TAB_MAP ? '' : 'C / X  CLOSE';
+               : (this.tab === TAB_MAP || this.tab === TAB_SAVE) ? '' : 'C / X  CLOSE';
     if (hint) text(hint, W - textWidth(hint) - 10, H - 12, '#5a5a66');
   },
 
@@ -4985,26 +5176,68 @@ const Menu = {
   drawMoves() {
     const list = this.list();
     const phys = Player.moves('physical').length;
+    const inset = TouchPad.on ? 46 : 0;
     for (let i = 0; i < Math.min(11, list.length); i++) {
       const m = list[i], y = 29 + i * 11;
       const lit = i === this.cursor;
       const pool = i < phys ? 'PP' : 'SP';
       const afford = (i < phys ? Player.pp : Player.sp) >= m.cost;
-      text(m.name.toUpperCase(), 18, y, lit ? '#f0ece2' : (afford ? '#9a9aa4' : '#63636e'));
+      text(m.name.toUpperCase(), 18 + inset, y, lit ? '#f0ece2' : (afford ? '#9a9aa4' : '#63636e'));
       const cost = `${m.cost} ${pool}`;
       // Columns are tight: COUNTER STANCE is the longest name and Multi-Jab has
       // the longest stat line, and all three have to fit across 320 pixels. The
       // cost is right-aligned to its column so the names never collide with it.
-      text(cost, 128 - textWidth(cost), y, afford ? '#b8b8c2' : '#63636e');
-      text(moveStatLine(m), 136, y, lit ? '#b0b0ba' : '#7a7a86');
-      if (lit) text('>', 10, y, '#e8d24a');
+      text(cost, 128 + inset - textWidth(cost), y, afford ? '#b8b8c2' : '#63636e');
+      // The stat column is dropped on touch: 46 pixels of it are gone and a
+      // truncated line is worse than none. It is on the STATUS-side row anyway.
+      if (!inset) text(moveStatLine(m), 136, y, lit ? '#b0b0ba' : '#7a7a86');
+      if (lit) text('>', 10 + inset, y, '#e8d24a');
     }
     const sel = list[this.cursor];
+    if (inset && sel) text(moveStatLine(sel), 14, H - 34, '#b0b0ba');
     if (sel && sel.notes) {
       const lines = wrap(sel.notes, W - 28);
       for (let i = 0; i < Math.min(2, lines.length); i++)
         text(lines[i], 14, H - 24 + i * 10, '#8a8a94');
     }
+  },
+
+  // One slot, shown as what it currently holds. The player should be able to
+  // see what they are about to write over before they write over it.
+  drawSave() {
+    const d = Save.read();
+    const boxY = 34, boxH = 74;
+    rect(28, boxY, W - 56, boxH, 'rgba(10,12,18,0.7)');
+    rect(28, boxY, W - 56, 1, '#3a3a44'); rect(28, boxY + boxH - 1, W - 56, 1, '#3a3a44');
+    rect(28, boxY, 1, boxH, '#3a3a44'); rect(W - 29, boxY, 1, boxH, '#3a3a44');
+
+    if (!d) {
+      text('THE NOTEBOOK IS EMPTY.', 40, boxY + 14, '#70707c');
+      text('NOTHING HAS BEEN WRITTEN DOWN YET.', 40, boxY + 26, '#4e4e58');
+    } else {
+      const leg = routeIndexOf(d.room);
+      const rows = [
+        ['NAME', d.name || '-'],
+        ['LEVEL', String(d.level)],
+        ['WHERE', leg >= 0 ? ROUTE[leg].label : 'SOMEWHERE'],
+        ['FOUND', `${d.collectibles || 0} / 10`],
+        ['WRITTEN', agoText(d.stamp)],
+      ];
+      for (let i = 0; i < rows.length; i++) {
+        const y = boxY + 8 + i * 12;
+        text(rows[i][0], 40, y, '#7a7a86');
+        text(rows[i][1], 108, y, '#e8e8ee');
+      }
+    }
+
+    // The saved beat: the line flashes once and then sits there.
+    const fresh = this.savedT > 0;
+    if (fresh) this.savedT = Math.max(0, this.savedT - Time.dt);
+    const prompt = d ? 'Z  WRITE OVER IT' : 'Z  WRITE IT DOWN';
+    textCentered(prompt, W / 2, boxY + boxH + 10,
+                 fresh && Math.sin(Time.t * 22) > 0 ? '#f0ece2' : '#e8d24a');
+    textCentered('SAVING RECORDS WHERE HE GOT TO. IT DOES NOT REST HIM.',
+                 W / 2, H - 14, '#5a5a66');
   },
 
   // A map of Limpo, in the town-map idiom: terrain, a road, and a marker for

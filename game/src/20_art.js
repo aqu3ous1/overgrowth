@@ -133,6 +133,15 @@ function wrap(str, maxPx, spacing = 1) {
 // --- drawing helpers ---------------------------------------------------
 function rect(x, y, w, h, c) { cx.fillStyle = c; cx.fillRect(x | 0, y | 0, w | 0, h | 0); }
 
+// Only the touch overlay uses these; everything in the world is rectangles.
+function circle(x, y, r, c) {
+  cx.fillStyle = c; cx.beginPath(); cx.arc(x, y, r, 0, Math.PI * 2); cx.fill();
+}
+function ring(x, y, r, c, w = 1) {
+  cx.strokeStyle = c; cx.lineWidth = w;
+  cx.beginPath(); cx.arc(x, y, r - w / 2, 0, Math.PI * 2); cx.stroke();
+}
+
 // Deterministic per-pixel noise, so texture never shimmers between frames.
 function hash2(x, y) {
   let h = (x * 374761393 + y * 668265263) ^ 0x5bf03635;

@@ -94,8 +94,18 @@
   #audio-note { color: var(--ink-faint); }
   #audio-note[data-on="1"] { color: var(--grass); }
 
+  /* On a phone the screen is the whole point: give it the viewport and drop
+     the furniture around it. The keyboard legend is meaningless on touch. */
   @media (max-width: 560px) {
-    body { gap: 16px; padding: 16px 10px 24px; }
+    body { gap: 10px; padding: 8px 6px 12px; justify-content: flex-start; }
+    #wrap { max-width: none; }
+    canvas#screen { border-width: 0; box-shadow: none; }
+    footer { display: none; }
+  }
+  @media (max-width: 560px) and (orientation: landscape) {
+    body { padding: 0; gap: 0; justify-content: center; }
+    canvas#screen { max-height: 100vh; width: auto; margin: 0 auto; }
+    .meta { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -116,7 +126,7 @@
 </footer>
 
 <div class="meta">
-  <span>0.3.1</span><span>&middot;</span><span>Acts 0&ndash;2</span><span>&middot;</span>
+  <span>0.3.2</span><span>&middot;</span><span>Acts 0&ndash;2</span><span>&middot;</span>
   <span id="audio-note">Click the screen for sound</span>
 </div>
 

@@ -48,26 +48,150 @@ const Input = {
   endFrame() { for (const k in pressed) { pressed[k] = false; consumed[k] = false; } },
 };
 
-// Touch: drag the left half to move, tap the right half to confirm.
-let touchOrigin = null;
+// --- touch controls ----------------------------------------------------
+// An on-screen pad and buttons, drawn into the game's own 320x180 frame so
+// they scale with it and land where they look like they are. The previous
+// scheme — drag the left half, tap the right half — had no cancel and no menu,
+// so half the game was unreachable on a phone.
+//
+// Named TouchPad, not Touch: a top-level `const Touch` shadows the DOM's own
+// Touch constructor for everything else in the global scope.
+const TouchPad = {
+  on: false,                 // overlay live; set from Options
+  supported: ('ontouchstart' in window) || navigator.maxTouchPoints > 0,
+  ids: {},                   // touch identifier -> which control it grabbed
+  lit: {},                   // control -> seconds of highlight left
+  // Up the sides, not along the bottom. Every text box in this game is anchored
+  // to the bottom edge, so a thumb pad down there sits on top of the words -
+  // the move list was unreadable behind it. These positions clear the tallest
+  // bottom box (the battle move list, y 118 down) and the HUD in the corner.
+  padX: 32, padY: 90, padR: 27, dead: 7,
+  buttons: [
+    { k: 'ok',   x: 291, y: 100, r: 17, label: 'Z' },
+    { k: 'no',   x: 291, y: 60,  r: 14, label: 'X' },
+    { k: 'menu', x: 299, y: 24,  r: 12, label: 'C' },
+  ],
+
+  // Client space -> the game's 320x180 space, so a tap lands on what it hit.
+  local(t) {
+    const r = cv.getBoundingClientRect();
+    return [(t.clientX - r.left) / r.width * W, (t.clientY - r.top) / r.height * H];
+  },
+
+  buttonAt(x, y) {
+    for (const b of this.buttons) if (Math.hypot(x - b.x, y - b.y) <= b.r) return b;
+    return null;
+  },
+  onPad(x, y) {
+    return Math.abs(x - this.padX) <= this.padR && Math.abs(y - this.padY) <= this.padR;
+  },
+
+  // The pad is a stick, not four keys: direction comes from the offset, so
+  // diagonals work and a thumb sliding around the pad keeps steering.
+  steer(x, y) {
+    const dx = x - this.padX, dy = y - this.padY;
+    held.left = dx < -this.dead;  held.right = dx > this.dead;
+    held.up = dy < -this.dead;    held.down = dy > this.dead;
+    for (const k of ['left', 'right', 'up', 'down']) if (held[k]) this.lit[k] = 0.12;
+  },
+  release() { held.left = held.right = held.up = held.down = false; },
+
+  // While a text box is up there is nothing to steer and one thing to do, so
+  // the whole screen becomes the advance button. Every mobile RPG does this and
+  // it is the difference between readable and infuriating.
+  reading() {
+    return (typeof Dialogue !== 'undefined' && Dialogue.active)
+        || (typeof Game !== 'undefined' && Game.mode === 'cutscene')
+        || (typeof Battle !== 'undefined' && Battle.active && Battle.state === 'message');
+  },
+
+  start(t) {
+    const [x, y] = this.local(t);
+    const b = this.buttonAt(x, y);
+    if (b) {
+      this.ids[t.identifier] = b.k;
+      if (!held[b.k]) pressed[b.k] = true;
+      held[b.k] = true;
+      this.lit[b.k] = 0.16;
+      return;
+    }
+    if (!this.reading() && this.onPad(x, y)) {
+      this.ids[t.identifier] = 'pad'; this.steer(x, y); return;
+    }
+    if (this.reading()) {
+      this.ids[t.identifier] = 'ok';
+      if (!held.ok) pressed.ok = true;
+      held.ok = true;
+    }
+  },
+  move(t) {
+    if (this.ids[t.identifier] !== 'pad') return;
+    const [x, y] = this.local(t);
+    this.steer(x, y);
+  },
+  end(t) {
+    const which = this.ids[t.identifier];
+    delete this.ids[t.identifier];
+    if (!which) return;
+    if (which === 'pad') this.release();
+    else held[which] = false;
+  },
+  tick(dt) { for (const k in this.lit) this.lit[k] = Math.max(0, this.lit[k] - dt); },
+
+  draw() {
+    if (!this.on) return;
+    const a = (k, base) => (this.lit[k] > 0 ? Math.min(1, base * 2.1) : base);
+    // The pad is hidden while reading: it would sit on top of the text box, and
+    // there is nothing to walk to anyway.
+    // Every element is a light shape on its own dark plate. A single light
+    // shape disappears against snow; a single dark one disappears in the
+    // Gallery. Both together survive either.
+    if (!this.reading()) {
+      cx.globalAlpha = 0.42;
+      circle(this.padX, this.padY, this.padR, '#0a0c12');
+      cx.globalAlpha = 0.7;
+      ring(this.padX, this.padY, this.padR, '#9aa1b2');
+      const arms = [['up', 0, -1], ['down', 0, 1], ['left', -1, 0], ['right', 1, 0]];
+      for (const [k, dx, dy] of arms) {
+        const bx = this.padX + dx * 15, by = this.padY + dy * 15;
+        const w = dy ? 14 : 8, h = dy ? 8 : 14;
+        cx.globalAlpha = a(k, 0.55);
+        rect(bx - w / 2 - 1, by - h / 2 - 1, w + 2, h + 2, '#0a0c12');
+        cx.globalAlpha = a(k, 0.8);
+        rect(bx - w / 2, by - h / 2, w, h, '#e6e8ee');
+      }
+    }
+    for (const b of this.buttons) {
+      if (this.reading() && b.k !== 'ok') continue;
+      cx.globalAlpha = a(b.k, 0.42);
+      circle(b.x, b.y, b.r, '#0a0c12');
+      cx.globalAlpha = a(b.k, 0.72);
+      ring(b.x, b.y, b.r, '#c8ccd8');
+      cx.globalAlpha = a(b.k, 0.85);
+      text(b.label, b.x - 2, b.y - 3, '#f0f2f6');
+    }
+    cx.globalAlpha = 1;
+  },
+};
+
 cv.addEventListener('touchstart', e => {
-  e.preventDefault(); Audio_.unlock();
-  const t = e.changedTouches[0], r = cv.getBoundingClientRect();
-  if (t.clientX - r.left < r.width / 2) touchOrigin = { x: t.clientX, y: t.clientY };
-  else { pressed.ok = true; held.ok = true; setTimeout(() => held.ok = false, 60); }
+  Audio_.unlock();
+  if (!TouchPad.on) return;
+  e.preventDefault();
+  for (const t of e.changedTouches) TouchPad.start(t);
 }, { passive: false });
 cv.addEventListener('touchmove', e => {
+  if (!TouchPad.on) return;
   e.preventDefault();
-  if (!touchOrigin) return;
-  const t = e.changedTouches[0];
-  const dx = t.clientX - touchOrigin.x, dy = t.clientY - touchOrigin.y, dead = 14;
-  held.left = dx < -dead; held.right = dx > dead;
-  held.up = dy < -dead; held.down = dy > dead;
+  for (const t of e.changedTouches) TouchPad.move(t);
 }, { passive: false });
-cv.addEventListener('touchend', e => {
-  e.preventDefault(); touchOrigin = null;
-  held.left = held.right = held.up = held.down = false;
-}, { passive: false });
+for (const ev of ['touchend', 'touchcancel']) {
+  cv.addEventListener(ev, e => {
+    if (!TouchPad.on) return;
+    e.preventDefault();
+    for (const t of e.changedTouches) TouchPad.end(t);
+  }, { passive: false });
+}
 
 // --- time --------------------------------------------------------------
 const Time = { dt: 0, t: 0, frame: 0 };
@@ -267,8 +391,10 @@ function frame(now) {
   Time.dt = Math.min(0.05, (now - lastT) / 1000);
   lastT = now; Time.t += Time.dt; Time.frame++;
   Audio_.update(Time.dt);
+  TouchPad.tick(Time.dt);
   Game.update(Time.dt);
   Game.draw();
+  TouchPad.draw();
   Input.endFrame();
   requestAnimationFrame(frame);
 }

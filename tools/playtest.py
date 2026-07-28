@@ -27,6 +27,13 @@ WRAPPER = """<!doctype html><html><head><meta charset="utf-8">
 </body></html>"""
 
 
+RESET_STATE = """() => {
+          Player.level = 1; Player.money = 0; Player.collectibles = 0; Player.hp = 1;
+          Player.bag = {}; Player.notes = []; Player.seen = [];
+          World.load('bedroom'); Game.mode = 'title'; Title.enter();
+        }"""
+
+
 def press(page, key, times=1, delay=90):
     for _ in range(times):
         page.keyboard.press(key)
@@ -627,11 +634,20 @@ def main():
         if page.evaluate("() => Game.mode") != "options":
             errors.append("OPTIONS on the title screen does not open")
         shot("19-options")
-        before = page.evaluate("() => Options.values.textSpeed")
+        # Whatever row the cursor starts on must respond; do not hard-code which.
+        key = page.evaluate("() => Options.rows[Options.cursor].key")
+        before = page.evaluate("(k) => Options.values[k]", key)
         press(page, "ArrowRight")
         page.wait_for_timeout(200)
-        if page.evaluate("() => Options.values.textSpeed") == before:
-            errors.append("options do not change on left/right")
+        if page.evaluate("(k) => Options.values[k]", key) == before:
+            errors.append(f"options do not change on left/right (row {key})")
+        # CONTROLS must actually arm and disarm the touch overlay.
+        page.evaluate("() => { Options.values.controls = 2; Options.apply(); }")
+        if not page.evaluate("() => TouchPad.on"):
+            errors.append("CONTROLS=TOUCH does not turn the on-screen pad on")
+        page.evaluate("() => { Options.values.controls = 1; Options.apply(); }")
+        if page.evaluate("() => TouchPad.on"):
+            errors.append("CONTROLS=KEYBOARD leaves the on-screen pad up")
         press(page, "x")
         page.wait_for_timeout(300)
         if page.evaluate("() => Game.mode") != "title":
@@ -675,6 +691,32 @@ def main():
         if page.evaluate("() => (Player.bag['Knuckle Wrap'] || 0)") != 1:
             errors.append("a battle-only item was spent from the field menu")
 
+        # Save from the menu, and continue from exactly that point.
+        page.evaluate("() => Save.clear()")
+        to_tab(5); shot("33-menu-save")
+        page.evaluate("() => { Player.money = 777; Player.collectibles = 2; Player.hp = 40; }")
+        press(page, "z")
+        page.wait_for_timeout(400)
+        d = page.evaluate("() => Save.read()")
+        if not d:
+            errors.append("saving from the menu wrote nothing")
+        elif d.get("hp") != 40:
+            errors.append("the menu save restored HP; writing it down is not resting")
+        page.evaluate(RESET_STATE)
+        page.wait_for_timeout(400)
+        if "CONTINUE" not in page.evaluate("() => Title.opts"):
+            errors.append("CONTINUE is not offered after saving from the menu")
+        page.evaluate("() => { Title.cursor = Title.opts.indexOf('CONTINUE'); }")
+        press(page, "z")
+        page.wait_for_timeout(600)
+        back = page.evaluate("() => ({room: World.id, money: Player.money, hp: Player.hp,"
+                             " found: Player.collectibles})")
+        if back != {"room": "ondo", "money": 777, "hp": 40, "found": 2}:
+            errors.append(f"CONTINUE did not resume the saved point: {back}")
+        page.evaluate("() => { Game.mode = 'field'; }")
+        press(page, "c")
+        page.wait_for_timeout(250)
+
         to_tab(2); shot("31-menu-moves")
         if not page.evaluate("() => Menu.list().length"):
             errors.append("the MOVES tab lists nothing")
@@ -683,7 +725,7 @@ def main():
             errors.append("the map recorded nowhere the player has been")
 
         # OPTIONS from the pause menu must open options, not close the menu.
-        to_tab(5)
+        to_tab(6)
         press(page, "z")
         page.wait_for_timeout(300)
         if page.evaluate("() => Game.mode") != "options":

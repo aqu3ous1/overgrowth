@@ -103,13 +103,18 @@ const Battle = {
     return Player.spd > this.enemy.spd;
   },
 
-  // Queue the player's action behind the enemy's, and say why — an action that
-  // simply happens later with no explanation reads as a dropped input.
+  // Queue the player's action behind the enemy's. `why` is optional and is only
+  // used where the delay is the move's own doing; losing a speed roll is not
+  // announced, because the enemy's attack landing first says it already.
   yieldTo(act, why) {
     this.pending = act;
-    this.push(why);
-    this.state = 'message';
-    this.after = () => this.enemyTurn();
+    if (why) {
+      this.push(why);
+      this.state = 'message';
+      this.after = () => this.enemyTurn();
+      return;
+    }
+    this.enemyTurn();
   },
 
   // Where every player action lands once it has resolved.
@@ -134,10 +139,10 @@ const Battle = {
     Player[pool] -= move.cost;
     this.sub = null;
     if (!this.playerFirst(move)) {
+      // "Winds up" is the move describing itself, not a turn-order caption, so
+      // it stays. Losing on speed passes silently.
       this.yieldTo(() => this.resolveMove(kind, move),
-                   move.priority === 'last'
-                     ? `${Player.name} winds up.`
-                     : `${this.enemy.name} moves first.`);
+                   move.priority === 'last' ? `${Player.name} winds up.` : null);
       return;
     }
     this.resolveMove(kind, move);
@@ -208,11 +213,9 @@ const Battle = {
     if (!it) return;
     Player.useItem(name);
     this.sub = null;
-    // An item is an action like any other and sorts by SPD the same way.
-    if (!this.playerFirst(null)) {
-      this.yieldTo(() => this.resolveItem(name, it), `${this.enemy.name} moves first.`);
-      return;
-    }
+    // Items always resolve first, whatever the speed roll. Reaching for a spray
+    // and dying before it opens is the kind of loss a player reads as the game
+    // cheating, and there is no counterplay to being slow.
     this.resolveItem(name, it);
   },
 

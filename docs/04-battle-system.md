@@ -94,11 +94,14 @@ so that "some things don't let you leave" is established before it matters.
 1. Player selects an action.
 2. Enemies select actions (hidden).
 3. All actions sort by **SPD**, ties broken by a coin flip. Some moves override priority — e.g.
-   `Wind-Up Punch` always acts last, `Rush Down` always acts first. **Losing the roll is stated**
-   ("KID winds up." / "Fence Post moves first."): an action that silently resolves later reads as a
-   dropped input, not as a slower character.
-4. Actions resolve in order. Dead combatants' queued actions are dropped.
-5. End-of-turn: status ticks, buff/debuff durations decrement, PP/SP regen (see below).
+   `Wind-Up Punch` always acts last, `Rush Down` always acts first. **Items always act first**,
+   whatever the roll: reaching for a spray and dying before it opens reads as the game cheating,
+   and there is no counterplay to being slow.
+4. Losing a speed roll is **not** narrated. The enemy's attack landing before yours says it, and a
+   caption saying so as well turns every slow turn into two text boxes. A move that delays *itself*
+   still announces it ("KID winds up."), because that is the move describing what it does.
+5. Actions resolve in order. Dead combatants' queued actions are dropped.
+6. End-of-turn: status ticks, buff/debuff durations decrement, PP/SP regen (see below).
 
 ## Damage formula (first pass)
 

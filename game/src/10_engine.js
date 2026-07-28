@@ -61,6 +61,11 @@ const TouchPad = {
   supported: ('ontouchstart' in window) || navigator.maxTouchPoints > 0,
   ids: {},                   // touch identifier -> which control it grabbed
   lit: {},                   // control -> seconds of highlight left
+  // The last tap or click, in game coordinates, for screens that want to be
+  // pressed directly rather than through the pad — the controls picker has to
+  // work before the player has told us which controls they have.
+  lastTap: null,
+  takeTap() { const t = this.lastTap; this.lastTap = null; return t; },
   // Up the sides, not along the bottom. Every text box in this game is anchored
   // to the bottom edge, so a thumb pad down there sits on top of the words -
   // the move list was unreadable behind it. These positions clear the tallest
@@ -140,6 +145,9 @@ const TouchPad = {
 
   draw() {
     if (!this.on) return;
+    // The picker asks which controls you want; showing them over the question
+    // answers it for you.
+    if (typeof Game !== 'undefined' && Game.mode === 'controls') return;
     const a = (k, base) => (this.lit[k] > 0 ? Math.min(1, base * 2.1) : base);
     // The pad is hidden while reading: it would sit on top of the text box, and
     // there is nothing to walk to anyway.
@@ -176,10 +184,17 @@ const TouchPad = {
 
 cv.addEventListener('touchstart', e => {
   Audio_.unlock();
+  // Recorded whether or not the overlay is live: a screen may want the raw tap.
+  if (e.changedTouches[0]) TouchPad.lastTap = TouchPad.local(e.changedTouches[0]);
   if (!TouchPad.on) return;
   e.preventDefault();
   for (const t of e.changedTouches) TouchPad.start(t);
 }, { passive: false });
+// A mouse counts too, so the picker can be clicked on a desktop.
+cv.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'touch') return;         // already handled above
+  TouchPad.lastTap = TouchPad.local(e);
+});
 cv.addEventListener('touchmove', e => {
   if (!TouchPad.on) return;
   e.preventDefault();

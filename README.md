@@ -36,16 +36,17 @@ one long walk out.
 | [16 — Combat Math](docs/16-combat-math.md) | Enemy stat derivation, damage formula, measured difficulty |
 | [17 — Economy](docs/17-economy.md) | Shops, prices, and the per-act ledger |
 | [18 — Vertical Slice](docs/18-vertical-slice.md) | What to build first, and how to know it worked |
-| [19 — The Playable Build](docs/19-build.md) | What 0.3.2 contains, and where it deviates |
+| [19 — The Playable Build](docs/19-build.md) | What 0.3.3 contains, and where it deviates |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
 
 ## Play it
 
-**0.3.2 is playable — Acts 0 through 2, on a desktop or a phone.** `game/overgrowth.html` is the
+**0.3.3 is playable — Acts 0 through 2, on a desktop or a phone.** `game/overgrowth.html` is the
 title screen, the bedroom, the Gallery, Okobo, the Sunken Orchard, the road, Ondo, Kestrel Works,
 and both bosses through **The Memorial** — in one self-contained file with no assets and no
-dependencies. Thirty-one rooms, an illustrated world map, save anywhere, and touch controls. Every sprite is drawn pixel by pixel at runtime, every tile texture is procedural, the font
-is a 5x7 bitmap defined inline, and all the audio is WebAudio synthesis.
+dependencies. Thirty-one rooms, an illustrated world map, save anywhere, and touch controls.
+Every sprite is drawn pixel by pixel at runtime, every tile texture is procedural, the font is a
+5x7 bitmap defined inline, and all the audio is WebAudio synthesis.
 
 ```
 python3 tools/gen_sprites.py       # shape primitives -> the pixel art
@@ -54,8 +55,9 @@ python3 tools/playtest.py          # drives it with a keyboard, fails on any err
 python3 tools/playtest_mobile.py   # drives it with a thumb, on an emulated phone
 ```
 
-**Arrows** move, **Z** confirms, **X** cancels, **C** opens the menu. On a touchscreen an on-screen
-pad appears instead; `CONTROLS` in the options forces either scheme.
+The game opens by asking which controls you want — **on-screen pad** or **keyboard** — answerable
+with either. Keyboard is **arrows** to move, **Z** confirm, **X** cancel, **C** menu. `CONTROLS` in
+the options changes it later.
 
 The build's balance tables are *generated* from `data/*.json`, not copied, so the game people play
 cannot drift from the game these documents describe — and `validate.py` fails if the checked-in

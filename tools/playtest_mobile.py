@@ -75,12 +75,22 @@ with sync_playwright() as pw:
     def tap_btn(k, ms=90):
         tap(*BTN[k], ms=ms)
 
-    if not pg.evaluate("() => TouchPad.on"):
-        bad.append("the touch overlay is not on by default on a touch device")
-
     def shot(n):
         if args.shots:
             pg.locator("#screen").screenshot(path=str(OUT / f"{n}.png"))
+
+    # The controls question comes first, and on a phone it has to be answerable
+    # by touch alone - which is the whole reason it is there.
+    if pg.evaluate("() => Game.mode") != "controls":
+        bad.append("the phone does not get the controls question first")
+    shot("m0-controls")
+    card = pg.evaluate("() => { const b = ControlPick.boxes()[0];"
+                       " return [b.x + b.w / 2, b.y + b.h / 2]; }")
+    tap(card[0], card[1], ms=500)
+    if pg.evaluate("() => Game.mode") != "title":
+        bad.append("tapping ON-SCREEN did not get past the controls question")
+    if not pg.evaluate("() => TouchPad.on"):
+        bad.append("choosing ON-SCREEN did not turn the on-screen pad on")
 
     shot("m1-title")
 

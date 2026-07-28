@@ -250,6 +250,18 @@ def main():
             if args.shots:
                 page.locator("#screen").screenshot(path=str(SHOTS / f"{name}.png"))
 
+        # --- the controls question, which is now the first screen
+        if page.evaluate("() => Game.mode") != "controls":
+            errors.append("the controls question is not the first thing shown")
+        shot("00-controls")
+        page.evaluate("() => { ControlPick.cursor = 1; }")   # KEYBOARD
+        press(page, "z")
+        page.wait_for_timeout(400)
+        if page.evaluate("() => Game.mode") != "title":
+            errors.append("answering the controls question did not reach the title")
+        if page.evaluate("() => TouchPad.on"):
+            errors.append("choosing KEYBOARD left the on-screen pad up")
+
         # --- title and name entry
         shot("01-title")
         press(page, "Enter")           # NEW GAME

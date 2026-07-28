@@ -92,7 +92,7 @@ const Title = {
 const OPT_KEY = 'overgrowth.options.v1';
 const Options = {
   cursor: 0, rep: {}, from: 'title',
-  values: { controls: 0, textSpeed: 1, volume: 2, flashing: 1, grain: 1 },
+  values: { controls: 0, controlsAsked: 0, textSpeed: 1, volume: 2, flashing: 1, grain: 1 },
   rows: [
     { key: 'controls',  label: 'CONTROLS',   opts: ['AUTO', 'KEYBOARD', 'TOUCH'] },
     { key: 'textSpeed', label: 'TEXT SPEED', opts: ['SLOW', 'NORMAL', 'FAST'] },
@@ -164,6 +164,121 @@ const Options = {
     textCentered('BACK', W / 2, by, selBack ? '#f0ece2' : '#70707c');
     if (selBack) text('>', W / 2 - textWidth('BACK') / 2 - 10, by, '#e8d24a');
     textCentered('LEFT / RIGHT CHANGE    X BACK', W / 2, H - 14, '#4a4a56');
+    grain(0.04);
+  },
+};
+
+// --- controls picker ---------------------------------------------------
+// The first thing the game shows, once. It has to be answerable by whatever
+// the player actually has, which is the whole reason it exists: a phone player
+// who is never offered the pad has no way to press anything, and a desktop
+// player who gets it anyway has a thumb pad sitting on their art.
+const ControlPick = {
+  cursor: 0, rep: {}, t: 0,
+  cards: [
+    { key: 'touch', value: 2, title: 'ON-SCREEN', sub: 'PAD AND BUTTONS' },
+    { key: 'keys',  value: 1, title: 'KEYBOARD',  sub: 'ARROWS  Z  X  C' },
+  ],
+  boxes() {
+    const w = 116, h = 76, y = 62, gap = 12;
+    const x0 = (W - (w * 2 + gap)) / 2;
+    return this.cards.map((c, i) => ({ c, x: x0 + i * (w + gap), y, w, h }));
+  },
+
+  enter() { this.cursor = TouchPad.supported ? 0 : 1; this.t = 0; TouchPad.takeTap(); },
+
+  choose(card) {
+    Options.values.controls = card.value;
+    Options.values.controlsAsked = 1;
+    Options.apply(); Options.save();
+    Audio_.sfx('ok');
+    Game.mode = 'title'; Title.enter();
+  },
+
+  update(dt) {
+    this.t += dt;
+    const n = this.cards.length;
+    if (Input.repeat('left', this.rep)) { this.cursor = (this.cursor + n - 1) % n; Audio_.sfx('blip'); }
+    if (Input.repeat('right', this.rep)) { this.cursor = (this.cursor + 1) % n; Audio_.sfx('blip'); }
+    const tap = TouchPad.takeTap();
+    if (tap) {
+      for (const b of this.boxes()) {
+        if (tap[0] >= b.x && tap[0] <= b.x + b.w && tap[1] >= b.y && tap[1] <= b.y + b.h) {
+          this.choose(b.c); return;
+        }
+      }
+    }
+    if (Input.hit('ok')) this.choose(this.cards[this.cursor]);
+  },
+
+  draw() {
+    rect(0, 0, W, H, '#08080c');
+    textCentered('OVERGROWTH', W / 2, 18, '#e8e4da', 2);
+    textCentered('HOW ARE YOU PLAYING?', W / 2, 42, '#9a9aa4');
+
+    for (let i = 0; i < 2; i++) {
+      const b = this.boxes()[i], sel = i === this.cursor;
+      rect(b.x, b.y, b.w, b.h, sel ? '#141922' : '#0d0f15');
+      const edge = sel ? '#e8d24a' : '#3a3a44';
+      rect(b.x, b.y, b.w, 1, edge); rect(b.x, b.y + b.h - 1, b.w, 1, edge);
+      rect(b.x, b.y, 1, b.h, edge); rect(b.x + b.w - 1, b.y, 1, b.h, edge);
+      const cxp = b.x + b.w / 2, art = b.y + 26;
+      if (b.c.key === 'touch') {
+        // The pad and buttons, drawn small, so the choice shows itself.
+        cx.globalAlpha = sel ? 1 : 0.45;
+        ring(cxp - 26, art, 14, '#9aa1b2');
+        for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+          const w = dy ? 8 : 4, h = dy ? 4 : 8;
+          rect(cxp - 26 + dx * 8 - w / 2, art + dy * 8 - h / 2, w, h, '#e6e8ee');
+        }
+        ring(cxp + 22, art + 7, 9, '#c8ccd8'); text('Z', cxp + 20, art + 4, '#f0f2f6');
+        ring(cxp + 22, art - 12, 7, '#c8ccd8'); text('X', cxp + 20, art - 15, '#f0f2f6');
+        cx.globalAlpha = 1;
+      } else {
+        cx.globalAlpha = sel ? 1 : 0.45;
+        // Keycaps. The arrows are drawn, not typed: the 5x7 font has letters,
+        // digits and punctuation, and no arrow glyphs at all.
+        const cap = (kx, ky) => {
+          rect(kx, ky, 11, 11, '#1c1c24');
+          rect(kx, ky + 10, 11, 1, '#3a3a44');
+        };
+        const arrow = (kx, ky, dx, dy) => {
+          for (let i = 0; i < 3; i++) {
+            const w = 5 - i * 2;
+            if (dy) rect(kx + 5 - w / 2 - 0.5, ky + (dy > 0 ? 3 + i : 7 - i), w, 1, '#d8d4c8');
+            else rect(kx + (dx > 0 ? 3 + i : 7 - i), ky + 5 - w / 2 - 0.5, 1, w, '#d8d4c8');
+          }
+        };
+        const ax = cxp - 46, ay = art - 12;
+        cap(ax + 13, ay);      arrow(ax + 13, ay, 0, -1);        // up
+        cap(ax, ay + 13);      arrow(ax, ay + 13, -1, 0);        // left
+        cap(ax + 13, ay + 13); arrow(ax + 13, ay + 13, 0, 1);    // down
+        cap(ax + 26, ay + 13); arrow(ax + 26, ay + 13, 1, 0);    // right
+        const letters = ['Z', 'X', 'C'];
+        for (let li = 0; li < 3; li++) {
+          const kx = cxp + 6 + li * 14, ky = art + 1;
+          cap(kx, ky);
+          text(letters[li], kx + 3, ky + 3, '#d8d4c8');
+        }
+        cx.globalAlpha = 1;
+      }
+      textCentered(b.c.title, cxp, b.y + b.h - 26, sel ? '#f0ece2' : '#70707c');
+      textCentered(b.c.sub, cxp, b.y + b.h - 14, sel ? '#8a8a94' : '#4e4e58');
+      // Corner brackets, each arm running inward from its own corner.
+      if (sel && Math.sin(this.t * 5) > -0.3) {
+        const L = b.x - 3, R = b.x + b.w + 1, T = b.y - 3, B = b.y + b.h + 1;
+        for (const [hx, vy, vx, hy] of [[L, T, L, T], [R - 8, T, R - 2, T],
+                                        [L, B - 8, L, B - 2], [R - 8, B - 8, R - 2, B - 2]]) {
+          rect(hx, hy, 8, 2, '#e8d24a');
+          rect(vx, vy, 2, 8, '#e8d24a');
+        }
+      }
+    }
+
+    textCentered(TouchPad.supported ? 'TAP ONE, OR USE THE ARROW KEYS.'
+                                    : 'CLICK ONE, OR USE THE ARROW KEYS.',
+                 W / 2, H - 26, '#5a5a66');
+    textCentered('YOU CAN CHANGE THIS LATER IN OPTIONS.', W / 2, H - 14, '#3f3f4a');
     grain(0.04);
   },
 };

@@ -1,6 +1,6 @@
 # 19 — The Playable Build
 
-**0.3.2 — Acts 0 through 2, playable, on a desktop or a phone.** Title screen through
+**0.3.3 — Acts 0 through 2, playable, on a desktop or a phone.** Title screen through
 **Main Boss 1**, in a browser, in one self-contained HTML file with no assets and no dependencies.
 
 ```
@@ -9,6 +9,27 @@ python3 tools/build_game.py        # game/src/*.js + data/*.json -> game/overgro
 python3 tools/playtest.py          # drives it with a keyboard, fails on any error
 python3 tools/playtest_mobile.py   # drives it with a thumb, on an emulated phone
 ```
+
+## 0.3.3 — the controls question
+
+**The first thing the game shows is which controls you want.** Two cards — `ON-SCREEN` and
+`KEYBOARD` — each drawing the thing it is offering, so the choice shows itself rather than
+describing itself. Answer it once and it never appears again; `CONTROLS` in the options still
+changes it.
+
+It defaults to whichever the device suggests, and it is answerable by *both*: tap or click a card,
+or use the arrow keys and Z. That symmetry is the whole point. Auto-detection was already there and
+it is right most of the time, but "most of the time" on the screen a player cannot press anything
+without is not good enough — a phone player who is never offered the pad has nothing to press, and a
+touchscreen laptop got a thumb pad over its art with no obvious way to say no.
+
+The pad hides itself while the question is up. Showing the controls over the question that asks
+whether you want them answers it for you.
+
+Two small things the picker needed: the raw tap position is now recorded whether or not the overlay
+is live (the picker has to be pressable before the player has told us what they are pressing with),
+and the keyboard card draws its arrow keys as shapes — the 5×7 font has letters, digits and
+punctuation, and no arrow glyphs at all.
 
 ## 0.3.2 — save anywhere, and a phone
 

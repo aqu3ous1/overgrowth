@@ -742,6 +742,7 @@ const Game = {
     Fade.update(dt);
     if (Fade.busy && Fade.a > 0.99) return;
 
+    if (this.mode === 'controls') { ControlPick.update(dt); return; }
     if (this.mode === 'title') { Title.update(dt); return; }
     if (this.mode === 'name') { NameEntry.update(dt); return; }
     if (this.mode === 'options') { Options.update(dt); return; }
@@ -806,6 +807,7 @@ const Game = {
 
   draw() {
     cx.clearRect(0, 0, W, H);
+    if (this.mode === 'controls') { ControlPick.draw(); return; }
     if (this.mode === 'title') { Title.draw(); Fade.draw(); return; }
     if (this.mode === 'name') { NameEntry.draw(); Fade.draw(); return; }
     if (this.mode === 'options') { Options.draw(); Fade.draw(); return; }
@@ -881,8 +883,11 @@ const ROOM_LABEL = {
 };
 
 // --- boot --------------------------------------------------------------
+// The controls question comes before the title, once, and never again unless
+// the player goes looking for it. Answering it is what makes the game playable
+// at all on whatever they are holding.
 Options.load();
 World.load('bedroom');
-Title.enter();
-Game.mode = 'title';
+if (Options.values.controlsAsked) { Title.enter(); Game.mode = 'title'; }
+else { ControlPick.enter(); Game.mode = 'controls'; }
 requestAnimationFrame(frame);

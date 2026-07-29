@@ -739,7 +739,9 @@ const Story = {
             { text: 'The last tier comes away and the yard is only a yard.', speaker: 'system' },
             { text: 'The names are still cut into it. They are not going anywhere.', speaker: 'system' },
             { text: '(Got Second Wind.)', speaker: 'system' },
-          ], () => { Game.mode = 'cutscene'; Cutscene.play('slice_end'); });
+            { text: 'The east gate is open. There is a road past it, and a border on it.',
+              speaker: 'system' },
+          ]);
         } else {
           Game.mode = 'field';
           Game.onDefeat();
@@ -936,8 +938,9 @@ const Cutscene = {
         const a = Math.min(1, this.t / 1.2);
         cx.globalAlpha = a;
         textCentered('OVERGROWTH', W / 2, 52, '#e8e4da', 3);
-        textCentered('END OF ACT TWO', W / 2, 72, '#6a6a76');
-        textCentered('Yettallia, and Vixtry Co., in a later build.', W / 2, 92, '#4a4a56');
+        textCentered('END OF ACT THREE', W / 2, 72, '#6a6a76');
+        textCentered('The Vixtry campus, and the Custodian, in a later build.',
+                     W / 2, 92, '#4a4a56');
         cx.globalAlpha = Math.max(0, Math.min(1, (this.t - 2.4) / 1.2));
         textCentered(`${Player.name}  -  Lv ${Player.level}  -  ${Player.collectibles}/10 found`,
                      W / 2, 116, '#8a8a94');

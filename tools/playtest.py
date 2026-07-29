@@ -598,6 +598,11 @@ def main():
         advance(page)
         if not page.evaluate("() => !!Player.flags.beatMemorial"):
             errors.append("the Memorial was never beaten")
+        # It is not the last boss any more, so it must hand the player back to
+        # the yard rather than to the end card.
+        mode = page.evaluate("() => Game.mode")
+        if mode not in ("field", "battle"):
+            errors.append(f"beating the Memorial left the game in {mode!r}, not back in the yard")
         shot("30-after-memorial")
 
         # --- Act 3: the border, Sable City, Bellhouse Commons
@@ -750,6 +755,9 @@ def main():
         page.wait_for_timeout(500); advance(page)
         if not page.evaluate("() => !!Player.flags.beatTenant"):
             errors.append("the Tenant was never beaten")
+        page.wait_for_timeout(900)
+        if page.evaluate("() => Game.mode") not in ("cutscene", "end"):
+            errors.append("beating the Tenant does not end the build")
         shot("49-after-tenant")
 
         # --- every transition must be survivable in both directions

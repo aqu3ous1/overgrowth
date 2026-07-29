@@ -1,6 +1,6 @@
 # 19 — The Playable Build
 
-**0.4.0 — Acts 0 through 3, playable, on a desktop or a phone.** Title screen through
+**0.4.1 — Acts 0 through 3, playable, on a desktop or a phone.** Title screen through
 **Main Boss 2**, in a browser, in one self-contained HTML file with no assets and no dependencies.
 
 ```
@@ -42,6 +42,15 @@ not long.
 prompt, in a corridor the player has already walked. `Never leave.`
 
 **Main Boss 2 — Tenant**, at the top, in a room that is squarer than the building allows.
+
+**Reported and fixed in 0.4.1:** beating The Memorial still ran the *end of Act Two* card, so a
+player who had just opened the border was told Yettallia was in a later build. Act 3 was added
+without taking the ending off the boss that no longer ends anything. The Memorial hands the player
+back to the yard now and says the east gate is open; only the Tenant reaches the end card.
+
+The playtest had walked straight past it — it teleports to the next area, so it never noticed the
+game had ended. Both bosses now assert what they hand back to: the Memorial must leave the player
+in the field, and the Tenant must not.
 
 ### Critical hits
 

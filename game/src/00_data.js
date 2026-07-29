@@ -579,7 +579,7 @@ const DATA = {
   },
   "Tenant": {
    "role": "standard",
-   "hp_multiplier": 1.92,
+   "hp_multiplier": 2.1,
    "atk_multiplier": 1.23,
    "phases": 3,
    "splits": true
@@ -765,7 +765,10 @@ const DATA = {
   "divisor": 12,
   "defCoeff": 0.5,
   "critChance": 0.04,
-  "critMult": 1.75
+  "critMult": 1.75,
+  "critPerSpd": 0.00025,
+  "critMax": 0.22,
+  "critPlayerOnly": true
  },
  "regen": {
   "PP": 2,

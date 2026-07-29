@@ -67,6 +67,8 @@ def walk(page, key, ms, dest, tries=3):
 
 
 def put(page, room, tx, ty, face="down"):
+    if page.evaluate("() => Battle.active"):
+        page.evaluate("() => { Battle.active = false; Battle.onEnd = null; }")
     page.evaluate("""([room, tx, ty, face]) => {
       if (World.id !== room) World.load(room);
       Player.x = tx*16+8; Player.y = ty*16+8; Player.face = face;
@@ -598,6 +600,158 @@ def main():
             errors.append("the Memorial was never beaten")
         shot("30-after-memorial")
 
+        # --- Act 3: the border, Sable City, Bellhouse Commons
+        idle(page); put(page, "kestrel_yard", 20, 7, "down")
+        walk(page, "ArrowDown", 700, "border")
+        if not page.evaluate("() => World.id === 'border'"):
+            errors.append("the yard does not open onto the border after the Memorial")
+        shot("40-border")
+
+        idle(page); put(page, "border", 22, 6, "right")
+        walk(page, "ArrowRight", 700, "sable_road")
+        if not page.evaluate("() => World.id === 'sable_road'"):
+            errors.append("the border does not cross into Yettallia")
+        idle(page); put(page, "sable_road", 22, 6, "right")
+        walk(page, "ArrowRight", 700, "sable")
+        if not page.evaluate("() => World.id === 'sable'"):
+            errors.append("the road does not reach Sable City")
+        shot("41-sable")
+
+        # Everyone in Sable must speak, including the desk.
+        for key, tx, ty, face in [("sable_local", 7, 7, "up"), ("sable_kid", 20, 10, "up"),
+                                  ("sable_rail", 30, 7, "up"), ("vixtry_desk", 14, 13, "up")]:
+            idle(page); put(page, "sable", tx, ty, face)
+            press(page, "z"); page.wait_for_timeout(280)
+            if not page.evaluate("() => Dialogue.active"):
+                errors.append(f"{key} said nothing")
+            advance(page)
+
+        # The billboard and a demo pod speak in the Vixtry voice.
+        idle(page); put(page, "sable", 17, 7, "up")
+        press(page, "z"); page.wait_for_timeout(280)
+        shot("42-sable-billboard")
+        advance(page)
+        idle(page); put(page, "sable", 26, 7, "up")
+        press(page, "z"); page.wait_for_timeout(600)
+        advance(page)
+
+        # The transit hub, and the line about his father, which nobody flags.
+        idle(page); put(page, "sable", 24, 5, "up")
+        walk(page, "ArrowUp", 500, "sable_transit")
+        if not page.evaluate("() => World.id === 'sable_transit'"):
+            errors.append("the transit hub cannot be entered")
+        idle(page); put(page, "sable_transit", 4, 5, "up")
+        press(page, "z"); advance(page)
+        if not page.evaluate("() => !!Player.flags.fatherLine"):
+            errors.append("the recruiter never delivers the line about the father")
+        shot("43-transit")
+
+        # The industrial district and Mini-Boss 2.
+        idle(page); put(page, "sable", 10, 14, "up")
+        walk(page, "ArrowUp", 600, "sable_works")
+        if not page.evaluate("() => World.id === 'sable_works'"):
+            errors.append("the works cannot be entered from Sable City")
+        idle(page); put(page, "sable_works", 10, 7, "down")
+        walk(page, "ArrowDown", 700, "sable_floor")
+        if not page.evaluate("() => World.id === 'sable_floor'"):
+            errors.append("the line floor cannot be reached")
+        page.evaluate("() => { Player.level = 20; Player.exp = Player.expToReach(20);"
+                      " Player.restore(); Player.addItem('Spray III', 4); }")
+        idle(page); put(page, "sable_floor", 10, 7, "up")
+        press(page, "z"); advance(page)
+        if not until(page, "Battle.active && Battle.enemy.boss", 6000):
+            errors.append("the supervisor does not start Mini-Boss 2")
+        else:
+            shot("44-supervisor")
+            if page.evaluate("() => Battle.canFlee()"):
+                errors.append("the Line Supervisor can be fled from")
+            if not fight(page):
+                errors.append("the Line Supervisor fight never ended")
+        page.wait_for_timeout(500); advance(page)
+        if not page.evaluate("() => !!Player.flags.beatSupervisor"):
+            errors.append("the Line Supervisor was never beaten")
+
+        # Bellhouse Commons.
+        idle(page); put(page, "sable", 30, 14, "down")
+        walk(page, "ArrowDown", 600, "bellhouse_ext")
+        if not page.evaluate("() => World.id === 'bellhouse_ext'"):
+            errors.append("Sable City does not lead to Bellhouse Commons")
+        shot("45-bellhouse")
+        idle(page); put(page, "bellhouse_ext", 11, 6, "up")
+        walk(page, "ArrowUp", 600, "bellhouse_1")
+        if not page.evaluate("() => World.id === 'bellhouse_1'"):
+            errors.append("Bellhouse cannot be entered")
+
+        # Both ends of the first hall arrive on the same floor. That is the point.
+        for tx, face, key in ((1, "left", "ArrowLeft"), (21, "right", "ArrowRight")):
+            idle(page); put(page, "bellhouse_1", tx, 2, face)
+            hold(page, key, 400)
+            page.wait_for_timeout(400)
+            if page.evaluate("() => World.id") != "bellhouse_2":
+                errors.append(f"the hall at x={tx} does not arrive on the second floor")
+            idle(page); put(page, "bellhouse_1", 10, 6)
+
+        # Act 3's notes, and the Custodian who finally says something.
+        notes = [("border", 12, 7, "border_order"),
+                 ("sable_road", 5, 8, "transit_complaint"),
+                 ("sable", 9, 11, "vixtry_flyer"),
+                 ("sable_transit", 11, 5, "demo_terms"),
+                 ("bellhouse_ext", 16, 8, "rent_notice"),
+                 ("bellhouse_1", 7, 7, "artists_statement"),
+                 ("bellhouse_2", 12, 7, "maintenance_log"),
+                 ("bellhouse_3", 15, 8, "left_with_super")]
+        for room, tx, ty, note in notes:
+            idle(page); put(page, room, tx, ty, "up")
+            press(page, "z"); page.wait_for_timeout(250)
+            if not page.evaluate("() => Dialogue.active"):
+                errors.append(f"lore note {note} is unreachable")
+            advance(page)
+
+        page.evaluate("() => { Player.flags.sawCustodian3 = false; World.load('bellhouse_2'); }")
+        page.wait_for_timeout(700)
+        if not page.evaluate("() => World.entities.some(e => e.kind === 'custodian')"):
+            errors.append("the Custodian does not appear at Bellhouse Commons")
+        shot("46-custodian3")
+        advance(page)
+
+        # 7B, her television, and the super.
+        idle(page); put(page, "bellhouse_3", 12, 8, "up")
+        press(page, "z"); page.wait_for_timeout(280)
+        if not page.evaluate("() => Dialogue.active"):
+            errors.append("the building super said nothing")
+        advance(page)
+        idle(page); put(page, "bellhouse_3", 7, 6, "up")
+        walk(page, "ArrowUp", 500, "bellhouse_7b")
+        if not page.evaluate("() => World.id === 'bellhouse_7b'"):
+            errors.append("7B cannot be entered")
+        before = page.evaluate("() => Player.money")
+        idle(page); put(page, "bellhouse_7b", 3, 4, "up")
+        press(page, "z"); advance(page)
+        if page.evaluate("() => Player.money") <= before:
+            errors.append("turning the television round paid nothing")
+        shot("47-7b")
+
+        # Main Boss 2, at the top.
+        page.evaluate("() => { Player.level = 26; Player.exp = Player.expToReach(26);"
+                      " Player.restore(); Player.addItem('Spray III', 6); }")
+        idle(page); put(page, "bellhouse_3", 15, 6, "up")
+        walk(page, "ArrowUp", 600, "bellhouse_top")
+        if not page.evaluate("() => World.id === 'bellhouse_top'"):
+            errors.append("the top floor cannot be reached")
+        page.wait_for_timeout(500); advance(page)
+        if not until(page, "Battle.active && Battle.enemy.boss", 6000):
+            errors.append("the top floor does not start the Tenant fight")
+        else:
+            shot("48-tenant")
+            if page.evaluate("() => Battle.canFlee()"):
+                errors.append("the Tenant can be fled from")
+            if not fight(page):
+                errors.append("the Tenant fight never ended")
+        page.wait_for_timeout(500); advance(page)
+        if not page.evaluate("() => !!Player.flags.beatTenant"):
+            errors.append("the Tenant was never beaten")
+        shot("49-after-tenant")
+
         # --- every transition must be survivable in both directions
         # (the 0.1.0 bug: landing on the return path bounced you straight back)
         pairs = [("okobo", "north_road"), ("north_road", "orchard1"),
@@ -611,7 +765,12 @@ def main():
                  ("kestrel_yard", "kestrel_f1"), ("kestrel_f1", "kestrel_f2"),
                  ("kestrel_f2", "kestrel_f3"), ("kestrel_f1", "kestrel_boiler"),
                  ("kestrel_f2", "kestrel_office"), ("kestrel_f3", "kestrel_locker"),
-                 ("ondo", "ondo_grocer")]
+                 ("ondo", "ondo_grocer"), ("kestrel_yard", "border"),
+                 ("border", "sable_road"), ("sable_road", "sable"),
+                 ("sable", "sable_shop"), ("sable", "sable_inn"),
+                 ("sable", "sable_transit"), ("sable", "sable_works"),
+                 ("sable_works", "sable_floor"), ("sable", "bellhouse_ext"),
+                 ("bellhouse_ext", "bellhouse_1"), ("bellhouse_3", "bellhouse_7b")]
         for a, b in pairs:
             for src, dst in ((a, b), (b, a)):
                 ok = page.evaluate("""([src, dst]) => {

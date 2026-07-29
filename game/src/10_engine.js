@@ -271,6 +271,12 @@ const Audio_ = {
                      this.tone(150, 0.14, { gain: 0.16, type: 'sawtooth' }); break;
       case 'hurt':   this.tone(190, 0.20, { gain: 0.18, type: 'sawtooth' });
                      this.tone(95, 0.26, { gain: 0.13, type: 'square' }); break;
+      // Layered on top of the ordinary hit, never instead of it: a crit should
+      // sound like the same punch landing harder.
+      case 'crit':   this.noise(0.09, { gain: 0.26, freq: 2600, q: 1.2 });
+                     [1046, 1568].forEach((f, i) =>
+                       setTimeout(() => this.tone(f, 0.10, { gain: 0.14, type: 'square' }), i * 45));
+                     break;
       case 'psy':    for (let i = 0; i < 5; i++)
                        setTimeout(() => this.tone(720 + i * 190, 0.11, { gain: 0.09, type: 'sine' }), i * 34);
                      break;
@@ -393,6 +399,22 @@ const TRACKS = {
     ],
   },
   // Liminal rooms: no melody, just a held tone and a hum.
+  // Sable City: fast, bright, and too many voices at once.
+  sable: {
+    bpm: 152, type: 'square', gain: 0.045, detune: 9, legato: 1.1, bass: true,
+    steps: [
+      7, 12, 14, 12, 7, 12, 14, 16, 14, 12, 7, 5, 7, null, 5, 3,
+      5, 10, 12, 10, 5, 10, 12, 14, 12, 10, 5, 3, 5, null, 3, 2,
+      0, 7, 12, 7, 0, 7, 12, 14, 12, 7, 0, -2, 0, null, -2, -4,
+      3, 10, 15, 10, 3, 10, 15, 17, 15, 10, 3, 2, 0, null, null, null,
+    ],
+  },
+  // Bellhouse: a corridor. Two tones a semitone apart, and nothing else.
+  bellhouse: {
+    drones: [{ freq: 58, gain: 0.05, type: 'sine' },
+             { freq: 61.4, gain: 0.03, type: 'sine' },
+             { freq: 174, gain: 0.012, type: 'triangle' }],
+  },
   gallery:  { drones: [{ freq: 55, gain: 0.05, type: 'sine' }, { freq: 110.3, gain: 0.022, type: 'sine' }] },
   orchard:  { drones: [{ freq: 73.4, gain: 0.045, type: 'sine' }, { freq: 147.6, gain: 0.014, type: 'triangle' }] },
   bedroom:  { drones: [{ freq: 48, gain: 0.055, type: 'sine' }] },

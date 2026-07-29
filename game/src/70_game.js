@@ -61,6 +61,56 @@ const NOTES = {
             'Item 15: heating, north floor - unsatisfactory.',
             'Item 15: heating, north floor - unsatisfactory.'],
   },
+  // --- Act 3 ---------------------------------------------------------
+  border_order: {
+    title: 'BORDER ORDER',
+    pages: ['Crossings are suspended until the review concludes.',
+            'The review concluded. The order was not withdrawn.'],
+  },
+  transit_complaint: {
+    title: 'TRANSIT COMPLAINT FORM',
+    pages: ['Nature of complaint: the 6:40 does not stop at Vell Street anymore.',
+            'Resolution: Vell Street has been deprioritised owing to reduced ridership.'],
+  },
+  vixtry_flyer: {
+    title: 'FLYER',
+    pages: ['VIXTRY CO. - online co-living.',
+            'Why commute? Why queue? Why wait?',
+            'Ask about family plans.'],
+  },
+  demo_terms: {
+    title: 'DEMO POD TERMS',
+    pages: ['Session data is retained to improve the experience.',
+            'Retention is indefinite because improvement is ongoing.',
+            'Users may request a summary of their data at any time.'],
+  },
+  rent_notice: {
+    title: 'RENT NOTICE',
+    pages: ['Owing to improvements to the building, rents will rise by 12% from the first.',
+            'We are proud to be investing in your home.'],
+  },
+  artists_statement: {
+    title: "ARTIST'S STATEMENT",
+    pages: ['The murals are meant to make the halls feel less long.',
+            'Management has asked me to note that the halls are not long.'],
+  },
+  maintenance_log: {
+    title: 'MAINTENANCE LOG',
+    pages: ['4C - door. 4C - door. 4C - door.',
+            '7B - nothing wrong, tenant wanted company.',
+            '7B - nothing wrong.'],
+  },
+  left_with_super: {
+    title: 'LEFT WITH THE SUPER',
+    pages: ["Marcy - I'm leaving the key with the super.",
+            "I don't think I'm coming back for the rest of it.",
+            'Sorry about the wall. It was like that.'],
+  },
+  under_a_door: {
+    title: 'SLID UNDER A DOOR',
+    pages: ['Whoever keeps turning my television around -',
+            "I know it's off. I know. Please stop."],
+  },
   last_one_out: {
     title: 'ON THE DOOR',
     pages: ["Whoever is last out, the yard lights are on the panel by the gate.",
@@ -73,8 +123,11 @@ const ONDO_STOCK = ['Spray', 'Spray II', 'Chalk Tablet', 'Bitter Tonic',
                     'Clean Rag', 'Knuckle Wrap', 'Cold Compress', 'Dropped Call'];
 // Food, not equipment. Cheaper per point than the market row and he knows it.
 const GROCER_STOCK = ['Spray', 'Chalk Tablet', 'Bitter Tonic'];
-const STOCKS = { ondo: ONDO_STOCK, grocer: GROCER_STOCK };
-const SHOP_TITLES = { ondo: 'ONDO', grocer: 'GROCER' };
+const SABLE_STOCK = ['Spray II', 'Spray III', 'Chalk Tablet', 'Bitter Tonic',
+                     'Clean Rag', 'Knuckle Wrap', 'Thin Static', 'Loose Laces',
+                     'Dead Battery'];
+const STOCKS = { ondo: ONDO_STOCK, grocer: GROCER_STOCK, sable: SABLE_STOCK };
+const SHOP_TITLES = { ondo: 'ONDO', grocer: 'GROCER', sable: 'SABLE CITY' };
 
 // --- NPC lines ---------------------------------------------------------
 // Limpo villagers attach a redundant location to statements about time.
@@ -233,6 +286,82 @@ const NPCS = {
             'That is how he put it. Went inside. Got better.',
             'I have been thinking about the order of those two things.'];
   },
+  // --- Act 3. Yettallia is louder, richer, and worse. -------------------
+  sable_local: () => ([
+    'You came in off the border road? Nobody comes in off the border road.',
+    'It is all right here. It is loud. You stop hearing it.',
+    'Everything you need is on this street. That is the idea.',
+  ]),
+  sable_kid: () => ([
+    'My mum is in the pod at the arcade. She has been in since the morning.',
+    'It is fine. You can wave and she waves.',
+  ]),
+  sable_rail: () => {
+    if (Player.flags.railTold) {
+      return ['Bellhouse. South end of the street, past the lights.'];
+    }
+    Player.flags.railTold = true;
+    return ['Line is out to the Commons and back. Bellhouse Commons.',
+            'Big place. Half of it empty and the rent still went up.',
+            'If you are looking for somewhere to go, it is somewhere to go.'];
+  },
+  sable_waiting: () => ([
+    'I am not waiting for a train. I am waiting for the desk to be free.',
+    'They only take so many a day. It is fair, I suppose.',
+  ]),
+  sable_tenant: () => ([
+    'Rent here is four times Ondo and I still could not tell you why.',
+    'You get used to the light. The window does not open.',
+  ]),
+  sable_shopkeeper: () => ([
+    'Everything is in. Everything is always in. That is Sable.',
+  ]),
+  sable_innkeeper: () => ([
+    'Room is upstairs. Nobody signs anything here, we have a system.',
+  ]),
+  // The recruitment desk. Soft, sincere, and it means every word.
+  vixtry_desk: () => {
+    if (Player.flags.deskHeard) {
+      return ['Take a flyer. Take two, if there is someone at home.'];
+    }
+    Player.flags.deskHeard = true;
+    return ['Hello. Have you got a minute? It is only a minute.',
+            'You would not commute. You would not queue. You would not wait.',
+            'People say it sounds like giving something up. It is the opposite.',
+            'You would be with everyone. All of the time. That is all it is.'];
+  },
+  // A grunt, who does not know which part of this is the significant part.
+  vixtry_recruiter: () => {
+    if (Player.flags.fatherLine) {
+      return ['Intake is quarterly. Come back and ask for me.'];
+    }
+    Player.flags.fatherLine = true;
+    return ['Intake, is it? You are young for it. That is not a no.',
+            'We take from everywhere. Limpo, mostly, lately.',
+            'Half the floor upstairs is Limpo. Good workers. Quiet.',
+            'One of them has your face on him, actually. Older. Same look.',
+            'Anyway. Fill this in and somebody will find you.'];
+  },
+  bellhouse_super: () => {
+    if (Player.flags.superTold) {
+      return ['Top floor is top floor. It is further than it looks.'];
+    }
+    Player.flags.superTold = true;
+    return ['You will want the top. Everybody wants the top.',
+            'The stairs do not go the way you would think. That is the building.',
+            'I have written it up. I write everything up.',
+            'Nothing is wrong with it. I want that on the record.'];
+  },
+  // Polite. Home. Completely uninterested in him.
+  bellhouse_7b: () => {
+    if (Player.flags.tvTurned) {
+      return ['You turned it round. Thank you.',
+              'Somebody keeps turning it back. It is not you. I know it is not you.'];
+    }
+    return ['Oh - hello. Do come in, it is open.',
+            'No, I am fine. Thank you for asking. Nobody asks.',
+            'Mind the television. It faces that way on purpose.'];
+  },
   records_clerk: () => {
     if (Player.flags.recordsDone) return ['Filed. Properly, this time.'];
     if (Player.flags.recordsQuest) return ['It is in here. That is all I can tell you.'];
@@ -360,6 +489,34 @@ function interact() {
         ? [{ text: 'A boiler. It is the only warm thing left in the works.', speaker: 'system' },
             { text: 'Nobody has been down here to light it.', speaker: 'system' }]
         : [{ text: 'A machine, stopped mid-cycle. Cold all the way through.', speaker: 'system' }]);
+      return;
+    case 'pod':
+      Dialogue.say([
+        { text: 'A demo pod. Somebody is inside it, lying back, eyes open.', speaker: 'system' },
+        { text: 'The screen is showing them a room. The room is nicer than this one.', speaker: 'system' },
+        { text: 'VIXTRY CO. - you are already home.', speaker: 'vixtry' },
+      ]);
+      return;
+    case 'television':
+      if (Player.flags.tvTurned) {
+        Dialogue.say([{ text: 'It faces the room now. It is still off.', speaker: 'system' }]);
+        return;
+      }
+      Player.flags.tvTurned = true;
+      Player.money += 300;
+      Audio_.sfx('found');
+      Dialogue.say([
+        { text: 'The television faces the wall.', speaker: 'system' },
+        { text: 'He turns it round.', speaker: 'system' },
+        { text: '(Got 300 Rell.)', speaker: 'system' },
+      ]);
+      return;
+    case 'apartment':
+      Dialogue.say([{ text: `Unit ${o.unit}. Nobody answers.`, speaker: 'system' },
+                    { text: 'Somebody is in. He can hear a chair.', speaker: 'system' }]);
+      return;
+    case 'foreman':
+      Story.supervisorFight();
       return;
     case 'desk':
       Dialogue.say([{ text: 'A desk, squared away. Pen lined up with the edge.', speaker: 'system' },
@@ -591,6 +748,89 @@ const Story = {
     });
   },
 
+// Mini-Boss 2. The first fight in the game against a person.
+  supervisorFight() {
+    if (Player.flags.beatSupervisor || Player.flags.supStarting) {
+      Dialogue.say([{ text: 'The line is stopped. It stays stopped.', speaker: 'system' }]);
+      return;
+    }
+    Player.flags.supStarting = true;
+    Dialogue.say([
+      { text: 'A supervisor, at the end of the line, with a clipboard.', speaker: 'system' },
+      { text: '"You are not on the sheet."', speaker: 'npc' },
+      { text: '"Everything that comes through here is on the sheet."', speaker: 'npc' },
+    ], () => {
+      const bd = DATA.bosses['Line Supervisor'];
+      const enc = DATA.bossEncounters['Line Supervisor'];
+      const e = Battle.makeEnemy('Line Supervisor', {
+        name: 'LINE SUPERVISOR', level: enc.internal_level, boss: true,
+        hpMul: bd.hp_multiplier, atkMul: bd.atk_multiplier,
+        phases: bd.phases, exp: enc.exp, scale: 3,
+      });
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.supStarting = false;
+        if (result === 'won') {
+          Player.flags.beatSupervisor = true;
+          Player.addItem('Spray III', 2);
+          Game.mode = 'field';
+          Audio_.play('sable');
+          Dialogue.say([
+            { text: 'He puts the clipboard down, carefully, the right way up.', speaker: 'system' },
+            { text: '(Got Spray III x2.)', speaker: 'system' },
+          ]);
+        } else { Game.mode = 'field'; Game.onDefeat(); }
+      });
+    });
+  },
+
+  // Third sighting, and the first time he says anything.
+  maybeCustodian3() {
+    if (Player.flags.sawCustodian3) return;
+    if (World.id !== 'bellhouse_2') return;
+    if (!Player.notes.includes('maintenance_log')) return;
+    Player.flags.sawCustodian3 = true;
+    const x = Math.max(20, Math.min(World.w * TS - 20, Player.x + 80));
+    World.entities.push({ kind: 'custodian', x, y: Player.y - 26, t: 3.4 });
+    Dialogue.say([{ text: 'Never leave.', speaker: 'custodian' }]);
+  },
+
+  // Main Boss 2. A room that is a perfect cube and is bigger than the floor
+  // it is on.
+  tenantFight() {
+    if (Player.flags.beatTenant || Player.flags.tenantStarting) return;
+    if (World.id !== 'bellhouse_top') return;
+    Player.flags.tenantStarting = true;
+    Dialogue.say([
+      { text: 'The room is square. It is squarer than the building allows.', speaker: 'system' },
+      { text: 'There is one tenant left on this floor, and it is not a person.', speaker: 'system' },
+    ], () => {
+      const bd = DATA.bosses['Tenant'];
+      const enc = DATA.bossEncounters['Tenant'];
+      const e = Battle.makeEnemy('Tenant', {
+        name: 'TENANT', level: enc.internal_level, boss: true,
+        hpMul: bd.hp_multiplier, atkMul: bd.atk_multiplier,
+        phases: bd.phases, exp: enc.exp, scale: 3,
+      });
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.tenantStarting = false;
+        if (result === 'won') {
+          Player.flags.beatTenant = true;
+          Player.addItem('Second Wind', 1);
+          Player.addItem('Loose Laces', 2);
+          Game.mode = 'field';
+          Audio_.play('bellhouse');
+          Dialogue.say([
+            { text: 'It comes apart into smaller squares, and then into none.', speaker: 'system' },
+            { text: 'The room is the size of the floor it is on again.', speaker: 'system' },
+            { text: '(Got Second Wind and Loose Laces x2.)', speaker: 'system' },
+          ], () => { Game.mode = 'cutscene'; Cutscene.play('slice_end'); });
+        } else { Game.mode = 'field'; Game.onDefeat(); }
+      });
+    });
+  },
+
   bossRoom() {
     if (Player.flags.beatBoss) return;
     if (World.id !== 'clearing') return;
@@ -777,6 +1017,8 @@ const Game = {
     Story.maybeCustodian();
     Story.maybeCustodian2();
     Story.bossRoom();
+    Story.maybeCustodian3();
+    Story.tenantFight();
 
     if (Input.hit('ok')) interact();
 
@@ -844,7 +1086,10 @@ const Game = {
       }
     }
     vignette(light, lx, ly, radius);
-    if (r.bright) tintScreen('#ffe6b0', 0.05);
+    // A room can push the whole frame toward a colour. Limpo is warm daylight;
+    // Sable is the first place lit by something somebody is selling.
+    if (r.tint) tintScreen(r.tint[0], r.tint[1]);
+    else if (r.bright) tintScreen('#ffe6b0', 0.05);
     grain(r.grain !== undefined ? r.grain : 0.04);
 
     if (this.mode === 'shop') Shop.draw();
@@ -880,6 +1125,16 @@ const ROOM_LABEL = {
   north_road: 'NORTH ROAD', orchard1: 'THE SUNKEN ORCHARD',
   orchard2: 'THE SUNKEN ORCHARD', orchard3: 'THE SUNKEN ORCHARD',
   clearing: 'THE SUNKEN ORCHARD',
+  kestrel_boiler: 'KESTREL WORKS - BOILER', kestrel_office: 'KESTREL WORKS - OFFICE',
+  kestrel_locker: 'KESTREL WORKS - CHANGING ROOM',
+  ondo_grocer: 'ONDO - GROCER',
+  border: 'THE BORDER', sable_road: 'YETTALLIA', sable: 'SABLE CITY',
+  sable_shop: 'SABLE CITY - SHOP', sable_inn: 'SABLE CITY - INN',
+  sable_transit: 'SABLE CITY - TRANSIT', sable_flat: 'SABLE CITY - A FLAT',
+  sable_works: 'SABLE CITY - WORKS', sable_floor: 'SABLE CITY - THE LINE',
+  bellhouse_ext: 'BELLHOUSE COMMONS', bellhouse_1: 'BELLHOUSE COMMONS',
+  bellhouse_2: 'BELLHOUSE COMMONS', bellhouse_3: 'BELLHOUSE COMMONS',
+  bellhouse_7b: 'BELLHOUSE - 7B', bellhouse_top: 'BELLHOUSE - THE TOP',
 };
 
 // --- boot --------------------------------------------------------------

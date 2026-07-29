@@ -71,10 +71,21 @@ def enemy_stats(level, role):
     }
 
 
-def damage(atk, power, defence, spd=0):
+def crit_chance(spd):
+    """The player's chance to crit at a given SPD, capped."""
+    return min(CRIT["max_chance"], CRIT["base_chance"] + spd * CRIT["per_spd"])
+
+
+def damage(atk, power, defence, spd=None):
+    """`spd` is the attacker's speed, and passing it is what makes crits possible.
+
+    Enemies never pass it, because enemies never crit - see progression.json.
+    A critical the player could not have played around reads as the game
+    cheating, and the difficulty here is meant to live in attrition.
+    """
     raw = (atk * power) / DIVISOR - defence * DEF_COEFF
     roll = raw * random.uniform(0.90, 1.10)
-    if random.random() < CRIT["base_chance"] + spd / 4000:
+    if spd is not None and random.random() < crit_chance(spd):
         roll = ((atk * power) / DIVISOR) * CRIT["multiplier"]
     return max(1, roll)
 

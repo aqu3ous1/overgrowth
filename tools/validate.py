@@ -667,6 +667,25 @@ if data_js.exists():
             "exported but not implemented",
         )
 
+    # --- crits belong to the player, and to nobody else --------------------
+    crit = progression["crit"]
+    check(crit.get("player_only") is True,
+          "crits must be marked player_only in the data, or the rule lives only in code")
+    check(crit["base_chance"] < crit["max_chance"] <= 0.5,
+          "the crit cap must sit above the base chance and below a coin flip")
+    for key, want in (("critChance", crit["base_chance"]), ("critMult", crit["multiplier"]),
+                      ("critPerSpd", crit["per_spd"]), ("critMax", crit["max_chance"])):
+        check(embedded["damage"].get(key) == want,
+              f"the build's {key} disagrees with progression.json — rebuild")
+    if battle_src.exists():
+        src = battle_src.read_text()
+        # The rule is enforced by *not* handing roll() a speed. Check the shape
+        # of both call sites rather than trusting the comment above them.
+        check("this.roll(stat, power, this.enemy.def, spd)" in src,
+              "the player's attack passes no speed to roll(), so it can never crit")
+        check("this.roll(e.atk * falloff, e.power, Player.def)" in src,
+              "the enemy's attack passes a speed to roll(), which lets enemies crit")
+
     for name, spec in embedded["bosses"].items():
         check(
             spec == blocks["bosses"].get(name),

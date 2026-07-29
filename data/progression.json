@@ -79,7 +79,11 @@
   "crit": {
     "base_chance": 0.04,
     "multiplier": 1.75,
-    "ignores_defense_term": true
+    "ignores_defense_term": true,
+    "per_spd": 0.00025,
+    "max_chance": 0.22,
+    "player_only": true,
+    "why": "Crits are the player's, and nobody else's. An enemy critical is a loss the player could not have played around - it lands as the game cheating, and this game already spends its difficulty on attrition and boss design rather than on spikes. Scaling with SPD gives that stat a second job outside turn order, and the cap keeps a fast late-game build from critting every other swing."
   },
   "stat_stages": {
     "max": 3,

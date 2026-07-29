@@ -1,7 +1,7 @@
 # 19 — The Playable Build
 
-**0.3.3 — Acts 0 through 2, playable, on a desktop or a phone.** Title screen through
-**Main Boss 1**, in a browser, in one self-contained HTML file with no assets and no dependencies.
+**0.4.0 — Acts 0 through 3, playable, on a desktop or a phone.** Title screen through
+**Main Boss 2**, in a browser, in one self-contained HTML file with no assets and no dependencies.
 
 ```
 python3 tools/gen_sprites.py       # shape primitives -> game/src/15_sprites.js
@@ -9,6 +9,79 @@ python3 tools/build_game.py        # game/src/*.js + data/*.json -> game/overgro
 python3 tools/playtest.py          # drives it with a keyboard, fails on any error
 python3 tools/playtest_mobile.py   # drives it with a thumb, on an emulated phone
 ```
+
+## 0.4.0 — Act 3, critical hits, and buildings that look like buildings
+
+### Act 3 — Yettallia
+
+The border opens once The Memorial is down. Fifteen new rooms.
+
+**The border.** Encounter band 5 — `Checkpoint`, `Frozen Hare`, `Long Coat`. The boom is down and
+there is nobody to lift it; the order suspending crossings was never withdrawn after the review it
+was waiting on concluded.
+
+**Sable City.** Band 6 — `Commuter`, `Kiosk`, `Neon Sign`, `Vixtry Canvasser`. The first place in
+the game louder than the player: it is the only area with `bright` lighting *and* a colour cast of
+its own, pushed pink by signage rather than by daylight. Shop, inn, a flat, a transit hall, and the
+industrial district. **Mini-Boss 2 — the Line Supervisor** is at the end of the line, and is the
+first fight in the game against a person.
+
+**Vixtry becomes unavoidable.** A billboard, a recruitment desk on the street, demo pods with people
+already inside them, and a recruiter in the transit hall who mentions — flatly, as small talk, in a
+list of unremarkable facts about staffing — that half the floor upstairs is from Limpo, and that one
+of them has the boy's face on him. Older. Same look. Nothing acknowledges it. The conversation moves
+on to the form.
+
+**Bellhouse Commons.** Band 7 — `Hall Mirror`, `Tenant's Cat`, `Unit 4C`, `Mural`, `Building Super`.
+The building is non-Euclidean and the map is what says so: **both ends of the first corridor arrive
+on the same floor**, and neither is the way back. The murals are elaborate, match nothing, and are
+accompanied by an artist's statement noting that management has asked her to note that the halls are
+not long.
+
+**Third Custodian sighting, and the first time he speaks.** One line, in his own box, with no advance
+prompt, in a corridor the player has already walked. `Never leave.`
+
+**Main Boss 2 — Tenant**, at the top, in a room that is squarer than the building allows.
+
+### Critical hits
+
+Crits existed in the formula and applied to **both sides**. They are the player's now, and nobody
+else's: an enemy critical is a loss the player could not have played around, it reads as the game
+cheating, and this game's difficulty is meant to live in attrition and boss design rather than in
+spikes ([04](04-battle-system.md)).
+
+The chance scales with SPD — `4% + 0.025% per point`, capped at 22% — which gives that stat a second
+job outside turn order. A crit ignores the defence term entirely, which is what makes it worth
+having against a wall, and it is loud: a harder shake, a white rim around the frame, its own sound
+layered over the hit, and `CRITICAL HIT!` in the log.
+
+The rule is enforced by *not* passing a speed to `roll()`, and the validator checks the shape of
+both call sites rather than trusting the comment above them.
+
+It is not free. Taking crits off the enemy removed damage from every fight, so the player spends
+fewer turns healing and more turns attacking — **the Tenant fell below its nine-turn floor** and was
+put back with more HP. Boss win rates across the simulator moved from 93–100% to 100%.
+
+### Buildings
+
+Every structure in the game was a flat rectangle of wall texture with a hole punched in it. Three
+changes, all automatic from the shape of the block rather than authored per building:
+
+- **A building is mostly roof.** Seen from above, only the bottom row is the face you walk up to.
+  Shingles on Limpo's brick, slate on Ondo's stone, rusting corrugated steel on the works.
+- **Rooflines, eaves and skirting** worked out from which neighbours are wall, so a block reads as a
+  thing with a top and a front instead of as a slab.
+- **Windows on the facade**, on alternate bays and never beside a door, so the doorway stays the
+  thing your eye lands on.
+
+The map's own outermost ring is excluded: without that test the border columns have wall above and
+below and classify as roof.
+
+**Interiors were nine-by-seven boxes with a row of crates in them.** They now have plank floors and
+plaster walls — with the same wood on both, a room read as one continuous brown field with furniture
+floating in it — and seventeen kinds of dressing: counters, shelving, filing cabinets, stoves,
+sinks, tables, cots, rugs, barrels, sacks, pictures, clocks, lamps, plants, pipes, crates, bunting,
+and Bellhouse's murals.
 
 ## 0.3.3 — the controls question
 

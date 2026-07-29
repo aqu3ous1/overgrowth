@@ -102,7 +102,17 @@ DATA_JS = {
     "bosses": blocks["bosses"],
     "bossEncounters": boss_encounters,
     "items": game_items,
-    "damage": {"divisor": 12, "defCoeff": 0.5, "critChance": 0.04, "critMult": 1.75},
+    # Crit figures come from the data rather than being retyped here, so the
+    # simulator and the game cannot disagree about how often it happens.
+    "damage": {
+        "divisor": 12,
+        "defCoeff": 0.5,
+        "critChance": progression["crit"]["base_chance"],
+        "critMult": progression["crit"]["multiplier"],
+        "critPerSpd": progression["crit"]["per_spd"],
+        "critMax": progression["crit"]["max_chance"],
+        "critPlayerOnly": progression["crit"]["player_only"],
+    },
     "regen": progression["resource_regen"],
     "shopStock": next(s["stock"] for s in shops["shops"] if s["act"] == 1),
     "currency": items["currency"],

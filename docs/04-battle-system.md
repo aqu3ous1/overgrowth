@@ -111,8 +111,29 @@ final = max(1, raw * variance * type_mods * stage_mods)
 variance = uniform(0.90, 1.10)
 ```
 
-Special moves substitute SPATK and SPDEF. Critical hits (base 4%, modified by SPD) apply 1.75× and
-ignore the target's DEF/SPDEF term entirely.
+Special moves substitute SPATK and SPDEF.
+
+### Critical hits — the player's only
+
+**Only the player can crit.** An enemy critical is a loss the player could not have played around:
+it reads as the game cheating, and this game's difficulty is meant to live in attrition and boss
+design rather than in spikes. The rule is in `data/progression.json` as `player_only`, and the
+validator enforces it against the battle code.
+
+| | |
+|---|---|
+| Base chance | 4% |
+| Per point of SPD | +0.025% |
+| Cap | 22% |
+| Multiplier | 1.75× |
+| Defence term | **Ignored entirely** |
+
+Scaling with SPD gives that stat a second job outside turn order. The cap stops a fast late-game
+build critting every other swing. Ignoring the defence term is what makes a crit worth having
+against a wall rather than just being a bigger number.
+
+A crit is loud — harder shake, a white rim around the frame, its own sound over the hit, and
+`CRITICAL HIT!` in the log. It is the one moment the game gets excited on the player's behalf.
 
 ## Resource regeneration
 

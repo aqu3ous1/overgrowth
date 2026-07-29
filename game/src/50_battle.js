@@ -67,7 +67,7 @@ const Battle = {
     this.subCursor = 0; this.subScroll = 0; this.turn = 0;
     this.shake = 0; this.flash = 0.5; this.enemyHurt = 0; this.playerHurt = 0;
     this.result = null; this.onEnd = onEnd || null;
-    this.homesick = false;
+    this.homesick = false; this.critFlash = 0; this.lastCrit = false;
     this.enemyDone = false; this.pending = null;
     this.backdrop = { floor: World.room.floor, wall: World.room.wall, bright: World.room.bright };
     Audio_.play(enemy.boss ? 'boss' : 'battle');
@@ -79,10 +79,30 @@ const Battle = {
   push(msg) { this.log.push(msg); this.logT = 0; },
 
   // --- damage ----------------------------------------------------------
-  roll(atk, power, def) {
-    const raw = (atk * power) / DATA.damage.divisor - def * DATA.damage.defCoeff;
+  // The player's chance to land a critical, at a given SPD. Capped, so a fast
+  // late-game build does not crit every other swing.
+  critChance(spd) {
+    const d = DATA.damage;
+    return Math.min(d.critMax, d.critChance + spd * d.critPerSpd);
+  },
+
+  // `spd` is the attacker's speed, and passing it is what allows a critical.
+  // Enemies never pass it, because enemies never crit: a critical the player
+  // could not have played around lands as the game cheating, and this game
+  // spends its difficulty on attrition and boss design instead. See
+  // data/progression.json.
+  roll(atk, power, def, spd) {
+    const d = DATA.damage;
+    const raw = (atk * power) / d.divisor - def * d.defCoeff;
     let dmg = raw * (0.9 + Math.random() * 0.2);
-    if (Math.random() < DATA.damage.critChance) dmg = (atk * power) / DATA.damage.divisor * DATA.damage.critMult;
+    let crit = false;
+    if (spd !== undefined && Math.random() < this.critChance(spd)) {
+      // A crit ignores the defence term entirely, which is what makes it worth
+      // shouting about against a wall.
+      dmg = (atk * power) / d.divisor * d.critMult;
+      crit = true;
+    }
+    this.lastCrit = crit;
     return Math.max(1, Math.round(dmg));
   },
 
@@ -191,12 +211,27 @@ const Battle = {
       return;
     }
 
-    let total = 0;
-    for (let i = 0; i < hits; i++) total += this.roll(stat, power, this.enemy.def);
+    let total = 0, crits = 0;
+    const spd = Player.spd;
+    for (let i = 0; i < hits; i++) {
+      total += this.roll(stat, power, this.enemy.def, spd);
+      if (this.lastCrit) crits++;
+    }
     this.enemy.hp -= total;
-    this.enemyHurt = 0.3; this.shake = 0.22;
+    // A crit is worth seeing as well as reading: harder shake, a white frame,
+    // and its own sound on top of the hit.
+    this.enemyHurt = crits ? 0.5 : 0.3;
+    this.shake = crits ? 0.42 : 0.22;
+    if (crits) { this.flash = 0.45; this.critFlash = 0.5; }
     Audio_.sfx(kind === 'physical' ? 'hit' : 'psy');
-    this.push(hits > 1 ? `${hits} hits! ${total} damage.` : `${total} damage.`);
+    if (crits) Audio_.sfx('crit');
+    if (hits > 1) {
+      this.push(crits
+        ? `${hits} hits, ${crits} critical! ${total} damage.`
+        : `${hits} hits! ${total} damage.`);
+    } else {
+      this.push(crits ? `CRITICAL HIT! ${total} damage.` : `${total} damage.`);
+    }
 
     if (move.drain_fraction) {
       const back = Math.round(total * move.drain_fraction);
@@ -322,6 +357,7 @@ const Battle = {
       const done = Math.min(e.phases - 1, Math.floor((1 - e.hp / e.maxHp) * e.phases));
       falloff = Math.max(0.45, 1 - 0.12 * done);
     }
+    // No spd argument: the enemy cannot crit, by design.
     let dmg = this.roll(e.atk * falloff, e.power, Player.def);
     if (this.quiet > 0) dmg = Math.round(dmg * 0.5);
     Player.hp -= dmg;
@@ -407,6 +443,7 @@ const Battle = {
     if (!this.active) return;
     this.shake = Math.max(0, this.shake - dt);
     this.flash = Math.max(0, this.flash - dt * 2);
+    this.critFlash = Math.max(0, (this.critFlash || 0) - dt * 2);
     this.enemyHurt = Math.max(0, this.enemyHurt - dt);
     this.playerHurt = Math.max(0, this.playerHurt - dt);
     this.logT += dt;
@@ -533,6 +570,17 @@ const Battle = {
     grain(0.05);
 
     this.drawHud();
+    if (this.critFlash > 0) {
+      // A rim of white around the frame rather than a full-screen wash: the
+      // enemy has to stay visible through the hit that is landing on it.
+      const a = this.critFlash * 1.6;
+      cx.globalAlpha = Math.min(0.85, a);
+      rect(0, 0, W, 3, '#fff8e0'); rect(0, H - 3, W, 3, '#fff8e0');
+      rect(0, 0, 3, H, '#fff8e0'); rect(W - 3, 0, 3, H, '#fff8e0');
+      cx.globalAlpha = Math.min(0.30, a * 0.4);
+      rect(0, 0, W, H, '#fff8e0');
+      cx.globalAlpha = 1;
+    }
     if (this.state === 'message' && this.log.length) this.drawLog();
     else if (this.state === 'menu') this.drawMenu();
     else if (this.state === 'sub') this.drawSub();

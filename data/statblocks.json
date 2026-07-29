@@ -88,7 +88,7 @@
     },
     "Tenant": {
       "role": "standard",
-      "hp_multiplier": 1.92,
+      "hp_multiplier": 2.1,
       "atk_multiplier": 1.23,
       "phases": 3,
       "splits": true

@@ -356,6 +356,15 @@ const ROUTE = [
   { label: 'KESTREL WORKS',   rooms: ['kestrel_yard', 'kestrel_f1', 'kestrel_f2', 'kestrel_f3',
                                       'kestrel_boiler', 'kestrel_office', 'kestrel_locker'],
     at: [190, 13], kind: 'works', short: 'KESTREL' },
+  // Yettallia: across the water, on the landmass he could only see before.
+  { label: 'THE BORDER',      rooms: ['border'], at: [222, 26], kind: 'road' },
+  { label: 'SABLE CITY',      rooms: ['sable', 'sable_road', 'sable_shop', 'sable_inn',
+                                      'sable_transit', 'sable_flat', 'sable_works',
+                                      'sable_floor'],
+    at: [252, 44], kind: 'city', short: 'SABLE' },
+  { label: 'BELLHOUSE COMMONS', rooms: ['bellhouse_ext', 'bellhouse_1', 'bellhouse_2',
+                                        'bellhouse_3', 'bellhouse_7b', 'bellhouse_top'],
+    at: [268, 74], kind: 'works', short: 'BELLHOUSE' },
 ];
 function routeIndexOf(roomId) {
   return ROUTE.findIndex(a => a.rooms.includes(roomId));
@@ -379,7 +388,9 @@ const WorldMap = {
       return dx * dx + dy * dy <= 1;
     };
     return blob(96, 74, 86, 40) || blob(150, 46, 78, 34) ||
-           blob(196, 20, 62, 22) || blob(64, 52, 44, 26) || blob(120, 30, 46, 22);
+           blob(196, 20, 62, 22) || blob(64, 52, 44, 26) || blob(120, 30, 46, 22) ||
+           // Yettallia, joined to Limpo by the border road and nothing else.
+           blob(262, 58, 46, 44) || blob(232, 32, 26, 16);
   },
 
   build() {
@@ -431,13 +442,7 @@ const WorldMap = {
       }
     }
 
-    // Yettallia, across the water. No label: he has only heard about it.
-    c.fillStyle = '#232a33';
-    for (let y = 0; y < MAP_H; y += 2) {
-      const w = 16 + Math.round(Math.sin(y * 0.09) * 5);
-      c.fillRect(MAP_W - w, y, w, 2);
-    }
-    c.fillStyle = '#2c343e'; c.fillRect(MAP_W - 3, 0, 3, MAP_H);
+    c.fillStyle = '#2c343e'; c.fillRect(MAP_W - 2, 0, 2, MAP_H);
     this.built = 1;
   },
 

@@ -322,6 +322,17 @@ PEOPLE = {
     "tenant_five":  dict(hat="wool", hair="thin"),              # dressed for indoors
     "records":      dict(hair="long", glasses=True, apron=True),
     "ond_grocer":   dict(hair="thin", stout=True, apron=True, beard=True),
+    # Act 3. Yettallia dresses better and looks more tired.
+    "sab_local":    dict(hair="short", coat=True, satchel=True),
+    "sab_kid":      dict(child=True, hair="bun"),
+    "sab_rail":     dict(hat="cap", coat=True),
+    "sab_shop":     dict(hair="bun", apron=True, glasses=True),
+    "sab_inn":      dict(hair="long", stout=True),
+    "sab_wait":     dict(hair="thin", stoop=True, coat=True),
+    "sab_flat":     dict(hair="wild", glasses=True),
+    "vix_rep":      dict(hair="short", coat=True),          # the clean one
+    "bell_super":   dict(hair="thin", beard=True, stout=True, apron=True),
+    "bell_7b":      dict(hair="long", stoop=True),
 }
 
 
@@ -587,6 +598,264 @@ def make_memorial():
     return s.rows()
 
 
+
+# --- Act 3 ---------------------------------------------------------------
+def make_checkpoint():
+    """Border country. A barrier that has outlived the border."""
+    s = Spr(20, 14)
+    s.rect(1, 2, 18, 4, "1")            # the boom, red and white
+    for i in range(0, 18, 4):
+        s.rect(1 + i, 2, 2, 4, "2")
+    s.rect(15, 0, 4, 12, "3")           # the post
+    s.rect(15, 0, 2, 12, "4")
+    s.rect(13, 11, 8, 3, "5")
+    s.rect(2, 7, 3, 5, "3")             # counterweight
+    s.outline("5")
+    return s.rows()
+
+
+def make_hare():
+    """Frozen Hare. Already leaving."""
+    s = Spr(14, 13)
+    head(s, 9.5, 5.0, 3.4, 3.2, "1", "2", "3")
+    s.rect(8, 0, 2, 5, "1")             # ears, laid back
+    s.rect(11, 0, 2, 5, "1")
+    s.rect(8, 0, 1, 5, "2")
+    s.rect(11, 0, 1, 5, "2")
+    s.rect(11, 4, 1, 1, "4")            # the eye, wide
+    s.ellipse(5.0, 8.0, 4.6, 3.4, "1")
+    s.ellipse(4.0, 7.0, 3.0, 2.2, "2", only={"1"})
+    s.rect(1, 6, 2, 2, "2")             # scut
+    s.rect(3, 11, 2, 2, "3")
+    s.rect(7, 11, 2, 2, "3")
+    s.outline("5")
+    return s.rows()
+
+
+def make_crate():
+    """Surplus Crate. Something is in it. Nobody knows what."""
+    s = Spr(15, 14)
+    s.rect(0, 1, 15, 13, "1")
+    s.rect(0, 1, 15, 3, "2")
+    s.rect(0, 6, 15, 1, "3")
+    s.rect(0, 10, 15, 1, "3")
+    s.rect(6, 1, 2, 13, "3")
+    s.rect(2, 4, 5, 2, "4")             # a stencil, half worn off
+    s.rect(9, 8, 4, 2, "4")
+    s.outline("5")
+    return s.rows()
+
+
+def make_coat():
+    """Long Coat. A person. Does not speak, does not stop."""
+    s = Spr(13, 18)
+    head(s, 6.0, 4.6, 3.9, 3.7, "1", "2", "3")
+    s.rect(1, 1, 11, 3, "6")            # brim, pulled low
+    s.rect(3, 0, 7, 2, "6")
+    s.rect(3, 4, 6, 1, "3")             # the face, in its shadow
+    s.rect(3, 9, 8, 9, "7")             # the coat, to the ankle
+    s.rect(3, 9, 3, 9, "8")
+    s.rect(2, 10, 1, 5, "7")
+    s.rect(10, 10, 1, 5, "7")
+    s.rect(6, 9, 1, 9, "8")             # the seam down the front
+    s.outline("8", targets={"7"})
+    s.outline("3", targets={"1", "2"})
+    return s.rows()
+
+
+def make_commuter():
+    """Running late. Has been running late for some time."""
+    s = Spr(13, 17)
+    head(s, 6.0, 4.4, 3.8, 3.6, "1", "2", "3")
+    for ex in (4, 7):
+        s.rect(ex, 3, 2, 2, "4")
+        s.rect(ex, 4, 1, 1, "5")
+    s.rect(2, 1, 9, 2, "9")             # hair, blown back
+    s.rect(1, 2, 2, 2, "9")
+    s.rect(3, 9, 7, 6, "6")
+    s.rect(3, 9, 2, 6, "7")
+    s.rect(2, 10, 1, 3, "6")
+    s.rect(10, 10, 1, 3, "6")
+    s.rect(9, 11, 4, 4, "8")            # case, swinging
+    s.rect(4, 15, 2, 2, "8")
+    s.rect(7, 15, 2, 2, "8")
+    s.outline("8", targets={"6", "7"})
+    s.outline("3", targets={"1", "2"})
+    return s.rows()
+
+
+def make_kiosk():
+    """Sells to you first. Then attacks."""
+    s = Spr(16, 20)
+    s.rect(1, 2, 14, 14, "1")
+    s.rect(1, 2, 4, 14, "2")
+    s.rect(0, 0, 16, 3, "3")            # awning
+    for i in range(0, 16, 4):
+        s.rect(i, 0, 2, 3, "4")
+    s.rect(3, 6, 10, 6, "5")            # the hatch, lit
+    s.rect(4, 7, 8, 4, "6")
+    s.rect(2, 16, 2, 4, "3")            # legs
+    s.rect(12, 16, 2, 4, "3")
+    s.outline("7")
+    return s.rows()
+
+
+def make_neon():
+    """Neon Sign. Nothing in Limpo is this bright."""
+    s = Spr(18, 16)
+    s.rect(0, 0, 18, 12, "1")           # the dark backing
+    s.rect(1, 1, 16, 10, "2")
+    s.rect(3, 3, 3, 7, "3")             # a letter, or most of one
+    s.rect(3, 3, 8, 2, "3")
+    s.rect(3, 6, 6, 2, "3")
+    s.rect(12, 3, 3, 7, "4")
+    s.rect(12, 8, 3, 2, "4")
+    s.rect(8, 12, 2, 4, "5")            # the bracket
+    s.rect(6, 15, 6, 1, "5")
+    s.outline("6")
+    return s.rows()
+
+
+def make_canvasser():
+    """The first Vixtry enemy. Genuinely polite, and means it."""
+    s = Spr(13, 18)
+    head(s, 6.0, 4.6, 3.9, 3.7, "1", "2", "3")
+    for ex in (4, 7):
+        s.rect(ex, 3, 2, 2, "4")
+        s.rect(ex, 4, 1, 1, "5")
+    s.rect(3, 7, 7, 1, "3")             # the smile, held
+    s.rect(2, 1, 9, 2, "9")
+    s.rect(3, 9, 7, 7, "6")             # a clean uniform
+    s.rect(3, 9, 2, 7, "7")
+    s.rect(6, 9, 1, 7, "8")
+    s.rect(2, 10, 1, 4, "6")
+    s.rect(10, 10, 1, 4, "6")
+    s.rect(4, 11, 2, 3, "a")            # the lanyard
+    s.rect(4, 14, 3, 3, "a")
+    s.rect(4, 16, 2, 2, "8")
+    s.rect(7, 16, 2, 2, "8")
+    s.outline("8", targets={"6", "7"})
+    s.outline("3", targets={"1", "2"})
+    return s.rows()
+
+
+def make_mirror():
+    """Hall Mirror. Gives back a quarter of whatever you put in."""
+    s = Spr(14, 20)
+    s.rect(0, 0, 14, 18, "1")
+    s.rect(2, 2, 10, 14, "2")
+    s.rect(3, 3, 8, 6, "3")             # the bright half
+    s.rect(3, 9, 8, 6, "4")
+    s.rect(4, 4, 2, 10, "5")            # a streak of glare
+    s.rect(0, 17, 14, 3, "1")
+    s.outline("6")
+    return s.rows()
+
+
+def make_cat():
+    """Tenant's Cat. Ignores you one turn in three."""
+    s = Spr(15, 12)
+    s.ellipse(6.5, 7.5, 5.4, 3.6, "1")
+    s.ellipse(5.5, 6.6, 3.6, 2.2, "2", only={"1"})
+    head(s, 11.5, 5.0, 3.0, 2.8, "1", "2", "3")
+    s.rect(9, 1, 2, 3, "1")             # ears
+    s.rect(13, 1, 2, 3, "1")
+    s.rect(11, 4, 1, 1, "4")
+    s.rect(13, 4, 1, 1, "4")
+    s.rect(0, 3, 2, 6, "1")             # tail, up
+    s.rect(1, 2, 2, 2, "1")
+    s.rect(3, 10, 2, 2, "3")
+    s.rect(8, 10, 2, 2, "3")
+    s.outline("5")
+    return s.rows()
+
+
+def make_door4c():
+    """Unit 4C. A door. Enormous, and blocks nothing at all."""
+    s = Spr(18, 30)
+    s.rect(0, 0, 18, 30, "1")
+    s.rect(1, 1, 16, 28, "2")
+    s.rect(2, 2, 14, 12, "3")           # two panels
+    s.rect(2, 16, 14, 12, "3")
+    s.rect(13, 14, 3, 3, "4")           # the handle
+    s.rect(6, 4, 6, 3, "5")             # the number plate
+    s.outline("6")
+    return s.rows()
+
+
+def make_mural():
+    """The wall art, animate. It matches nothing about the building."""
+    s = Spr(22, 20)
+    s.rect(0, 0, 22, 20, "1")
+    for i in range(6):
+        s.ellipse(3 + i * 3.2, 6 + (i % 3) * 4, 4.5, 4.0, str((i % 4) + 2))
+    s.rect(4, 8, 3, 3, "6")             # two eyes in it, if you look
+    s.rect(14, 11, 3, 3, "6")
+    s.outline("7")
+    return s.rows()
+
+
+def make_super():
+    """Building Super. Apologizes, then fights."""
+    s = Spr(14, 18)
+    head(s, 6.5, 4.8, 4.2, 3.9, "1", "2", "3")
+    for ex in (4, 8):
+        s.rect(ex, 3, 2, 2, "4")
+        s.rect(ex, 4, 1, 1, "5")
+    s.rect(2, 1, 10, 2, "9")
+    s.rect(4, 8, 3, 1, "9")             # moustache
+    s.rect(3, 10, 9, 6, "6")            # overalls, stout
+    s.rect(3, 10, 3, 6, "7")
+    s.rect(2, 11, 1, 4, "6")
+    s.rect(11, 11, 1, 4, "6")
+    s.rect(1, 12, 2, 3, "1")
+    s.rect(11, 12, 2, 3, "1")
+    s.rect(6, 11, 3, 2, "a")            # keys on his belt
+    s.rect(4, 16, 3, 2, "8")
+    s.rect(8, 16, 3, 2, "8")
+    s.outline("8", targets={"6", "7"})
+    s.outline("3", targets={"1", "2"})
+    return s.rows()
+
+
+def make_supervisor():
+    """Mini-Boss 2. The first fight in the game against a person."""
+    s = Spr(16, 24)
+    head(s, 8.0, 5.4, 4.6, 4.3, "1", "2", "3")
+    for ex in (5, 9):
+        s.rect(ex, 4, 3, 2, "4")
+        s.rect(ex + 1, 5, 1, 1, "5")
+    s.rect(2, 1, 13, 3, "6")            # hard hat, and a good one
+    s.rect(4, 0, 9, 2, "6")
+    s.rect(5, 9, 6, 1, "3")
+    s.rect(3, 12, 11, 9, "7")
+    s.rect(3, 12, 4, 9, "8")
+    s.rect(2, 13, 1, 5, "7")
+    s.rect(13, 13, 1, 5, "7")
+    s.rect(1, 17, 2, 3, "1")
+    s.rect(13, 17, 2, 3, "1")
+    s.rect(7, 12, 2, 9, "8")            # the zip
+    s.rect(9, 14, 3, 2, "9")            # a clipboard, held flat
+    s.rect(4, 21, 3, 3, "a")
+    s.rect(9, 21, 3, 3, "a")
+    s.outline("8", targets={"7"})
+    s.outline("3", targets={"1", "2"})
+    return s.rows()
+
+
+def make_tenant():
+    """Main Boss 2. A cube, and it splits. It was never a person."""
+    s = Spr(26, 26)
+    s.rect(2, 2, 22, 22, "1")
+    s.rect(2, 2, 22, 6, "2")            # the lit top face
+    s.rect(2, 2, 7, 22, "2")
+    s.rect(9, 8, 15, 16, "3")           # the face in shadow
+    s.rect(6, 10, 5, 5, "4")            # two windows, or two eyes
+    s.rect(15, 10, 5, 5, "4")
+    s.rect(6, 18, 14, 2, "5")
+    s.outline("6")
+    return s.rows()
+
 for _face in ("down", "up", "side"):
     for _step in (0, 1, 2):
         SPRITES[f"player_{_face}" + ("" if _step == 0 else f"_{_step}")] = \
@@ -678,8 +947,35 @@ PALETTES.update({
     "tenant_five":  person_pal("#b9a58e", "#4a6a6a", "#7a6a58", "#9a4a44", "#6a2f2c", "#43413a"),
     "records":      person_pal("#7fb6c6", "#5a5a6e", "#2f4650", "#3a3a44", "#d6d2c6"),
     "ond_grocer":   person_pal("#9fbe74", "#4a6a4a", "#c8c0b0", "#3a3a44", "#dcd6c4"),
+    "sab_local":    person_pal("#b9a58e", "#3f4654", "#2e2a26", "#3a3a44", "#8a7a4a"),
+    "sab_kid":      person_pal("#c98b6a", "#8a4a7a", "#3a2a1c"),
+    "sab_rail":     person_pal("#9fbe74", "#2f4658", "#3f4a2a", "#1f3040"),
+    "sab_shop":     person_pal("#7fb6c6", "#6a4a7a", "#2f4650", "#3a3a44", "#e4e0d2"),
+    "sab_inn":      person_pal("#c98b6a", "#7a5a3a", "#54321f"),
+    "sab_wait":     person_pal("#b8a48c", "#4a4a52", "#c8c0b4", "#3a3a44", "#8a8478"),
+    "sab_flat":     person_pal("#9fbe74", "#7a3f4a", "#3f4a2a"),
+    # Vixtry is the cleanest thing in the frame, everywhere it appears.
+    "vix_rep":      person_pal("#c2a086", "#eef1f5", "#3c3630", "#3a3a44", "#4a8ad0"),
+    "bell_super":   person_pal("#c98b6a", "#4a5f4a", "#8e8478", "#3a3a44", "#c9c4bc"),
+    "bell_7b":      person_pal("#b9a58e", "#5a5a6e", "#8a8478"),
 })
 
+
+SPRITES["checkpoint"] = make_checkpoint()
+SPRITES["hare"] = make_hare()
+SPRITES["crate"] = make_crate()
+SPRITES["coat"] = make_coat()
+SPRITES["commuter"] = make_commuter()
+SPRITES["kiosk"] = make_kiosk()
+SPRITES["neon"] = make_neon()
+SPRITES["canvasser"] = make_canvasser()
+SPRITES["mirror"] = make_mirror()
+SPRITES["cat"] = make_cat()
+SPRITES["door4c"] = make_door4c()
+SPRITES["mural"] = make_mural()
+SPRITES["super"] = make_super()
+SPRITES["supervisor"] = make_supervisor()
+SPRITES["tenant"] = make_tenant()
 
 SPRITES["milepost"] = make_milepost()
 SPRITES["ration_tin"] = make_ration_tin()
@@ -744,3 +1040,40 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+PALETTES.update({
+    "checkpoint": {1: "#c8c4bc", 2: "#a8443c", 3: "#6e6a62", 4: "#8a867e",
+                   5: "#26241f"},
+    "hare":       {1: "#b9bec6", 2: "#d8dde4", 3: "#5e626a", 4: "#c05a6a",
+                   5: "#2a2c32"},
+    "crate":      {1: "#8a6a44", 2: "#a5814f", 3: "#5c4429", 4: "#c9bfa2",
+                   5: "#2f2318"},
+    "coat":       {1: "#a8998a", 2: "#c2b3a2", 3: "#4e453c", 4: "#f2f4f8",
+                   5: "#12121a", 6: "#33353c", 7: "#3f424a", 8: "#22242a"},
+    "commuter":   {1: "#c98b6a", 2: "#e2ab89", 3: "#6f4630", 4: "#f2f4f8",
+                   5: "#12121a", 6: "#4a5a7a", 7: "#63769a", 8: "#25292f",
+                   9: "#3a3128"},
+    "kiosk":      {1: "#4a4e58", 2: "#5e646f", 3: "#8a3f44", 4: "#c9c4bc",
+                   5: "#2a2e36", 6: "#e8d88a", 7: "#181a20"},
+    "neon":       {1: "#191c24", 2: "#23273040".replace("40", ""), 3: "#4ad8e0",
+                   4: "#e04a9a", 5: "#5a5f6a", 6: "#0d0f14"},
+    "canvasser":  {1: "#c2a086", 2: "#dcbb9f", 3: "#6a4c38", 4: "#f2f4f8",
+                   5: "#12121a", 6: "#dfe4ea", 7: "#f2f5f9", 8: "#8d99a8",
+                   9: "#3c3630", "a": "#4a8ad0"},
+    "mirror":     {1: "#6a5a3a", 2: "#8a7a52", 3: "#b9c6cf", 4: "#7d8b98",
+                   5: "#e4edf3", 6: "#2a2418"},
+    "cat":        {1: "#4a4550", 2: "#635d6c", 3: "#2a2730", 4: "#c8d84a",
+                   5: "#16141a"},
+    "door4c":     {1: "#3f2d1e", 2: "#5d4630", 3: "#4a3524", 4: "#c8a860",
+                   5: "#c9c4bc", 6: "#1e150e"},
+    "mural":      {1: "#2a1f38", 2: "#c04a7a", 3: "#4ac0b0", 4: "#e0a83a",
+                   5: "#6a4ac0", 6: "#f2f4f8", 7: "#140e1c"},
+    "super":      {1: "#c98b6a", 2: "#e2ab89", 3: "#6f4630", 4: "#f2f4f8",
+                   5: "#12121a", 6: "#4a5f4a", 7: "#5f7a5f", 8: "#25301f",
+                   9: "#8e8478", "a": "#c8a860"},
+    "supervisor": {1: "#c2a086", 2: "#dcbb9f", 3: "#6a4c38", 4: "#f2f4f8",
+                   5: "#12121a", 6: "#d8a83a", 7: "#3f4a5a", 8: "#232a35",
+                   9: "#c9c4bc", "a": "#2a2e36"},
+    "tenant":     {1: "#5a5f70", 2: "#767d92", 3: "#3f4352", 4: "#c8d0e0",
+                   5: "#2a2d38", 6: "#14161d"},
+})

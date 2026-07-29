@@ -125,6 +125,239 @@ function paintStone(x, y, tx, ty, dim) {
     }
   }
 }
+
+// Interior floorboards. Warmer and lighter than the wall behind them: with the
+// same wood on both, a room read as one continuous brown field with furniture
+// floating in it.
+function paintPlank(x, y, tx, ty, dim) {
+  rect(x, y, TS, TS, shade('#7a5a3c', dim));
+  for (let r = 0; r < 4; r++) {
+    const v = hash2(tx * 13, ty * 4 + r);
+    rect(x, y + r * 4, TS, 3, shade(v > 0.66 ? '#87643f' : v > 0.33 ? '#7a5a3c' : '#6d5036', dim));
+    rect(x, y + r * 4 + 3, TS, 1, shade('#4f3826', dim));
+  }
+  // The odd board end, so the run does not look printed.
+  if (hash2(tx * 3, ty * 7) > 0.72) rect(x + 6, y, 1, TS, shade('#4f3826', dim));
+}
+
+// Plaster over lath, with a skirting board along the bottom of the room so the
+// wall meets the floor somewhere instead of just changing colour.
+function paintPlaster(x, y, tx, ty, dim) {
+  rect(x, y, TS, TS, shade('#8d8272', dim));
+  for (let i = 0; i < 10; i++) {
+    const h = hash2(tx * 61 + i, ty * 29 + i);
+    rect(x + ((h * TS) | 0), y + ((hash2(i * 5, tx - ty) * TS) | 0), 1, 1,
+         shade(h > 0.5 ? '#9a8f7e' : '#7e7466', dim));
+  }
+  rect(x, y, TS, 1, shade('#6d6455', dim));
+}
+
+// --- interior dressing -------------------------------------------------
+// Flat props with no collision and no interaction. Interiors were nine-by-seven
+// boxes with one row of crates in them; this is what makes a shop look like a
+// shop rather than like the inn with a different NPC standing in it.
+function drawDecor(t, px, py, dim, o) {
+  switch (t) {
+    case 'rug':
+      rect(px - 15, py - 9, 31, 19, shade('#5a2f3a', dim));
+      rect(px - 13, py - 7, 27, 15, shade('#6d3a46', dim));
+      rect(px - 9, py - 4, 19, 9, shade('#8a4a52', dim));
+      rect(px - 5, py - 2, 11, 5, shade('#5a2f3a', dim));
+      break;
+    case 'counter':                       // long, waist-high, with a worn top
+      rect(px - 16, py - 10, 33, 16, shade('#4a3524', dim));
+      rect(px - 16, py - 12, 33, 3, shade('#7a5a3a', dim));
+      rect(px - 16, py - 13, 33, 1, shade('#9a7a52', dim));
+      for (let i = 0; i < 5; i++) rect(px - 13 + i * 7, py - 8, 5, 11, shade('#3d2b1d', dim));
+      break;
+    case 'shelf':
+      rect(px - 12, py - 22, 25, 24, shade('#3f2d1e', dim));
+      rect(px - 11, py - 21, 23, 22, shade('#563d29', dim));
+      for (let r = 0; r < 3; r++) {
+        rect(px - 11, py - 15 + r * 7, 23, 2, shade('#3f2d1e', dim));
+        for (let i = 0; i < 4; i++) {
+          const h = hash2(o.x * 7 + i, o.y * 5 + r);
+          if (h < 0.3) continue;
+          rect(px - 10 + i * 6, py - 20 + r * 7, 4, 5,
+               shade(['#8a6a3a', '#5a7a6a', '#7a4a4a', '#6a6a7a'][(h * 4) | 0], dim));
+        }
+      }
+      break;
+    case 'cabinet':                       // records, ledgers, municipal misery
+      rect(px - 9, py - 24, 19, 26, shade('#3a3e44', dim));
+      rect(px - 8, py - 23, 17, 24, shade('#4e545c', dim));
+      for (let r = 0; r < 4; r++) {
+        rect(px - 7, py - 22 + r * 6, 15, 5, shade('#41464e', dim));
+        rect(px - 2, py - 20 + r * 6, 5, 1, shade('#8d939c', dim));
+      }
+      break;
+    case 'stove':
+      rect(px - 10, py - 18, 21, 20, shade('#2e3238', dim));
+      rect(px - 9, py - 17, 19, 18, shade('#43484f', dim));
+      rect(px - 7, py - 14, 15, 8, shade('#1c1f24', dim));
+      rect(px - 6, py - 12, 13, 4, shade('#a8552a', dim));   // firebox, still lit
+      rect(px - 5, py - 11, 11, 2, shade('#e0913a', dim));
+      rect(px - 3, py - 24, 6, 7, shade('#33373d', dim));    // flue
+      break;
+    case 'sink':
+      rect(px - 10, py - 12, 21, 14, shade('#4a4f56', dim));
+      rect(px - 9, py - 13, 19, 3, shade('#6d747d', dim));
+      rect(px - 6, py - 10, 13, 7, shade('#2b2f34', dim));
+      rect(px - 5, py - 9, 11, 5, shade('#5f7480', dim));
+      rect(px - 1, py - 17, 2, 5, shade('#8d939c', dim));
+      break;
+    case 'table':
+      rect(px - 14, py - 12, 29, 12, shade('#4a3524', dim));
+      rect(px - 14, py - 14, 29, 3, shade('#7d5c3c', dim));
+      rect(px - 12, py, 3, 5, shade('#3d2b1d', dim));
+      rect(px + 9, py, 3, 5, shade('#3d2b1d', dim));
+      rect(px - 6, py - 18, 5, 5, shade('#c8bda0', dim));    // something left on it
+      break;
+    case 'cot':                           // a bed nobody made
+      rect(px - 11, py - 16, 23, 20, shade('#3f2d1e', dim));
+      rect(px - 10, py - 15, 21, 18, shade('#6a5a48', dim));
+      rect(px - 10, py - 15, 21, 7, shade('#a8a294', dim));
+      rect(px - 9, py - 14, 8, 5, shade('#d6d2c4', dim));    // pillow
+      break;
+    case 'plant':
+      rect(px - 5, py - 6, 11, 8, shade('#7a4a34', dim));
+      rect(px - 5, py - 7, 11, 2, shade('#96603f', dim));
+      for (let i = 0; i < 5; i++) {
+        const a = i / 4 * 2 - 1;
+        rect(px + a * 6 - 1, py - 15 - Math.abs(a) * -3, 3, 9, shade('#3f7a44', dim));
+      }
+      break;
+    case 'barrel':
+      rect(px - 7, py - 15, 15, 17, shade('#6b4d31', dim));
+      rect(px - 7, py - 16, 15, 3, shade('#9a7549', dim));
+      rect(px - 6, py - 15, 13, 1, shade('#b08a58', dim));
+      rect(px - 8, py - 11, 17, 2, shade('#3a2a1c', dim));
+      rect(px - 8, py - 4, 17, 2, shade('#3a2a1c', dim));
+      break;
+    case 'sacks':
+      rect(px - 11, py - 9, 11, 11, shade('#8a7a56', dim));
+      rect(px - 1, py - 12, 12, 14, shade('#9c8a62', dim));
+      rect(px - 10, py - 8, 4, 4, shade('#a89a72', dim));
+      break;
+    case 'picture':                       // hung on the wall behind
+      rect(px - 8, py - 12, 17, 14, shade('#3a2c18', dim));
+      rect(px - 7, py - 11, 15, 12, shade('#8a6a34', dim));
+      rect(px - 6, py - 10, 13, 10, shade('#2a3550', dim));
+      rect(px - 6, py - 10, 13, 5, shade('#54608c', dim));
+      break;
+    case 'clock':
+      rect(px - 5, py - 14, 11, 13, shade('#4a3524', dim));
+      rect(px - 4, py - 13, 9, 9, shade('#d8d2c2', dim));
+      rect(px - 1, py - 11, 1, 4, shade('#2a2418', dim));
+      rect(px, py - 9, 3, 1, shade('#2a2418', dim));
+      break;
+    case 'lamp':
+      rect(px - 1, py - 12, 3, 13, shade('#4a4438', dim));
+      rect(px - 6, py - 18, 13, 6, shade('#8a7a4a', dim));
+      rect(px - 5, py - 12, 11, 2, shade('#f0d890', dim));
+      break;
+    case 'pipe':                          // industrial, runs along the wall
+      rect(px - 16, py - 8, 33, 5, shade('#5a5f66', dim));
+      rect(px - 16, py - 8, 33, 2, shade('#767d86', dim));
+      rect(px - 4, py - 10, 8, 9, shade('#484d54', dim));
+      break;
+    case 'crates':
+      rect(px - 12, py - 10, 12, 12, shade('#4a3524', dim));
+      rect(px - 12, py - 10, 12, 2, shade('#7a5a3a', dim));
+      rect(px + 1, py - 16, 11, 18, shade('#54402c', dim));
+      rect(px + 1, py - 16, 11, 2, shade('#8a6a44', dim));
+      break;
+    case 'mural_wall': {
+      // Painted on the corridor wall. It is not trying to match anything.
+      const seed = o.x * 31 + o.y * 17;
+      rect(px - 22, py - 14, 45, 28, shade('#2a1f38', dim));
+      for (let i = 0; i < 7; i++) {
+        const h = hash2(seed + i, seed - i);
+        const bx = px - 20 + i * 6, by = py - 11 + ((hash2(seed, i) * 16) | 0);
+        const c = ['#c04a7a', '#4ac0b0', '#e0a83a', '#6a4ac0', '#3f8ad0'][(h * 5) | 0];
+        if (h > 0.55) rect(bx, by, 5, 12, shade(c, dim));
+        else { rect(bx - 1, by, 8, 5, shade(c, dim)); rect(bx + 1, by + 5, 4, 6, shade(c, dim)); }
+      }
+      rect(px - 22, py - 14, 45, 1, shade('#6a4ac0', dim));
+      rect(px - 22, py + 13, 45, 1, shade('#6a4ac0', dim));
+      break;
+    }
+    case 'neon_sign': {
+      // Hung off the front of a shop. The glow is the point; the word is not.
+      const pulse = 0.72 + 0.28 * Math.sin(Time.t * 2.4 + o.x);
+      const hue = ['#ff4a9a', '#4ad8e0', '#ffc84a', '#8a6aff'][(o.x + o.y) % 4];
+      cx.globalAlpha = 0.16 * pulse;
+      circle(px, py - 8, 22, hue);
+      cx.globalAlpha = 0.28 * pulse;
+      circle(px, py - 8, 13, hue);
+      cx.globalAlpha = 1;
+      rect(px - 13, py - 16, 27, 16, '#12141c');
+      rect(px - 12, py - 15, 25, 14, '#1b1f2a');
+      cx.globalAlpha = pulse;
+      rect(px - 9, py - 12, 3, 9, hue);
+      rect(px - 9, py - 12, 8, 2, hue);
+      rect(px - 9, py - 8, 6, 2, hue);
+      rect(px + 3, py - 12, 3, 9, hue);
+      rect(px + 3, py - 5, 6, 2, hue);
+      cx.globalAlpha = 1;
+      rect(px - 1, py, 3, 4, '#3a3f4a');
+      break;
+    }
+    case 'bunting':                       // strung across a market row
+      for (let i = 0; i < 6; i++) {
+        const bx = px - 15 + i * 6, by = py - 14 + Math.abs(i - 2.5) | 0;
+        rect(bx, by, 5, 1, shade('#6a6250', dim));
+        rect(bx + 1, by + 1, 3, 4, shade(['#8a4a52', '#5a7a6a', '#8a7a4a'][i % 3], dim));
+      }
+      break;
+  }
+}
+
+// --- roofs and facades -------------------------------------------------
+// Seen from above, a building is mostly roof: only its bottom row is the face
+// you walk up to. Painting the whole block in wall texture is what made every
+// structure in the game read as a slab with a hole in it.
+function paintShingle(x, y, tx, ty, dim) {
+  rect(x, y, TS, TS, shade('#5e2f28', dim));
+  for (let r = 0; r < 4; r++) {
+    const off = ((ty * 4 + r) % 2) ? 4 : 0;
+    for (let c = -1; c < 3; c++) {
+      const bx = x + off + c * 8, by = y + r * 4;
+      const v = hash2(tx * 19 + c + off, ty * 7 + r);
+      rect(Math.max(x, bx), by, Math.min(7, x + TS - bx), 3,
+           shade(v > 0.7 ? '#8c463a' : v > 0.35 ? '#7d3f34' : '#6b352c', dim));
+      rect(Math.max(x, bx), by, Math.min(7, x + TS - bx), 1,
+           shade(v > 0.5 ? '#a1554529'.slice(0, 7) : '#96503f', dim));
+    }
+  }
+}
+function paintSlate(x, y, tx, ty, dim) {
+  rect(x, y, TS, TS, shade('#3d444e', dim));
+  for (let r = 0; r < 4; r++) {
+    const off = ((ty * 4 + r) % 2) ? 5 : 0;
+    for (let c = -1; c < 3; c++) {
+      const bx = x + off + c * 10, by = y + r * 4;
+      const v = hash2(tx * 29 + c + off, ty * 13 + r);
+      rect(Math.max(x, bx), by, Math.min(9, x + TS - bx), 3,
+           shade(v > 0.66 ? '#5d6673' : v > 0.33 ? '#525a66' : '#474e59', dim));
+    }
+  }
+}
+// Corrugated steel, streaked with rust. The works has not been maintained.
+function paintPanel(x, y, tx, ty, dim) {
+  rect(x, y, TS, TS, shade('#4a4d54', dim));
+  for (let c = 0; c < TS; c += 4) {
+    rect(x + c, y, 3, TS, shade(hash2(tx * 11 + c, ty) > 0.5 ? '#565a62' : '#4a4d54', dim));
+    rect(x + c + 3, y, 1, TS, shade('#33363c', dim));
+  }
+  for (let i = 0; i < 3; i++) {
+    const h = hash2(tx * 47 + i, ty * 31 + i);
+    if (h > 0.72) rect(x + ((h * TS) | 0), y + ((hash2(i, tx + ty) * TS) | 0), 2, 3,
+                       shade('#6d4a33', dim));
+  }
+}
+const ROOFS = { brick: paintShingle, stone: paintSlate, concrete: paintPanel };
+
 function paintVoid(x, y) { rect(x, y, TS, TS, '#000000'); }
 function paintDirt(x, y, tx, ty, dim) {
   rect(x, y, TS, TS, shade('#5a4a36', dim));
@@ -138,12 +371,15 @@ function paintDirt(x, y, tx, ty, dim) {
 const FLOORS = {
   grass: paintGrass, wood: paintWood, water: paintWater, carpet: paintCarpet,
   dirt: paintDirt, ceiling: paintCeiling, snow: paintSnow,
-  concrete: paintConcrete, pavement: paintPavement,
+  concrete: paintConcrete, pavement: paintPavement, plank: paintPlank,
 };
 const WALLS = {
   brick: paintBrick, wood: paintWood, void: paintVoid, ceiling: paintCeiling,
-  concrete: paintConcrete, stone: paintStone,
+  concrete: paintConcrete, stone: paintStone, plaster: paintPlaster,
 };
+// Walls that are the inside of a room rather than the outside of a building:
+// no roof, no facade windows, no eaves.
+const INTERIOR_WALLS = new Set(['wood', 'ceiling', 'plaster']);
 
 // --- rooms -------------------------------------------------------------
 // Maps: '.' floor, '#' wall, '~' water, 'T' tree, ' ' void, '=' furniture,
@@ -306,6 +542,10 @@ const ROOMS = {
       '#.....................PP',
       '########################',
     ],
+    decor: [
+      { x: 3, y: 12, t: 'crates' }, { x: 23, y: 3, t: 'barrel' },
+      { x: 9, y: 8, t: 'plant' },
+    ],
     objects: [
       { x: 8, y: 6, t: 'well', label: 'well' },
       { x: 18, y: 3, t: 'memorial', label: 'memorial' },
@@ -327,53 +567,73 @@ const ROOMS = {
   },
 
   shop: {
-    floor: 'wood', wall: 'wood', light: 0.3, music: 'okobo', grain: 0.03,
+    floor: 'plank', wall: 'plaster', light: 0.24, music: 'okobo', grain: 0.03,
     map: [
-      '#########',
-      '#.......#',
-      '#.=====.#',
-      '#.......#',
-      '#.......#',
-      '#...D...#',
-      '#########',
+      '#############',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#.....D.....#',
+      '#############',
     ],
-    npcs: [{ art: 'vlg_shop', x: 4, y: 1, key: 'shopkeeper', shop: true }],
-    exits: [{ x: 4, y: 5, to: 'okobo', at: [5, 5] }],
-    start: [4, 4],
+    decor: [
+      { x: 6, y: 1, t: 'counter' }, { x: 2, y: 1, t: 'shelf' },
+      { x: 10, y: 1, t: 'shelf' }, { x: 2, y: 4, t: 'barrel' },
+      { x: 10, y: 4, t: 'sacks' }, { x: 6, y: 4, t: 'rug' },
+      { x: 4, y: 1, t: 'clock' },
+    ],
+    npcs: [{ art: 'vlg_shop', x: 6, y: 2, key: 'shopkeeper', shop: true }],
+    exits: [{ x: 6, y: 6, to: 'okobo', at: [5, 5] }],
+    start: [6, 5],
   },
 
   inn: {
-    floor: 'wood', wall: 'wood', light: 0.3, music: 'okobo', grain: 0.03,
+    floor: 'plank', wall: 'plaster', light: 0.24, music: 'okobo', grain: 0.03,
     map: [
-      '#########',
-      '#.......#',
-      '#.......#',
-      '#.......#',
-      '#.......#',
-      '#...D...#',
-      '#########',
+      '#############',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#.....D.....#',
+      '#############',
     ],
-    objects: [{ x: 2, y: 1, t: 'bed', label: 'bed', save: true }],
-    npcs: [{ art: 'vlg_inn', x: 6, y: 2, key: 'innkeeper' }],
-    exits: [{ x: 4, y: 5, to: 'okobo', at: [16, 5] }],
-    start: [4, 4],
+    decor: [
+      { x: 2, y: 1, t: 'stove' }, { x: 10, y: 1, t: 'shelf' },
+      { x: 4, y: 4, t: 'table' }, { x: 9, y: 4, t: 'plant' },
+      { x: 6, y: 1, t: 'picture' }, { x: 10, y: 4, t: 'lamp' },
+    ],
+    objects: [{ x: 2, y: 4, t: 'bed', label: 'bed', save: true }],
+    npcs: [{ art: 'vlg_inn', x: 8, y: 2, key: 'innkeeper' }],
+    exits: [{ x: 6, y: 6, to: 'okobo', at: [16, 5] }],
+    start: [6, 5],
   },
 
   house: {
-    floor: 'wood', wall: 'wood', light: 0.35, music: 'okobo', grain: 0.03,
+    floor: 'plank', wall: 'plaster', light: 0.29, music: 'okobo', grain: 0.03,
     map: [
-      '#########',
-      '#.......#',
-      '#.=...=.#',
-      '#.......#',
-      '#.......#',
-      '#...D...#',
-      '#########',
+      '#############',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#.....D.....#',
+      '#############',
     ],
-    objects: [{ x: 6, y: 1, t: 'note', note: 'ration_card' }],
-    npcs: [{ art: 'vlg_hess', x: 3, y: 2, key: 'hess' }],
-    exits: [{ x: 4, y: 5, to: 'okobo', at: [17, 10] }],
-    start: [4, 4],
+    decor: [
+      { x: 2, y: 1, t: 'stove' }, { x: 5, y: 1, t: 'picture' },
+      { x: 9, y: 1, t: 'shelf' }, { x: 3, y: 4, t: 'table' },
+      { x: 9, y: 4, t: 'cot' }, { x: 6, y: 4, t: 'rug' },
+      { x: 11, y: 1, t: 'clock' },
+    ],
+    objects: [{ x: 7, y: 1, t: 'note', note: 'ration_card' }],
+    npcs: [{ art: 'vlg_hess', x: 4, y: 2, key: 'hess' }],
+    exits: [{ x: 6, y: 6, to: 'okobo', at: [17, 10] }],
+    start: [6, 5],
   },
 
   north_road: {
@@ -531,6 +791,11 @@ const ROOMS = {
       '#..........................PP#',
       '##############################',
     ],
+    decor: [
+      { x: 10, y: 6, t: 'bunting' }, { x: 18, y: 6, t: 'bunting' },
+      { x: 4, y: 11, t: 'plant' }, { x: 27, y: 8, t: 'plant' },
+      { x: 17, y: 14, t: 'crates' },
+    ],
     objects: [
       { x: 15, y: 7, t: 'fountain', label: 'fountain' },
       { x: 22, y: 6, t: 'billboard', label: 'billboard' },
@@ -554,57 +819,78 @@ const ROOMS = {
   },
 
   ondo_shop: {
-    floor: 'wood', wall: 'wood', light: 0.3, music: 'ondo', grain: 0.03,
+    floor: 'plank', wall: 'plaster', light: 0.24, music: 'ondo', grain: 0.03,
     map: [
-      '#########',
-      '#.......#',
-      '#.=====.#',
-      '#.......#',
-      '#.......#',
-      '#...D...#',
-      '#########',
+      '###############',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#......D......#',
+      '###############',
     ],
-    npcs: [{ art: 'ond_shop', x: 4, y: 1, key: 'ondo_shopkeeper', shop: 'ondo' }],
-    exits: [{ x: 4, y: 5, to: 'ondo', at: [6, 5] }],
-    start: [4, 4],
+    decor: [
+      { x: 7, y: 1, t: 'counter' }, { x: 2, y: 1, t: 'shelf' },
+      { x: 5, y: 1, t: 'shelf' }, { x: 12, y: 1, t: 'cabinet' },
+      { x: 2, y: 4, t: 'crates' }, { x: 12, y: 4, t: 'barrel' },
+      { x: 7, y: 4, t: 'rug' }, { x: 10, y: 1, t: 'clock' },
+    ],
+    npcs: [{ art: 'ond_shop', x: 7, y: 2, key: 'ondo_shopkeeper', shop: 'ondo' }],
+    exits: [{ x: 7, y: 6, to: 'ondo', at: [6, 5] }],
+    start: [7, 5],
   },
 
   // The other end of the baker's grievance. Sells food; the feud is free.
   ondo_grocer: {
-    floor: 'wood', wall: 'stone', light: 0.4, music: 'ondo', grain: 0.04,
+    floor: 'plank', wall: 'plaster', light: 0.34, music: 'ondo', grain: 0.04,
     map: [
-      '#########',
-      '#.......#',
-      '#.==.==.#',
-      '#.......#',
-      '#.......#',
-      '#...D...#',
-      '#########',
+      '#############',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#.....D.....#',
+      '#############',
     ],
-    npcs: [{ art: 'ond_grocer', x: 4, y: 2, key: 'ondo_grocer', shop: 'grocer' }],
-    exits: [{ x: 4, y: 5, w: 1, h: 1, to: 'ondo', at: [25, 13], sfx: 'door' }],
-    start: [4, 4],
+    decor: [
+      { x: 6, y: 1, t: 'counter' }, { x: 2, y: 1, t: 'sacks' },
+      { x: 10, y: 1, t: 'shelf' }, { x: 2, y: 4, t: 'crates' },
+      { x: 10, y: 4, t: 'barrel' }, { x: 8, y: 4, t: 'sacks' },
+      { x: 4, y: 1, t: 'bunting' },
+    ],
+    npcs: [{ art: 'ond_grocer', x: 6, y: 2, key: 'ondo_grocer', shop: 'grocer' }],
+    exits: [{ x: 6, y: 6, to: 'ondo', at: [25, 13] }],
+    start: [6, 5],
   },
 
   ondo_inn: {
-    floor: 'wood', wall: 'wood', light: 0.3, music: 'ondo', grain: 0.03,
+    floor: 'plank', wall: 'plaster', light: 0.26, music: 'ondo', grain: 0.03,
     map: [
-      '#########',
-      '#.......#',
-      '#.......#',
-      '#.......#',
-      '#.......#',
-      '#...D...#',
-      '#########',
+      '###############',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#......D......#',
+      '###############',
     ],
-    objects: [{ x: 2, y: 1, t: 'bed', label: 'bed', save: true }],
-    npcs: [{ art: 'ond_inn', x: 6, y: 2, key: 'ondo_innkeeper' }],
-    exits: [{ x: 4, y: 5, to: 'ondo', at: [15, 5] }],
-    start: [4, 4],
+    decor: [
+      { x: 2, y: 1, t: 'counter' }, { x: 6, y: 1, t: 'picture' },
+      { x: 9, y: 1, t: 'clock' }, { x: 12, y: 1, t: 'plant' },
+      { x: 4, y: 4, t: 'table' }, { x: 9, y: 4, t: 'table' },
+      { x: 12, y: 4, t: 'lamp' }, { x: 7, y: 3, t: 'rug' },
+    ],
+    objects: [{ x: 2, y: 4, t: 'bed', label: 'bed', save: true }],
+    npcs: [{ art: 'ond_inn', x: 7, y: 2, key: 'ondo_innkeeper' }],
+    exits: [{ x: 7, y: 6, to: 'ondo', at: [15, 5] }],
+    start: [7, 5],
   },
 
   boarding_house: {
-    floor: 'wood', wall: 'wood', light: 0.42, music: 'ondo', grain: 0.04,
+    floor: 'plank', wall: 'plaster', light: 0.36, music: 'ondo', grain: 0.04,
     map: [
       '###########',
       '#.........#',
@@ -614,6 +900,11 @@ const ROOMS = {
       '#.........#',
       '#....D....#',
       '###########',
+    ],
+    decor: [
+      { x: 2, y: 2, t: 'counter' }, { x: 5, y: 1, t: 'clock' },
+      { x: 8, y: 1, t: 'picture' }, { x: 2, y: 5, t: 'plant' },
+      { x: 9, y: 5, t: 'lamp' },
     ],
     objects: [
       { x: 8, y: 1, t: 'note', note: 'ledger' },
@@ -630,7 +921,7 @@ const ROOMS = {
   },
 
   records_room: {
-    floor: 'wood', wall: 'stone', light: 0.5, music: 'ondo', grain: 0.045,
+    floor: 'plank', wall: 'plaster', light: 0.44, music: 'ondo', grain: 0.045,
     map: [
       '#############',
       '#...........#',
@@ -641,6 +932,12 @@ const ROOMS = {
       '#.=..=..=..=#',
       '#....D......#',
       '#############',
+    ],
+    decor: [
+      { x: 2, y: 2, t: 'cabinet' }, { x: 5, y: 2, t: 'cabinet' },
+      { x: 8, y: 2, t: 'cabinet' }, { x: 11, y: 2, t: 'cabinet' },
+      { x: 2, y: 5, t: 'cabinet' }, { x: 5, y: 5, t: 'cabinet' },
+      { x: 11, y: 5, t: 'cabinet' }, { x: 8, y: 6, t: 'lamp' },
     ],
     objects: [
       { x: 10, y: 5, t: 'collectible', which: 'poster_corner' },
@@ -689,9 +986,9 @@ const ROOMS = {
       '#..################..#',
       '#..#######DDD#####...#',
       '#.........PPP........#',
-      'P.........PPP........#',
-      'P.........PPP........#',
-      '#....................#',
+      'P.........PPP.......P#',
+      'P.........PPP.......P#',
+      '#...................P#',
       '######################',
     ],
     objects: [
@@ -703,6 +1000,8 @@ const ROOMS = {
     exits: [
       { x: 0, y: 7, w: 1, h: 2, to: 'winter_road', at: [20, 5] },
       { x: 10, y: 5, w: 3, h: 1, to: 'kestrel_f1', at: [10, 7], sfx: 'door' },
+      // Open once the Memorial is down: the border, and Yettallia past it.
+      { x: 20, y: 8, w: 1, h: 2, to: 'border', at: [2, 6], requires: 'beatMemorial' },
     ],
     start: [2, 8],
   },
@@ -721,6 +1020,10 @@ const ROOMS = {
       '#.D......PPP........P',
       '#.P......PPP........P',
       '#########PPP#########',
+    ],
+    decor: [
+      { x: 3, y: 7, t: 'pipe' }, { x: 17, y: 7, t: 'pipe' },
+      { x: 12, y: 1, t: 'crates' },
     ],
     objects: [
       { x: 4, y: 4, t: 'note', note: 'notice_year_one' },
@@ -751,6 +1054,10 @@ const ROOMS = {
       '#..............#',
       '################',
     ],
+    decor: [
+      { x: 3, y: 2, t: 'pipe' }, { x: 12, y: 2, t: 'pipe' },
+      { x: 3, y: 6, t: 'barrel' }, { x: 12, y: 6, t: 'crates' },
+    ],
     objects: [
       { x: 11, y: 3, t: 'note', note: 'safety_inspection' },
       { x: 6, y: 6, t: 'machine', label: 'boiler' },
@@ -775,6 +1082,9 @@ const ROOMS = {
       'P..................D#',
       '#####################',
     ],
+    decor: [
+      { x: 3, y: 1, t: 'pipe' }, { x: 17, y: 3, t: 'crates' },
+    ],
     objects: [
       { x: 6, y: 3, t: 'note', note: 'notice_year_four' },
     ],
@@ -790,7 +1100,7 @@ const ROOMS = {
 
   // The foreman's office. Somebody had to sign the notices.
   kestrel_office: {
-    floor: 'wood', wall: 'concrete', light: 0.6, music: 'kestrel', grain: 0.05,
+    floor: 'plank', wall: 'plaster', light: 0.54, music: 'kestrel', grain: 0.05,
     map: [
       '#############',
       '#...........#',
@@ -800,6 +1110,11 @@ const ROOMS = {
       '#.....P.....#',
       '#.....D.....#',
       '#############',
+    ],
+    decor: [
+      { x: 2, y: 2, t: 'cabinet' }, { x: 10, y: 2, t: 'cabinet' },
+      { x: 6, y: 1, t: 'clock' }, { x: 2, y: 4, t: 'stove' },
+      { x: 10, y: 4, t: 'lamp' },
     ],
     objects: [
       { x: 3, y: 4, t: 'note', note: 'shift_schedule' },
@@ -849,6 +1164,10 @@ const ROOMS = {
       '#.............#',
       '###############',
     ],
+    decor: [
+      { x: 2, y: 5, t: 'pipe' }, { x: 11, y: 5, t: 'pipe' },
+      { x: 3, y: 2, t: 'crates' },
+    ],
     objects: [
       { x: 3, y: 4, t: 'locker', label: 'locker' },
       { x: 11, y: 4, t: 'locker', label: 'locker' },
@@ -859,6 +1178,456 @@ const ROOMS = {
     spawn: [{ name: 'Frostbitten Glove', n: 1 }],
     exits: [{ x: 7, y: 1, w: 2, h: 1, to: 'kestrel_f3', at: [9, 6], sfx: 'door' }],
     start: [7, 3],
+  },
+
+  // --- Act 3: the crossing ---------------------------------------------
+  // Border country. The boom is still down and there is nobody to lift it.
+  border: {
+    floor: 'snow', wall: 'stone', light: 0.3, music: 'kestrel', grain: 0.05,
+    map: [
+      '#########################',
+      '#.......................#',
+      '#..####........####.....#',
+      '#..####........####.....#',
+      '#..###D........###D.....#',
+      'P.......................P',
+      'P.......................P',
+      '#.......................#',
+      '#....TT..........TT.....#',
+      '#########################',
+    ],
+    decor: [{ x: 12, y: 2, t: 'crates' }, { x: 20, y: 7, t: 'barrel' }],
+    objects: [
+      { x: 12, y: 6, t: 'note', note: 'border_order' },
+      { x: 6, y: 4, t: 'machine', label: 'hut' },
+    ],
+    spawn: [{ name: 'Checkpoint', n: 1 }, { name: 'Frozen Hare', n: 1 },
+            { name: 'Long Coat', n: 1 }],
+    exits: [
+      { x: 0, y: 5, w: 1, h: 2, to: 'kestrel_yard', at: [19, 8] },
+      { x: 24, y: 5, w: 1, h: 2, to: 'sable_road', at: [2, 5] },
+    ],
+    start: [2, 6],
+  },
+
+  // The first thing in the game that is louder than he is.
+  sable_road: {
+    floor: 'pavement', wall: 'concrete', light: 0.12, music: 'sable', grain: 0.05,
+    bright: true, tint: ['#7aa8ff', 0.06],
+    map: [
+      '#########################',
+      '#.......................#',
+      '#..#######......######..#',
+      '#..#######......######..#',
+      '#..######D......#####D..#',
+      'P.......................P',
+      'P.......................P',
+      '#.......................#',
+      '#..####......########...#',
+      '#..####......########...#',
+      '#########################',
+    ],
+    decor: [{ x: 8, y: 8, t: 'crates' }, { x: 18, y: 8, t: 'barrel' },
+            { x: 6, y: 4, t: 'neon_sign' }, { x: 20, y: 4, t: 'neon_sign' }],
+    objects: [
+      { x: 14, y: 6, t: 'billboard', label: 'billboard' },
+      { x: 5, y: 7, t: 'note', note: 'transit_complaint' },
+    ],
+    spawn: [{ name: 'Surplus Crate', n: 1 }, { name: 'Long Coat', n: 2 }],
+    exits: [
+      { x: 0, y: 5, w: 1, h: 2, to: 'border', at: [22, 6] },
+      { x: 24, y: 5, w: 1, h: 2, to: 'sable', at: [2, 9] },
+    ],
+    start: [2, 6],
+  },
+
+  sable: {
+    floor: 'pavement', wall: 'concrete', light: 0.02, music: 'sable', grain: 0.045,
+    bright: true, tint: ['#ff6ad0', 0.08],
+    map: [
+      '##################################',
+      '#................................#',
+      '#..######..######..######..####..#',
+      '#..######..######..######..####..#',
+      '#..#####D..#####D..#####D..###D..#',
+      '#................................#',
+      '#................................#',
+      'P................................#',
+      'P................................#',
+      '#................................#',
+      '#................................#',
+      '#....######........######........#',
+      '#....######........######........#',
+      '#....#####D........#####D........#',
+      '#................................#',
+      '#..............................PP#',
+      '##################################',
+    ],
+    decor: [
+      { x: 5, y: 5, t: 'neon_sign' }, { x: 13, y: 5, t: 'neon_sign' },
+      { x: 21, y: 5, t: 'neon_sign' }, { x: 28, y: 5, t: 'neon_sign' },
+      { x: 7, y: 14, t: 'neon_sign' }, { x: 21, y: 14, t: 'neon_sign' },
+      { x: 12, y: 9, t: 'bunting' }, { x: 24, y: 9, t: 'bunting' },
+      { x: 4, y: 9, t: 'crates' }, { x: 29, y: 10, t: 'barrel' },
+      { x: 17, y: 10, t: 'plant' },
+    ],
+    objects: [
+      { x: 17, y: 6, t: 'billboard', label: 'billboard' },
+      { x: 26, y: 6, t: 'pod', label: 'demo pod' },
+      { x: 9, y: 10, t: 'note', note: 'vixtry_flyer' },
+    ],
+    npcs: [
+      { art: 'sab_local', x: 7, y: 6, key: 'sable_local' },
+      { art: 'sab_kid', x: 20, y: 9, key: 'sable_kid' },
+      { art: 'sab_rail', x: 30, y: 6, key: 'sable_rail' },
+      { art: 'vix_rep', x: 14, y: 12, key: 'vixtry_desk' },
+    ],
+    exits: [
+      { x: 0, y: 7, w: 1, h: 2, to: 'sable_road', at: [22, 6] },
+      { x: 8, y: 4, to: 'sable_shop', at: [7, 5], sfx: 'door' },
+      { x: 16, y: 4, to: 'sable_inn', at: [7, 5], sfx: 'door' },
+      { x: 24, y: 4, to: 'sable_transit', at: [8, 7], sfx: 'door' },
+      { x: 30, y: 4, to: 'sable_flat', at: [6, 5], sfx: 'door' },
+      { x: 10, y: 13, w: 1, h: 1, to: 'sable_works', at: [2, 7], sfx: 'door' },
+      { x: 24, y: 13, w: 1, h: 1, to: 'sable_flat', at: [6, 5], sfx: 'door' },
+      { x: 30, y: 15, w: 2, h: 1, to: 'bellhouse_ext', at: [11, 8] },
+    ],
+    start: [2, 9],
+  },
+
+  sable_shop: {
+    floor: 'plank', wall: 'plaster', light: 0.28, music: 'sable', grain: 0.03,
+    map: [
+      '###############',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#......D......#',
+      '###############',
+    ],
+    decor: [
+      { x: 7, y: 1, t: 'counter' }, { x: 2, y: 1, t: 'shelf' },
+      { x: 4, y: 1, t: 'shelf' }, { x: 12, y: 1, t: 'cabinet' },
+      { x: 2, y: 4, t: 'crates' }, { x: 12, y: 4, t: 'barrel' },
+      { x: 7, y: 4, t: 'rug' }, { x: 10, y: 1, t: 'clock' },
+    ],
+    npcs: [{ art: 'sab_shop', x: 7, y: 2, key: 'sable_shopkeeper', shop: 'sable' }],
+    exits: [{ x: 7, y: 6, to: 'sable', at: [8, 5], sfx: 'door' }],
+    start: [7, 5],
+  },
+
+  sable_inn: {
+    floor: 'plank', wall: 'plaster', light: 0.3, music: 'sable', grain: 0.03,
+    map: [
+      '###############',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#......D......#',
+      '###############',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'counter' }, { x: 6, y: 1, t: 'picture' },
+      { x: 9, y: 1, t: 'clock' }, { x: 12, y: 1, t: 'plant' },
+      { x: 5, y: 4, t: 'table' }, { x: 10, y: 4, t: 'lamp' },
+      { x: 8, y: 3, t: 'rug' },
+    ],
+    objects: [{ x: 2, y: 4, t: 'bed', label: 'bed', save: true }],
+    npcs: [{ art: 'sab_inn', x: 7, y: 2, key: 'sable_innkeeper' }],
+    exits: [{ x: 7, y: 6, to: 'sable', at: [16, 5], sfx: 'door' }],
+    start: [7, 5],
+  },
+
+  // The transit hub, and the recruitment desk in the corner of it.
+  sable_transit: {
+    floor: 'plank', wall: 'plaster', light: 0.26, music: 'sable', grain: 0.035,
+    map: [
+      '#################',
+      '#...............#',
+      '#...............#',
+      '#..===...===....#',
+      '#...............#',
+      '#...............#',
+      '#..===...===....#',
+      '#...............#',
+      '#.......D.......#',
+      '#################',
+    ],
+    decor: [
+      { x: 14, y: 1, t: 'cabinet' }, { x: 2, y: 1, t: 'clock' },
+      { x: 8, y: 1, t: 'picture' }, { x: 2, y: 7, t: 'plant' },
+      { x: 14, y: 7, t: 'lamp' },
+    ],
+    objects: [
+      { x: 11, y: 4, t: 'note', note: 'demo_terms' },
+      { x: 14, y: 4, t: 'pod', label: 'demo pod' },
+    ],
+    npcs: [
+      { art: 'vix_rep', x: 4, y: 4, key: 'vixtry_recruiter' },
+      { art: 'sab_wait', x: 8, y: 5, key: 'sable_waiting' },
+    ],
+    exits: [{ x: 8, y: 8, to: 'sable', at: [24, 5], sfx: 'door' }],
+    start: [8, 7],
+  },
+
+  sable_flat: {
+    floor: 'plank', wall: 'plaster', light: 0.34, music: 'sable', grain: 0.03,
+    map: [
+      '#############',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#...........#',
+      '#.....D.....#',
+      '#############',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'stove' }, { x: 5, y: 1, t: 'picture' },
+      { x: 9, y: 1, t: 'shelf' }, { x: 3, y: 4, t: 'table' },
+      { x: 9, y: 4, t: 'cot' }, { x: 6, y: 4, t: 'rug' },
+      { x: 11, y: 1, t: 'clock' },
+    ],
+    npcs: [{ art: 'sab_flat', x: 6, y: 2, key: 'sable_tenant' }],
+    exits: [{ x: 6, y: 6, to: 'sable', at: [30, 5], sfx: 'door' }],
+    start: [6, 5],
+  },
+
+  // The industrial district. Mini-Boss 2 is at the end of it.
+  sable_works: {
+    floor: 'concrete', wall: 'concrete', light: 0.34, music: 'sable', grain: 0.06,
+    map: [
+      '#####################',
+      '#...................#',
+      '#..===...===...===..#',
+      '#...................#',
+      '#...................#',
+      '#..===...===...===..#',
+      '#...................#',
+      'D...................#',
+      '#........PPP........#',
+      '#........PPP........#',
+      '#########PPP#########',
+    ],
+    decor: [
+      { x: 3, y: 6, t: 'pipe' }, { x: 16, y: 6, t: 'pipe' },
+      { x: 10, y: 1, t: 'crates' },
+    ],
+    objects: [
+      { x: 17, y: 4, t: 'machine', label: 'press' },
+      { x: 4, y: 1, t: 'machine', label: 'press' },
+    ],
+    spawn: [{ name: 'Surplus Crate', n: 1 }, { name: 'Commuter', n: 1 },
+            { name: 'Long Coat', n: 1 }],
+    exits: [
+      { x: 0, y: 7, to: 'sable', at: [10, 14], sfx: 'door' },
+      { x: 9, y: 10, w: 3, h: 1, to: 'sable_floor', at: [10, 2] },
+    ],
+    start: [2, 7],
+  },
+
+  sable_floor: {
+    floor: 'concrete', wall: 'concrete', light: 0.55, music: 'sable', grain: 0.065,
+    map: [
+      '#########PPP#########',
+      '#........PPP........#',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#####################',
+    ],
+    decor: [{ x: 3, y: 6, t: 'pipe' }, { x: 17, y: 6, t: 'pipe' }],
+    objects: [
+      { x: 10, y: 6, t: 'foreman', label: 'supervisor' },
+      { x: 17, y: 2, t: 'collectible', which: 'shift_badge' },
+    ],
+    spawn: [{ name: 'Kiosk', n: 1 }, { name: 'Neon Sign', n: 1 }],
+    exits: [{ x: 9, y: 0, w: 3, h: 1, to: 'sable_works', at: [10, 7] }],
+    start: [10, 2],
+  },
+
+  // --- Bellhouse Commons ------------------------------------------------
+  bellhouse_ext: {
+    floor: 'pavement', wall: 'concrete', light: 0.32, music: 'bellhouse', grain: 0.05, dark: true,
+    map: [
+      '#######################',
+      '#.....................#',
+      '#..#################..#',
+      '#..#################..#',
+      '#..#################..#',
+      '#..########DD######...#',
+      '#..........PP.........#',
+      '#..........PP.........#',
+      '#.....................#',
+      'PP....................#',
+      '#######################',
+    ],
+    decor: [{ x: 4, y: 8, t: 'plant' }, { x: 18, y: 8, t: 'crates' }],
+    objects: [{ x: 16, y: 7, t: 'note', note: 'rent_notice' }],
+    exits: [
+      { x: 0, y: 9, w: 2, h: 1, to: 'sable', at: [29, 14] },
+      { x: 11, y: 5, w: 2, h: 1, to: 'bellhouse_1', at: [10, 8], sfx: 'door' },
+    ],
+    start: [11, 8],
+  },
+
+  // The halls are longer than the building. Management has asked us to note
+  // that the halls are not long.
+  bellhouse_1: {
+    floor: 'carpet', wall: 'plaster', light: 0.6, music: 'bellhouse', grain: 0.06,
+    map: [
+      '#######################',
+      '#.....................#',
+      'D.....................D',
+      '#.....................#',
+      '#######.#######.#######',
+      '#.....................#',
+      '#.....................#',
+      '#.....................#',
+      '#.........PP..........#',
+      '#########DPP##########',
+    ],
+    decor: [
+      { x: 3, y: 3, t: 'mural_wall' }, { x: 11, y: 3, t: 'mural_wall' },
+      { x: 19, y: 3, t: 'mural_wall' }, { x: 5, y: 7, t: 'lamp' },
+      { x: 17, y: 7, t: 'lamp' },
+    ],
+    objects: [
+      { x: 7, y: 6, t: 'note', note: 'artists_statement' },
+      { x: 14, y: 2, t: 'apartment', label: 'door', unit: '7B' },
+    ],
+    spawn: [{ name: 'Hall Mirror', n: 1 }, { name: "Tenant's Cat", n: 1 }],
+    exits: [
+      { x: 9, y: 9, w: 3, h: 1, to: 'bellhouse_ext', at: [11, 6], sfx: 'door' },
+      { x: 0, y: 2, to: 'bellhouse_2', at: [21, 5], sfx: 'door' },
+      { x: 22, y: 2, to: 'bellhouse_2', at: [2, 5], sfx: 'door' },
+    ],
+    start: [10, 8],
+  },
+
+  // Both ends of the hall above arrive here. Neither is the way back.
+  bellhouse_2: {
+    floor: 'carpet', wall: 'plaster', light: 0.66, music: 'bellhouse', grain: 0.065,
+    map: [
+      '########################',
+      '#......................#',
+      '#......................#',
+      '#..####.....####.......#',
+      '#..####.....####.......#',
+      'D..####.....####.......D',
+      '#......................#',
+      '#......................#',
+      '#.........PP...........#',
+      '#########DPP###########',
+    ],
+    decor: [
+      { x: 7, y: 2, t: 'mural_wall' }, { x: 16, y: 2, t: 'mural_wall' },
+      { x: 20, y: 7, t: 'lamp' }, { x: 3, y: 7, t: 'plant' },
+    ],
+    objects: [
+      { x: 12, y: 6, t: 'note', note: 'maintenance_log' },
+      { x: 5, y: 5, t: 'apartment', label: 'door', unit: '4C' },
+      { x: 18, y: 3, t: 'collectible', which: 'spare_key' },
+    ],
+    spawn: [{ name: 'Unit 4C', n: 1 }, { name: 'Mural', n: 1 },
+            { name: "Tenant's Cat", n: 1 }],
+    exits: [
+      { x: 9, y: 9, w: 3, h: 1, to: 'bellhouse_1', at: [10, 2], sfx: 'door' },
+      { x: 0, y: 5, to: 'bellhouse_3', at: [10, 8], sfx: 'door' },
+      { x: 23, y: 5, to: 'bellhouse_3', at: [10, 8], sfx: 'door' },
+    ],
+    start: [10, 8],
+  },
+
+  bellhouse_3: {
+    floor: 'carpet', wall: 'plaster', light: 0.72, music: 'bellhouse', grain: 0.07,
+    map: [
+      '#####################',
+      '#...................#',
+      '#...................#',
+      '#..#####...#####....#',
+      '#..#####...#####....#',
+      '#..####D...####D....#',
+      '#...................#',
+      '#...................#',
+      '#........PP.........#',
+      '#########PP#########',
+    ],
+    decor: [
+      { x: 10, y: 1, t: 'mural_wall' }, { x: 3, y: 7, t: 'lamp' },
+      { x: 17, y: 7, t: 'lamp' },
+    ],
+    objects: [
+      { x: 15, y: 7, t: 'note', note: 'left_with_super' },
+      { x: 6, y: 1, t: 'apartment', label: 'door', unit: '2A' },
+    ],
+    npcs: [{ art: 'bell_super', x: 12, y: 7, key: 'bellhouse_super' }],
+    spawn: [{ name: 'Mural', n: 1 }, { name: 'Hall Mirror', n: 1 }],
+    exits: [
+      { x: 9, y: 8, w: 2, h: 2, to: 'bellhouse_2', at: [10, 2], sfx: 'door' },
+      { x: 7, y: 5, to: 'bellhouse_7b', at: [5, 4], sfx: 'door' },
+      { x: 15, y: 5, to: 'bellhouse_top', at: [9, 14], sfx: 'door' },
+    ],
+    start: [10, 8],
+  },
+
+  // 7B. Nothing wrong. Tenant wanted company.
+  bellhouse_7b: {
+    floor: 'plank', wall: 'plaster', light: 0.36, music: 'bellhouse', grain: 0.04,
+    map: [
+      '###########',
+      '#.........#',
+      '#.........#',
+      '#.........#',
+      '#.........#',
+      '#....D....#',
+      '###########',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'cot' }, { x: 8, y: 1, t: 'shelf' },
+      { x: 5, y: 3, t: 'rug' }, { x: 8, y: 3, t: 'lamp' },
+      { x: 5, y: 1, t: 'clock' },
+    ],
+    objects: [
+      { x: 3, y: 3, t: 'television', label: 'television' },
+      { x: 8, y: 4, t: 'note', note: 'under_a_door' },
+    ],
+    npcs: [{ art: 'bell_7b', x: 6, y: 2, key: 'bellhouse_7b' }],
+    exits: [{ x: 5, y: 5, to: 'bellhouse_3', at: [7, 6], sfx: 'door' }],
+    start: [5, 4],
+  },
+
+  // The room at the top. It is a perfect cube and it is bigger than the floor
+  // it is on.
+  bellhouse_top: {
+    floor: 'carpet', wall: 'plaster', light: 0.85, music: 'bellhouse', grain: 0.08, dark: true,
+    map: [
+      '###################',
+      '#.................#',
+      '#.................#',
+      '#.................#',
+      '#.................#',
+      '#.................#',
+      '#.................#',
+      '#.................#',
+      '#.................#',
+      '#.................#',
+      '#.................#',
+      '#.................#',
+      '#.................#',
+      '#........PP.......#',
+      '#########DD########',
+    ],
+    decor: [{ x: 9, y: 3, t: 'mural_wall' }],
+    exits: [{ x: 9, y: 14, w: 2, h: 1, to: 'bellhouse_3', at: [15, 6], sfx: 'door' }],
+    start: [9, 13],
   },
 };
 
@@ -948,6 +1717,68 @@ const World = {
     e.y = Math.max(2, Math.min(this.h * TS - 2, e.y));
   },
 
+  // Roofline, eaves and skirting, worked out from the shape of the block rather
+  // than authored per building. Every structure in the game was a flat
+  // rectangle of texture with a hole in it; this is what makes one read as a
+  // building seen from above instead of as a wall the tiles happen to share.
+  isWall(x, y) { const t = this.tile(x, y); return t === '#' || t === 'D'; },
+
+  // Which part of a structure a wall tile is. The map's own outermost ring is
+  // scenery, not a building, so it stays flat: without that test the border
+  // columns have wall above and below and classify as roof.
+  wallPart(tx, ty) {
+    const r = this.room;
+    if (INTERIOR_WALLS.has(r.wall)) return 'inside';
+    if (tx === 0 || ty === 0 || tx === this.w - 1 || ty === this.h - 1) return 'border';
+    if (this.isWall(tx, ty + 1)) return 'roof';
+    if (this.isWall(tx, ty - 1)) return 'face';
+    return 'border';
+  },
+
+  // The front of a building: a window on alternate bays, and never beside the
+  // door, so the doorway stays the thing your eye lands on.
+  facade(tx, ty, px, py, dim) {
+    if (this.isWall(tx - 1, ty) && this.tile(tx - 1, ty) === 'D') return;
+    if (this.isWall(tx + 1, ty) && this.tile(tx + 1, ty) === 'D') return;
+    if (hash2(tx * 5, ty * 3) < 0.18) return;
+    const lit = hash2(tx * 3 + 1, ty * 9 + 2) > 0.55;
+    rect(px + 3, py + 3, 10, 9, shade('#22242c', dim));
+    rect(px + 4, py + 4, 8, 7, lit ? '#c8b878' : shade('#4a5560', dim));
+    rect(px + 4, py + 4, 8, 3, lit ? '#e0d09a' : shade('#5c6874', dim));
+    rect(px + 7, py + 4, 1, 7, shade('#22242c', dim));   // the glazing bar
+    rect(px + 2, py + 12, 12, 1, shade('#8a8378', dim)); // sill
+  },
+
+  trim(tx, ty, px, py, dim, part) {
+    const wall = (x, y) => this.isWall(x, y);
+    const up = wall(tx, ty - 1), down = wall(tx, ty + 1);
+    const left = wall(tx - 1, ty), right = wall(tx + 1, ty);
+    const r = this.room;
+    if (part === 'inside') return;
+
+    const ridge = r.wall === 'concrete' ? '#7b7f88'
+                : r.wall === 'stone' ? '#b3aa9c' : '#a2564a';
+    const shade_ = r.wall === 'concrete' ? '#31333a'
+                 : r.wall === 'stone' ? '#413c36' : '#41221d';
+
+    // The top edge catches the light: a ridge cap along it, and a return down
+    // the first pixel of each side so corners do not look bitten off.
+    if (!up) {
+      rect(px, py, TS, 2, shade(ridge, dim + 6));
+      rect(px, py + 2, TS, 1, shade(shade_, dim));
+    }
+    // The bottom edge is the front of the building, in shadow, with a sill.
+    if (!down) {
+      rect(px, py + TS - 3, TS, 1, shade(shade_, dim));
+      rect(px, py + TS - 2, TS, 2, shade(ridge, dim - 14));
+    }
+    if (!left) rect(px, py, 1, TS, shade(shade_, dim));
+    if (!right) rect(px + TS - 1, py, 1, TS, shade(shade_, dim));
+    // Corner pieces, so the ridge turns properly instead of stopping dead.
+    if (!up && !left) rect(px, py, 2, 3, shade(ridge, dim + 10));
+    if (!up && !right) rect(px + TS - 2, py, 2, 3, shade(ridge, dim + 10));
+  },
+
   centerCamera() {
     this.camX = Math.round(Math.max(0, Math.min(this.w * TS - W, Player.x - W / 2)));
     this.camY = Math.round(Math.max(0, Math.min(this.h * TS - H, Player.y - H / 2)));
@@ -1028,7 +1859,16 @@ const World = {
         const px = tx * TS - this.camX, py = ty * TS - this.camY;
         const t = this.tile(tx, ty);
         if (t === ' ') { paintVoid(px, py); continue; }
-        if (t === '#') { wallFn(px, py, tx, ty, dim); continue; }
+        if (t === '#') {
+          // Interior rooms are all wall; outdoor blocks are roof except along
+          // the front, and the map's own border is neither.
+          const part = this.wallPart(tx, ty);
+          if (part === 'roof') (ROOFS[r.wall] || paintShingle)(px, py, tx, ty, dim);
+          else wallFn(px, py, tx, ty, dim);
+          if (part === 'face') this.facade(tx, ty, px, py, dim);
+          this.trim(tx, ty, px, py, dim, part);
+          continue;
+        }
         if (t === 'P') { paintPath(px, py, tx, ty, dim, r.floor === 'water'); continue; }
         if (t === 'D') {
           // a doorway punched through the wall it sits in
@@ -1051,6 +1891,14 @@ const World = {
           rect(px + 1, py + 2, TS - 2, 2, shade(metal ? '#6d7178' : '#5d4a35', dim));
           rect(px + 2, py + TS - 5, TS - 4, 1, shade(metal ? '#31343a' : '#2e241a', dim));
         }
+      }
+    }
+
+    if (r.decor) {
+      for (const d of r.decor) {
+        const dx = d.x * TS + TS / 2 - this.camX, dy = d.y * TS + TS / 2 - this.camY;
+        if (dx < -40 || dx > W + 40 || dy < -48 || dy > H + 48) continue;
+        drawDecor(d.t, dx, dy, dim, d);
       }
     }
 
@@ -1241,6 +2089,42 @@ const World = {
         rect(px - 6, py - 19, 13, 3, '#7d8791');
         break;
       }
+      // A demo pod. Somebody is in it, and their face is very calm.
+      case 'pod': {
+        rect(px - 10, py - 24, 21, 26, '#dfe4ea');
+        rect(px - 9, py - 23, 19, 24, '#f2f5f9');
+        rect(px - 7, py - 20, 15, 15, '#1a2430');
+        rect(px - 6, py - 19, 13, 13, '#22415e');
+        const g = 0.5 + 0.5 * Math.sin(Time.t * 1.7 + px);
+        rect(px - 5, py - 17, 11, 4, `rgba(120,190,240,${0.25 + g * 0.35})`);
+        rect(px - 3, py - 12, 7, 5, '#c8b090');
+        rect(px + 5, py - 4, 4, 2, '#4a8ad0');
+        break;
+      }
+      // An apartment door. The unit number is on it, and it stays shut.
+      case 'apartment':
+        rect(px - 8, py - 24, 17, 26, '#3f2d1e');
+        rect(px - 7, py - 23, 15, 24, '#5d4630');
+        rect(px - 6, py - 21, 13, 9, '#4a3524');
+        rect(px - 6, py - 10, 13, 8, '#4a3524');
+        rect(px + 4, py - 12, 3, 3, '#c8a860');
+        rect(px - 4, py - 22, 9, 4, '#c9c4bc');
+        break;
+      case 'television':
+        rect(px - 9, py - 16, 19, 17, '#3a3730');
+        rect(px - 8, py - 15, 17, 15, '#4e4a42');
+        // Facing the wall. The back of it is what you see.
+        rect(px - 6, py - 13, 13, 11, '#2e2b26');
+        rect(px - 4, py - 11, 9, 3, '#413d36');
+        rect(px - 1, py - 20, 2, 5, '#8d939c');
+        break;
+      case 'foreman':
+        rect(px - 9, py - 20, 19, 21, '#3f4a5a');
+        rect(px - 9, py - 20, 6, 21, '#4e5b6d');
+        rect(px - 6, py - 17, 13, 8, '#232a35');
+        rect(px - 5, py - 16, 11, 6, '#d8a83a');
+        rect(px - 3, py - 7, 7, 4, '#232a35');
+        break;
       case 'desk':
         rect(px - 11, py - 12, 23, 12, '#4a3a26');
         rect(px - 11, py - 12, 23, 2, '#6b5436');
@@ -1306,4 +2190,19 @@ const ENEMY_ART = {
   'Wader':           { spr: 'wader',    pal: 'wader' },
   'Orchard Keeper':  { spr: 'tree',     pal: 'bigtree' },
   'The Fruiting Tree': { spr: 'bigtree', pal: 'fruiting' },
+  'Checkpoint':        { spr: 'checkpoint', pal: 'checkpoint' },
+  'Frozen Hare':       { spr: 'hare',       pal: 'hare' },
+  'Surplus Crate':     { spr: 'crate',      pal: 'crate' },
+  'Long Coat':         { spr: 'coat',       pal: 'coat' },
+  'Commuter':          { spr: 'commuter',   pal: 'commuter' },
+  'Kiosk':             { spr: 'kiosk',      pal: 'kiosk' },
+  'Neon Sign':         { spr: 'neon',       pal: 'neon' },
+  'Vixtry Canvasser':  { spr: 'canvasser',  pal: 'canvasser' },
+  'Hall Mirror':       { spr: 'mirror',     pal: 'mirror' },
+  "Tenant's Cat":      { spr: 'cat',        pal: 'cat' },
+  'Unit 4C':           { spr: 'door4c',     pal: 'door4c' },
+  'Mural':             { spr: 'mural',      pal: 'mural' },
+  'Building Super':    { spr: 'super',      pal: 'super' },
+  'Line Supervisor':   { spr: 'supervisor', pal: 'supervisor' },
+  'Tenant':            { spr: 'tenant',     pal: 'tenant' },
 };

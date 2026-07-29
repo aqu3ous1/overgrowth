@@ -11,6 +11,7 @@ land in game/shots/ so the art can be looked at without launching anything.
 """
 
 import argparse
+import json
 import pathlib
 import sys
 
@@ -18,6 +19,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 BUILD = ROOT / "game" / "overgrowth.html"
+ITEMS = json.loads((ROOT / "data" / "items.json").read_text())
 SHOTS = ROOT / "game" / "shots"
 
 # The published artifact is wrapped in a document skeleton; do the same locally.
@@ -30,6 +32,8 @@ WRAPPER = """<!doctype html><html><head><meta charset="utf-8">
 RESET_STATE = """() => {
           Player.level = 1; Player.money = 0; Player.collectibles = 0; Player.hp = 1;
           Player.bag = {}; Player.notes = []; Player.seen = [];
+          Player.owned = {}; Player.passives = {}; Player.owed = [];
+          Player.equip = Object.assign({}, DATA.equipStart);
           World.load('bedroom'); Game.mode = 'title'; Title.enter();
         }"""
 
@@ -55,6 +59,7 @@ def walk(page, key, ms, dest, tries=3):
     is a flaky test rather than a bug in the game.
     """
     for _ in range(tries):
+        take_milestone(page)
         hold(page, key, ms)
         if until(page, f"World.id === '{dest}'", 2500):
             return True
@@ -76,6 +81,7 @@ def put(page, room, tx, ty, face="down"):
     }""", [room, tx, ty, face])
     page.wait_for_timeout(120)
     until(page, "!Fade.busy", 3000, 60)
+    take_milestone(page)
 
 
 def until(page, expr, ms=4000, step=100):
@@ -206,9 +212,29 @@ def _use_a_spray(page):
     return True
 
 
+def take_milestone(page, n=4):
+    """Answer the passive prompt if it is up.
+
+    Levelling past a milestone opens a modal out in the field, so every walk,
+    transition and trigger in this file stops working until something picks one.
+    A real player answers it; so does this.
+    """
+    picked = 0
+    for _ in range(n):
+        if page.evaluate("() => Game.mode") != "milestone":
+            break
+        page.keyboard.press("z")
+        page.wait_for_timeout(220)
+        picked += 1
+    return picked
+
+
 def idle(page, ms=6000):
     """Wait until the game is accepting field input again."""
-    return until(page, "!Dialogue.active && !Fade.busy && Game.mode === 'field'", ms, 80)
+    ok = until(page, "!Dialogue.active && !Fade.busy && "
+                     "(Game.mode === 'field' || Game.mode === 'milestone')", ms, 80)
+    take_milestone(page)
+    return ok and page.evaluate("() => Game.mode === 'field'")
 
 
 def state(page):
@@ -408,6 +434,96 @@ def main():
         if res != "won":
             errors.append(f"a level 1 player could not beat a Yard Dog (result={res})")
         steps.append(("battle-result", {"result": res}))
+
+        # --- the effects that were not effects
+        # Counter Stance was reported as "does not work at all", and it was one
+        # of fourteen: three moves and eleven items had no branch in the fight.
+        # Driven through the battle object with Math.random pinned, so this
+        # measures the mechanic and not the dice.
+        fx = page.evaluate("""() => {
+          const real = Math.random;
+          const out = {};
+          const fresh = () => {
+            const e = Battle.makeEnemy('Yard Dog', { level: 12 });
+            Battle.start(e, null, () => {});
+            e.inaction = 0; e.inflicts = null;
+            Player.level = 12; Player.restore();
+            return e;
+          };
+          try {
+            const cs = DATA.moves.physical.find(m => m.name === 'Counter Stance');
+            out.hasCounterStance = !!cs;
+            const swing = brace => {
+              const e = fresh();
+              Math.random = () => 0.5;
+              if (brace) Battle.resolveMove('physical', cs);
+              Battle.enemyDone = false;
+              const hp0 = Player.hp, ehp0 = e.hp;
+              Battle.enemyTurn();
+              return { took: hp0 - Player.hp, dealt: ehp0 - e.hp, stance: Battle.stance };
+            };
+            out.plain = swing(false);
+            out.braced = swing(true);
+
+            // A booster moves a stage; a debuff lands a status.
+            fresh();
+            Battle.resolveItem('Knuckle Wrap', DATA.items['Knuckle Wrap']);
+            out.atkStage = Battle.stages.atk;
+            Battle.resolveItem('Shed Skin', DATA.items['Shed Skin']);
+            out.enemyDefStage = Battle.enemy.stages.def;
+            Battle.resolveItem('Dropped Call', DATA.items['Dropped Call']);
+            out.enemyFog = Battle.enemy.status.Fog || 0;
+
+            // Statuses on the player: they arrive, they bite, and one is curable.
+            fresh();
+            Battle.afflict('Static', 'player');
+            Math.random = () => 0.01;
+            Battle.mayAct();
+            out.staticSkipped = Battle.log.join(' ').includes('seized up');
+            fresh();
+            Battle.afflict('Drained', 'player');
+            const sp = DATA.moves.special.find(m => m.cost > 0);
+            out.drainedCost = [Battle.moveCost('special', sp), sp.cost];
+            Battle.afflict('Fog', 'player');
+            out.fogReaches = !!Battle.fx('miss', 'player');
+            Battle.resolveItem('Clean Rag', DATA.items['Clean Rag']);
+            out.curedOne = Object.keys(Battle.mine).length;
+          } finally {
+            Math.random = real;
+            Battle.active = false; Battle.onEnd = null;
+          }
+          return out;
+        }""")
+        if not fx.get("hasCounterStance"):
+            errors.append("Counter Stance is gone from the move list")
+        else:
+            plain, braced = fx["plain"], fx["braced"]
+            if braced["took"] >= plain["took"]:
+                errors.append(
+                    f"Counter Stance did not soften the hit ({braced['took']} braced "
+                    f"vs {plain['took']} unbraced)")
+            if braced["dealt"] <= 0:
+                errors.append("Counter Stance blocked but returned no damage")
+            if plain["dealt"] != 0:
+                errors.append("damage came back without bracing")
+            if braced["stance"] != 0:
+                errors.append("Counter Stance did not expire after the hit it blocked")
+        if fx.get("atkStage") != 1:
+            errors.append(f"Knuckle Wrap left ATK at stage {fx.get('atkStage')}")
+        if fx.get("enemyDefStage") != -2:
+            errors.append(f"Shed Skin left enemy DEF at stage {fx.get('enemyDefStage')}")
+        if not fx.get("enemyFog"):
+            errors.append("Dropped Call did not inflict Fog")
+        if not fx.get("staticSkipped"):
+            errors.append("Static did not cost the player a turn")
+        if not fx.get("fogReaches"):
+            errors.append("Fog on the player reaches no code")
+        cost, base = fx.get("drainedCost", [0, 0])
+        if cost <= base:
+            errors.append(f"Drained did not raise a special's cost ({cost} vs {base})")
+        if fx.get("curedOne") != 1:
+            errors.append(f"Clean Rag should cure exactly one status, left {fx.get('curedOne')}")
+        steps.append(("effects", {"braced": fx.get("braced"), "plain": fx.get("plain")}))
 
         # --- the boss
         page.evaluate("() => { Player.level = 9; Player.exp = Player.expToReach(9); Player.restore(); Player.flags.beatBoss=false; }")
@@ -844,15 +960,24 @@ def main():
         page.wait_for_timeout(300)
         shot("17-menu")
 
-        def to_tab(want):
-            for _ in range(len(page.evaluate("() => Menu.tabs"))):
-                if page.evaluate("() => Menu.tab") == want:
+        # Addressed by name, not index. Inserting GEAR between BAG and MOVES
+        # silently repointed every numbered call in this file at the wrong tab,
+        # and the failures it produced ("the MOVES tab lists nothing") described
+        # the test's confusion rather than anything wrong with the game.
+        def to_tab(name):
+            tabs = page.evaluate("() => Menu.tabs")
+            if name not in tabs:
+                errors.append(f"the pause menu has no {name} tab (has {tabs})")
+                return False
+            for _ in range(len(tabs)):
+                if tabs[page.evaluate("() => Menu.tab")] == name:
                     return True
                 press(page, "ArrowRight")
                 page.wait_for_timeout(140)
+            errors.append(f"could not reach the {name} tab")
             return False
 
-        to_tab(1); shot("18-menu-bag")
+        to_tab("BAG"); shot("18-menu-bag")
 
         # Every restorative must be usable out here, and nothing else.
         page.evaluate("() => { Player.addItem('Spray', 2); Player.addItem('Knuckle Wrap', 1);"
@@ -871,8 +996,11 @@ def main():
             errors.append("a battle-only item was spent from the field menu")
 
         # Save from the menu, and continue from exactly that point.
-        page.evaluate("() => Save.clear()")
-        to_tab(5); shot("33-menu-save")
+        # Passives are cleared first so the save genuinely owes two: by this
+        # point in the run the boss fights have levelled past 10 and 20, and the
+        # harness has already answered those prompts.
+        page.evaluate("() => { Save.clear(); Player.passives = {}; Player.owed = []; }")
+        to_tab("SAVE"); shot("33-menu-save")
         page.evaluate("() => { Player.money = 777; Player.collectibles = 2; Player.hp = 40; }")
         press(page, "z")
         page.wait_for_timeout(400)
@@ -892,19 +1020,97 @@ def main():
                              " found: Player.collectibles})")
         if back != {"room": "ondo", "money": 777, "hp": 40, "found": 2}:
             errors.append(f"CONTINUE did not resume the saved point: {back}")
+
+        # That save is level 26 and has never picked a passive, so the game owes
+        # it two. Loading one has to notice; a save written before milestones
+        # existed must not quietly skip them.
+        if not until(page, "Game.mode === 'milestone'", 2500):
+            errors.append("a levelled save resumed owing passives and never asked")
+        else:
+            shot("34-milestone")
+            first = page.evaluate("() => Milestone.level")
+            press(page, "z")
+            page.wait_for_timeout(300)
+            if not page.evaluate("() => Object.keys(Player.passives).length"):
+                errors.append("picking a passive recorded nothing")
+            if page.evaluate("() => Game.mode") != "milestone":
+                errors.append("two milestones were owed and only one was offered")
+            elif page.evaluate("() => Milestone.level") == first:
+                errors.append("the milestone screen offered the same level twice")
+            press(page, "z")
+            page.wait_for_timeout(300)
+            if page.evaluate("() => Player.owed.length"):
+                errors.append("the milestone queue never emptied")
+            got = page.evaluate("() => Battle.critChance(Player.spd) > DATA.damage.critChance"
+                                " || Player.passive('hp_regen') > 0")
+            if not got:
+                errors.append("a chosen passive changes nothing in the fight")
         page.evaluate("() => { Game.mode = 'field'; }")
         press(page, "c")
         page.wait_for_timeout(250)
 
-        to_tab(2); shot("31-menu-moves")
+        # Gear: owned, worn, and actually moving a stat. The whole system existed
+        # only in docs/06 until 0.5.0 - the tables were written, the shops listed
+        # the pieces, and the game had no slots at all.
+        gear = page.evaluate("""() => {
+          const out = {};
+          Player.owned = {}; Player.equip = Object.assign({}, DATA.equipStart);
+          out.bare = Player.atk;
+          Player.ownGear('Tent Stake');
+          out.owning = Player.atk;
+          Player.wear('Tent Stake');
+          out.worn = Player.atk;
+          out.bonus = DATA.equipment['Tent Stake'].stats.atk;
+          // A trade-off piece must actually cost what it says it costs.
+          Player.ownGear('Anvil-Laden Sword'); Player.wear('Anvil-Laden Sword');
+          out.slowAtk = Player.atk; out.slowSpd = Player.spd;
+          Player.wear('Tent Stake');
+          out.backSpd = Player.spd;
+          // A shop sells it, refuses a second one, and charges for it.
+          Player.owned = {}; Player.money = 5000;
+          Player.equip = Object.assign({}, DATA.equipStart);
+          Shop.start(DATA.shopStock[1], 'TEST');
+          out.stockHasGear = DATA.shopStock[1].some(n => !!DATA.equipment[n]);
+          Shop.buy('Patched Coat');
+          out.afterBuy = Player.money;
+          Shop.buy('Patched Coat');
+          out.afterSecond = Player.money;
+          out.ownsCoat = !!Player.owned['Patched Coat'];
+          Shop.open = false;
+          return out;
+        }""")
+        if gear["owning"] != gear["bare"]:
+            errors.append("owning a weapon changed a stat before it was worn")
+        if gear["worn"] != gear["bare"] + gear["bonus"]:
+            errors.append(f"Tent Stake gave {gear['worn'] - gear['bare']} ATK, not {gear['bonus']}")
+        if gear["slowSpd"] >= gear["backSpd"]:
+            errors.append("the Anvil-Laden Sword did not cost any speed")
+        if gear["slowAtk"] <= gear["worn"]:
+            errors.append("the Anvil-Laden Sword was not stronger than the Tent Stake")
+        if not gear["stockHasGear"]:
+            errors.append("no shop anywhere stocks a piece of equipment")
+        coat_price = next(x["price"] for x in ITEMS["equipment"]["body"] if x["name"] == "Patched Coat")
+        if gear["afterBuy"] != 5000 - coat_price:
+            errors.append(f"buying the Patched Coat charged {5000 - gear['afterBuy']}, "
+                          f"not the {coat_price} in data/items.json")
+        if gear["afterSecond"] != gear["afterBuy"]:
+            errors.append("the shop sold a second copy of a piece already owned")
+        if not gear["ownsCoat"]:
+            errors.append("buying gear did not put it in the wardrobe")
+
+        to_tab("GEAR"); shot("35-menu-gear")
+        if not page.evaluate("() => Menu.list().length"):
+            errors.append("the GEAR tab lists nothing, not even what he is wearing")
+
+        to_tab("MOVES"); shot("31-menu-moves")
         if not page.evaluate("() => Menu.list().length"):
             errors.append("the MOVES tab lists nothing")
-        to_tab(3); shot("32-menu-map")
+        to_tab("MAP"); shot("32-menu-map")
         if not page.evaluate("() => Player.seen.length"):
             errors.append("the map recorded nowhere the player has been")
 
         # OPTIONS from the pause menu must open options, not close the menu.
-        to_tab(6)
+        to_tab("OPTIONS")
         press(page, "z")
         page.wait_for_timeout(300)
         if page.evaluate("() => Game.mode") != "options":

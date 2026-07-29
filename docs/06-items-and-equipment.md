@@ -158,6 +158,41 @@ get to act before the thing that won't let you leave.
 | Lead Apron | +14 | +6 | **−6** | — | 4 | 2,800 |
 | Overgrown Coat | +6 | +6 | +2 | +20 | 5 | *found* |
 
+### Where gear comes from
+
+Three routes, and every piece has at least one — nothing is missable, and the validator fails if a
+piece exists with no way of obtaining it.
+
+| Route | How it behaves |
+|---|---|
+| **Shops** | Each act's shop stocks that act's gear alongside its consumables. This is the reliable route and the one the economy is balanced around ([17](17-economy.md)). |
+| **Boss drops** | Every boss hands over a piece as well as supplies. A player who never shops still finishes each act with something new to wear. |
+| **Common-enemy drops** | A very small pool of early pieces, at roughly one fight in six hundred. It is a story about the world being full of other people's belongings, not a way to shop. |
+
+The **Overgrown Coat** is the exception and stays found-only.
+
+### Drops generally
+
+Beyond the Rell every fight pays, an enemy leaves an item about **one fight in six**. What it leaves
+is rolled against a tier table, and rarity is keyed to **price** rather than to a hand-written list —
+so retuning what something costs moves it through the table automatically, and the two can never
+disagree about which things are precious.
+
+| Tier | Weight | Ceiling |
+|---|---:|---:|
+| Common | 62 | 70 Rell |
+| Uncommon | 27 | 130 Rell |
+| Rare | 10 | 700 Rell |
+| Gear | 1 | *the pool above* |
+
+Two further rules:
+
+- **Nothing drops that the player could not already have been sold.** The ceiling is also capped at
+  roughly 26 Rell per enemy level, so a level 3 rat in the first field cannot hand over a Spray III
+  and flatten the early economy.
+- **`Ration Tin` and `Surplus Crate`** ([12](12-bestiary.md)) always drop, and drop one tier up.
+  They exist to be opened rather than fought, and behaving like ordinary enemies would waste them.
+
 ### Rules
 
 - **Every act from 2 to 4 offers at least one trade-off item per slot.** The player is never in a

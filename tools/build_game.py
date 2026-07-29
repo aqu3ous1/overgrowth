@@ -30,11 +30,14 @@ bosses = load("bosses.json")
 blocks = load("statblocks.json")
 items = load("items.json")
 shops = load("shops.json")
+drops = load("drops.json")
 
 # --- battle-item effects ---------------------------------------------------
 # The docs describe effects in prose; the game needs numbers. This is the one
 # place the two are reconciled, and it fails loudly on an unrecognised effect.
 HEAL_RE = re.compile(r"restore (\d+|all) (HP|PP|SP)")
+STAGE_RE = re.compile(r"([+-]\d+) (ATK|DEF|SPATK|SPDEF|SPD|all) stages?")
+INFLICT_RE = re.compile(r"inflict (\w+)")
 
 
 def item_effect(entry):
@@ -46,11 +49,38 @@ def item_effect(entry):
     return None, None
 
 
+def item_extras(entry):
+    """Everything an item does that is not a restore.
+
+    Parsed from the same prose the docs print, so a booster cannot exist in the
+    shop and do nothing in the fight - which is what every one of them did
+    until 0.4.2.
+    """
+    effect = entry["effect"]
+    out = {}
+    m = STAGE_RE.match(effect)
+    if m:
+        out["stage"] = int(m.group(1))
+        out["stat"] = m.group(2).lower()
+        # A minus goes on the enemy; a plus goes on you.
+        out["at"] = "enemy" if out["stage"] < 0 else "self"
+        return out
+    m = INFLICT_RE.match(effect)
+    if m:
+        out["inflict"] = m.group(1)
+        return out
+    if effect == "cure one status":
+        out["cure"] = True
+        return out
+    return out
+
+
 game_items = {}
 for group_name, group in items["battle_items"].items():
     for it in group:
         key, value = item_effect(it)
         entry = {"price": it["price"], "effect": it["effect"], "battle": True}
+        entry.update(item_extras(it))
         if key:
             entry[key] = value
             # Restoratives also work out of battle. Boosters and debuffs do not:
@@ -74,12 +104,52 @@ for e in enemies["roster"]:
         **({"inaction_rate": e["inaction_rate"]} if "inaction_rate" in e else {}),
         **({"inflicts": e["inflicts"]} if "inflicts" in e else {}),
         **({"deals_damage": False} if e.get("deals_damage") is False else {}),
+        **({"drop_designed": True} if e.get("drop_designed") else {}),
     }
 
 boss_encounters = {
-    e["name"]: {"internal_level": e["internal_level"], "exp": e["exp"], "act": e["act"]}
+    e["name"]: {
+        "internal_level": e["internal_level"],
+        "exp": e["exp"],
+        "act": e["act"],
+        "drops": e["drops"],
+    }
     for e in bosses["encounters"]
 }
+
+# --- equipment -------------------------------------------------------------
+# Flattened to one lookup by name, because a slot is a property of a piece and
+# the game asks "what is this thing?" far more often than "what fits here?".
+DROP_RE = re.compile(r"^(.+?)(?: x(\d+))?$")
+
+
+def drop_entry(text):
+    """`Spray II x3` -> ('Spray II', 3). A bare name is one of it."""
+    m = DROP_RE.match(text)
+    return m.group(1), int(m.group(2) or 1)
+
+
+STAT_COLUMNS = ("ATK", "SPATK", "DEF", "SPDEF", "SPD", "HP")
+
+game_equipment = {}
+for slot, pieces in items["equipment"].items():
+    for piece in pieces:
+        game_equipment[piece["name"]] = {
+            "slot": slot,
+            "act": piece["act"],
+            # The Overgrown Coat is found, not sold, so it carries no price.
+            "price": piece.get("price", 0),
+            **({"found": True} if piece.get("found_only") else {}),
+            # Lowercased to match the keys Player.gearBonus asks for, and the
+            # zeroes dropped: a piece's stat block should list what it changes.
+            "stats": {k.lower(): piece[k] for k in STAT_COLUMNS if piece.get(k)},
+            "flavour": piece["flavour"],
+        }
+
+# The shop's stock grows with the story rather than being frozen at act 1, which
+# is what shipped before: every list after the first existed in the data and was
+# never exported, so the Ondo shop sold act-1 goods for the rest of the game.
+shop_stock = {s["act"]: s["stock"] for s in shops["shops"]}
 
 DATA_JS = {
     "levelCap": progression["level_cap"],
@@ -114,7 +184,12 @@ DATA_JS = {
         "critPlayerOnly": progression["crit"]["player_only"],
     },
     "regen": progression["resource_regen"],
-    "shopStock": next(s["stock"] for s in shops["shops"] if s["act"] == 1),
+    "milestones": progression["milestones"],
+    "equipment": game_equipment,
+    "equipStart": drops["starting"],
+    "gearDrops": drops["gear"],
+    "drops": drops,
+    "shopStock": shop_stock,
     "currency": items["currency"],
 }
 

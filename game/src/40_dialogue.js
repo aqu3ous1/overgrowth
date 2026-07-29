@@ -99,6 +99,66 @@ const Player = {
   bag: {}, flags: {}, collectibles: 0, notes: [],
   seen: [],                               // route indices reached, for the map
   stepAcc: 0,
+  equip: { weapon: 'Bare Hands', body: 'School Clothes' },
+  owned: {},                              // gear held, equipped or not
+  passives: {},                           // milestone level -> chosen passive id
+  owed: [],                               // milestones reached but not yet picked
+
+  // --- equipment -------------------------------------------------------
+  // Two slots and no accessories, so this stays a sum over two names rather
+  // than anything with a loadout in it.
+  gearBonus(stat) {
+    let n = 0;
+    for (const slot in this.equip) {
+      const piece = DATA.equipment[this.equip[slot]];
+      if (piece && piece.stats[stat]) n += piece.stats[stat];
+    }
+    return n;
+  },
+
+  ownGear(name) {
+    if (!DATA.equipment[name]) return false;
+    const isNew = !this.owned[name];
+    this.owned[name] = true;
+    return isNew;
+  },
+
+  wear(name) {
+    const piece = DATA.equipment[name];
+    if (!piece || !this.owned[name]) return false;
+    this.equip[piece.slot] = name;
+    // Wearing something with an HP bonus must not leave you above your own
+    // maximum when you take it off again.
+    this.hp = Math.min(this.hp, this.maxHp);
+    return true;
+  },
+
+  // --- milestones ------------------------------------------------------
+  // Every tenth level: the trickle goes up on its own, and one passive is
+  // chosen. The choice is the only durable decision in the whole progression.
+  get regenBonus() {
+    const m = DATA.milestones;
+    return Math.floor(this.level / m.every) * m.regen_bonus;
+  },
+
+  // The value of a chosen passive of this kind, or 0. Kinds are unique across
+  // the table, so at most one pick can answer.
+  passive(kind) {
+    for (const lv in this.passives) {
+      const pick = (DATA.milestones.choices[lv] || []).find(p => p.id === this.passives[lv]);
+      if (pick && pick.kind === kind) return pick.value;
+    }
+    return 0;
+  },
+
+  milestonesUpTo(level) {
+    const every = DATA.milestones.every;
+    const out = [];
+    for (let lv = every; lv <= level; lv += every) {
+      if (DATA.milestones.choices[lv]) out.push(lv);
+    }
+    return out;
+  },
 
   statAt(level, stat) {
     const keys = Object.keys(DATA.statCurve).map(Number).sort((a, b) => a - b);
@@ -109,14 +169,19 @@ const Player = {
     const t = (level - lo) / (hi - lo);
     return Math.round(DATA.statCurve[lo][stat] + t * (DATA.statCurve[hi][stat] - DATA.statCurve[lo][stat]));
   },
-  get maxHp() { return this.statAt(this.level, 'HP'); },
+  // Gear is added on top of the curve, and a stat can never be driven below 1:
+  // the Lead Apron is meant to be slow, not motionless.
+  stat(key, gearKey) {
+    return Math.max(1, this.statAt(this.level, key) + this.gearBonus(gearKey));
+  },
+  get maxHp() { return this.stat('HP', 'hp'); },
   get maxPp() { return this.statAt(this.level, 'PP'); },
   get maxSp() { return this.statAt(this.level, 'SP'); },
-  get atk()   { return this.statAt(this.level, 'ATK'); },
-  get spatk() { return this.statAt(this.level, 'SPATK'); },
-  get def()   { return this.statAt(this.level, 'DEF'); },
-  get spdef() { return this.statAt(this.level, 'SPDEF'); },
-  get spd()   { return this.statAt(this.level, 'SPD'); },
+  get atk()   { return this.stat('ATK', 'atk'); },
+  get spatk() { return this.stat('SPATK', 'spatk'); },
+  get def()   { return this.stat('DEF', 'def'); },
+  get spdef() { return this.stat('SPDEF', 'spdef'); },
+  get spd()   { return this.stat('SPD', 'spd'); },
 
   moves(kind) {
     return DATA.moves[kind].filter(m => m.level <= this.level);
@@ -133,6 +198,11 @@ const Player = {
     }
     if (gained.length) {
       this.hp = this.maxHp; this.pp = this.maxPp; this.sp = this.maxSp;
+      // Milestones are queued rather than prompted here: this runs mid-battle,
+      // and a menu that opens over a fight is a menu that eats the win screen.
+      for (const lv of this.milestonesUpTo(this.level)) {
+        if (!this.passives[lv] && !this.owed.includes(lv)) this.owed.push(lv);
+      }
     }
     return gained;
   },

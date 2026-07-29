@@ -42,6 +42,40 @@ def warn(condition, message):
         warnings.append(message)
 
 
+def _calls(src, fn):
+    """The argument text of every `fn(...)` call in src, paren-matched.
+
+    Paren-matched rather than regex'd because an argument can itself be a call,
+    and an argument list can wrap across lines.
+    """
+    out = []
+    for m in re.finditer(re.escape(fn) + r"\(", src):
+        i, depth = m.end(), 1
+        while depth and i < len(src):
+            if src[i] == "(":
+                depth += 1
+            elif src[i] == ")":
+                depth -= 1
+            i += 1
+        out.append(src[m.end():i - 1])
+    return out
+
+
+def _arity(args):
+    """How many arguments an argument list has, counting only top-level commas."""
+    if not args.strip():
+        return 0
+    depth, n = 0, 1
+    for ch in args:
+        if ch in "([{":
+            depth += 1
+        elif ch in ")]}":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            n += 1
+    return n
+
+
 def load(name):
     return json.loads((DATA / name).read_text())
 
@@ -51,6 +85,7 @@ moves = load("moves.json")
 enemies = load("enemies.json")
 bosses = load("bosses.json")
 items = load("items.json")
+shops = load("shops.json")
 world = load("world.json")
 
 CAP = progression["level_cap"]
@@ -109,6 +144,59 @@ check(
 )
 
 
+# --- milestones ------------------------------------------------------------
+# Every tenth level pays a flat regen bump and one choice of passive. The two
+# rules that matter: a passive kind is unique across the whole table, because
+# Player.passive(kind) answers with the first match and a duplicate would make
+# one of the pair silently unreachable; and every kind is read somewhere.
+ms = progression["milestones"]
+check(ms["every"] > 0 and CAP // ms["every"] >= 2,
+      f"a milestone every {ms['every']} levels gives fewer than two before the cap of {CAP}")
+check(ms["regen_bonus"] > 0, "the milestone regen bonus must actually be a bonus")
+seen_ids, seen_kinds = set(), set()
+expected_levels = list(range(ms["every"], CAP + 1, ms["every"]))
+check(sorted(int(k) for k in ms["choices"]) == expected_levels,
+      f"milestone levels {sorted(int(k) for k in ms['choices'])} should be {expected_levels}")
+for lv, pair in ms["choices"].items():
+    check(int(lv) % ms["every"] == 0, f"milestone at level {lv} is not on the {ms['every']}s")
+    check(int(lv) <= CAP, f"milestone at level {lv} is above the cap of {CAP}")
+    check(len(pair) == 2, f"the level {lv} milestone offers {len(pair)} choices, not 2")
+    for c in pair:
+        for field in ("id", "name", "effect", "kind", "value"):
+            check(field in c, f"the level {lv} passive {c.get('name', '?')!r} has no {field}")
+        check(c["id"] not in seen_ids, f"two passives share the id {c['id']!r}")
+        check(c["kind"] not in seen_kinds,
+              f"two passives share the kind {c['kind']!r}; Player.passive() could only find one")
+        seen_ids.add(c["id"])
+        seen_kinds.add(c["kind"])
+    check(pair[0]["kind"] != pair[1]["kind"],
+          f"the level {lv} milestone offers the same kind twice — that is not a choice")
+
+# --- drops -----------------------------------------------------------------
+drops = load("drops.json")
+ce = drops["common_enemy"]
+check(0 < ce["chance"] < 1, f"a drop chance of {ce['chance']} is not a chance")
+prices = [t["max_price"] for t in ce["tiers"] if "max_price" in t]
+check(prices == sorted(prices), f"drop tiers are not in ascending price order: {prices}")
+weights = [t["weight"] for t in ce["tiers"]]
+check(all(w > 0 for w in weights), "a drop tier with no weight can never be rolled")
+check(weights[-1] == min(weights), "the last drop tier should be the rarest one")
+gear_tier = [t for t in ce["tiers"] if t.get("equipment")]
+check(len(gear_tier) == 1, "there should be exactly one gear tier in the drop table")
+equipment_names = {p["name"] for ps in items["equipment"].values() for p in ps}
+for n in drops["gear"]["pool"]:
+    check(n in equipment_names, f"the gear drop pool lists {n!r}, which is not equipment")
+for slot, name in drops["starting"].items():
+    check(name in equipment_names, f"the game starts in {name!r}, which is not equipment")
+    check(any(p["name"] == name and p["act"] == 1 for p in items["equipment"][slot]),
+          f"the starting {slot} {name!r} is not an act 1 {slot}")
+# The rarest tier must actually be rare: a piece of gear roughly every few
+# hundred fights, not every few dozen.
+gear_odds = ce["chance"] * gear_tier[0]["weight"] / sum(weights)
+check(gear_odds < 0.005,
+      f"a common enemy drops gear once every {1 / gear_odds:.0f} fights — too often to be a find")
+
+
 # --- moves -----------------------------------------------------------------
 
 all_moves = moves["physical"] + moves["special"]
@@ -162,6 +250,46 @@ check(
     "Homesick" in quiet_room["notes"],
     "Quiet Room must be documented as the only cure for Homesick",
 )
+
+# --- a status must mean something to whoever is carrying it ----------------
+# Every one of these was inert until 0.4.2: four species inflicted statuses the
+# game never applied, and Mind Fog, Static Pulse and every debuff item landed on
+# an enemy that had no notion of carrying anything. The rule now is that each
+# status states what it does on each side, and that the code reads it.
+SIDES = ("player_effect", "enemy_effect")
+battle_js = ROOT / "game" / "src" / "50_battle.js"
+battle_text = battle_js.read_text() if battle_js.exists() else ""
+kinds = set()
+for s in moves["statuses"]:
+    sides = [s.get(k) for k in SIDES]
+    check(any(sides), f"{s['name']} does nothing to anyone — give it a player_ or enemy_effect")
+    for key, side in zip(SIDES, sides):
+        if side is None:
+            continue
+        check(isinstance(side, dict) and "kind" in side,
+              f"{s['name']}.{key} must be an object with a `kind`")
+        if isinstance(side, dict) and "kind" in side:
+            kinds.add(side["kind"])
+            check(len(side) > 1,
+                  f"{s['name']}.{key} is a kind with no number — nothing to tune")
+    if s["name"] == "Homesick":
+        # The one the bag cannot fix, and the one no enemy ever carries.
+        check(s["enemy_effect"] is None, "Homesick is the player's alone; it takes no enemy_effect")
+        check(s["duration"] is None, "Homesick does not run out")
+    else:
+        check(s["item_curable"] is True, f"{s['name']} should be curable — only Homesick is not")
+        check(isinstance(s["duration"], int) and s["duration"] > 0,
+              f"{s['name']} needs a positive duration")
+
+if battle_text:
+    for kind in sorted(kinds):
+        check(f"'{kind}'" in battle_text,
+              f"no code reads the {kind!r} status effect — it is data nothing consults")
+    # Homesick aside, statuses reach the fight through one accessor. If that name
+    # changes, everything above is checking a table nobody opens.
+    check("fx(kind, who)" in battle_text,
+          "the two-sided status accessor is gone; the checks above prove nothing")
+
 
 
 # --- enemies ---------------------------------------------------------------
@@ -356,6 +484,40 @@ for slot, pieces in items["equipment"].items():
             "(06-items-and-equipment.md equipment rules)",
         )
 
+# --- nothing is missable, and nothing is a mystery -------------------------
+# docs/06: "Nothing is missable. Every equipment tier is purchasable in at least
+# one shop, with the strongest version of each tier found in the world." A piece
+# with no source is a piece the player can never hold.
+SOURCE_KINDS = ("shop", "drop", "found", "start", "boss")
+shop_lists = {s["act"]: s["stock"] for s in shops["shops"]}
+sold_anywhere = {n for stock in shop_lists.values() for n in stock}
+boss_drops = {d.split(" x")[0] for e in bosses["encounters"] for d in e["drops"]}
+for slot, pieces in items["equipment"].items():
+    for p in pieces:
+        srcs = p.get("sources", [])
+        check(bool(srcs), f"{p['name']} has no way of being obtained")
+        for s in srcs:
+            kind = s.split(":")[0]
+            check(kind in SOURCE_KINDS, f"{p['name']} lists unknown source {s!r}")
+            if kind == "boss":
+                who = s.split(":", 1)[1]
+                check(any(e["name"] == who for e in bosses["encounters"]),
+                      f"{p['name']} is dropped by {who!r}, who is not a boss")
+                check(p["name"] in boss_drops,
+                      f"{p['name']} claims a drop from {who} that bosses.json does not list")
+        if "shop" in srcs:
+            check(p["name"] in sold_anywhere,
+                  f"{p['name']} says it is sold, but no shop in shops.json stocks it")
+        check(bool(p.get("flavour")), f"{p['name']} has no flavour text")
+
+# A boss drop naming something that does not exist is a message the player gets
+# and an item they do not.
+known = {i["name"] for g in items["battle_items"].values() for i in g}
+known |= {p["name"] for ps in items["equipment"].values() for p in ps}
+for e in bosses["encounters"]:
+    for d in e["drops"]:
+        check(d.split(" x")[0] in known, f"{e['name']} drops {d!r}, which does not exist")
+
 overgrown = next(p for p in items["equipment"]["body"] if p["name"] == "Overgrown Coat")
 check(
     all(overgrown.get(k, 0) >= 0 for k in STAT_KEYS) and overgrown.get("found_only"),
@@ -376,7 +538,6 @@ check(
     "— equal value makes a tier pointless",
 )
 
-shops = load("shops.json")
 known_items = {i["name"] for g in items["battle_items"].values() for i in g}
 known_items |= {p["name"] for slot in items["equipment"].values() for p in slot}
 for shop in shops["shops"]:
@@ -679,12 +840,18 @@ if data_js.exists():
               f"the build's {key} disagrees with progression.json — rebuild")
     if battle_src.exists():
         src = battle_src.read_text()
-        # The rule is enforced by *not* handing roll() a speed. Check the shape
-        # of both call sites rather than trusting the comment above them.
-        check("this.roll(stat, power, this.enemy.def, spd)" in src,
-              "the player's attack passes no speed to roll(), so it can never crit")
-        check("this.roll(e.atk * falloff, e.power, Player.def)" in src,
+        # The rule is enforced by *not* handing roll() a speed, so check the
+        # arity of every call site. Matching the argument text literally, which
+        # is what this did first, meant renaming a local broke the check and
+        # told you crits were off when nothing about them had moved.
+        calls = _calls(src, "this.roll")
+        check(len(calls) == 2, f"expected 2 roll() call sites, found {len(calls)}")
+        against_player = [a for a in calls if "Player.def" in a]
+        against_enemy = [a for a in calls if "Player.def" not in a]
+        check(len(against_player) == 1 and _arity(against_player[0]) == 3,
               "the enemy's attack passes a speed to roll(), which lets enemies crit")
+        check(len(against_enemy) == 1 and _arity(against_enemy[0]) == 4,
+              "the player's attack passes no speed to roll(), so it can never crit")
 
     for name, spec in embedded["bosses"].items():
         check(
@@ -692,12 +859,140 @@ if data_js.exists():
             f"the build's stats for {name} are stale — rebuild",
         )
 
+    # --- an item the shop sells must do something in a fight ---------------
+    # Eleven of the eighteen were inert until 0.4.2, and nothing caught it,
+    # because the docs described them, the shop stocked them, and the fight
+    # simply had no branch. The parse in build_game.py is what turns the prose
+    # into a field; this is what proves the parse covered every line.
+    DOES_SOMETHING = ("heal", "pp", "sp", "stage", "inflict", "cure")
+    for _group, _entries in items["battle_items"].items():
+        for _it in _entries:
+            _built = embedded["items"].get(_it["name"], {})
+            check(any(k in _built for k in DOES_SOMETHING),
+                  f"{_it['name']} sells for {_it['price']} and does nothing in a fight")
+
+    # --- the new systems have to reach the game, not just the data ---------
+    # Equipment is the cautionary tale here: docs/06 described sixteen pieces,
+    # shops.json stocked them, bosses.json dropped them, and for three acts the
+    # build had no slots at all. Data that nothing reads is documentation.
+    for _slot, _pieces in items["equipment"].items():
+        for _p in _pieces:
+            _built = embedded["equipment"].get(_p["name"])
+            check(_built is not None, f"the build has no {_p['name']} — rebuild")
+            if not _built:
+                continue
+            check(_built["slot"] == _slot, f"{_p['name']} is in the wrong slot in the build")
+            _want = {k.lower(): _p[k] for k in ("ATK", "SPATK", "DEF", "SPDEF", "SPD", "HP")
+                     if _p.get(k)}
+            check(_built["stats"] == _want,
+                  f"the build's stats for {_p['name']} are stale — rebuild")
+    player_js = ROOT / "game" / "src" / "40_dialogue.js"
+    player_text = player_js.read_text() if player_js.exists() else ""
+    ui_text = (ROOT / "game" / "src" / "60_ui.js").read_text()
+    game_text = (ROOT / "game" / "src" / "70_game.js").read_text()
+    check("gearBonus" in player_text, "nothing applies an equipped piece's stats")
+    check("DATA.equipment" in player_text, "the player code never looks at the equipment table")
+    for lv, pair in ms["choices"].items():
+        for c in pair:
+            check(f"'{c['kind']}'" in battle_text or f"'{c['kind']}'" in player_text,
+                  f"the {c['name']} passive ({c['kind']}) is offered and read by nothing")
+    check("regenBonus" in battle_text,
+          "the milestone regen bonus is never added to the trickle")
+    check("Player.owed" in ui_text or "Player.owed" in game_text,
+          "milestones are queued and never offered")
+    check("DATA.drops" in battle_text, "the drop table is exported and never rolled")
+    check("bossEncounters" in battle_text and "drops" in battle_text,
+          "boss drops are in the data and never handed over")
+    # Saves have to carry all of it, or a reload silently undresses the player.
+    for field in ("equip", "owned", "passives", "owed"):
+        check(f"{field}: Player.{field}" in ui_text or f'"{field}"' in ui_text
+              or f"{field}: Player." in ui_text,
+              f"saves do not record Player.{field}")
+        check(f"d.{field}" in ui_text, f"loading a save ignores {field}")
+
+        # Every move that deals no damage must be handled by name, or by the status
+    # it inflicts. Counter Stance shipped for three acts as a no-op.
+    for _m in moves["physical"] + moves["special"]:
+        if _m.get("power"):
+            continue
+        _named = f"'{_m['name']}'" in battle_text
+        check(_named or _m.get("inflicts") or _m.get("heal_fraction"),
+              f"{_m['name']} deals no damage and the fight has no branch for it")
+
 if build.exists():
     html = build.read_text()
     check("<!doctype" not in html.lower(), "the build must be a fragment, not a full document")
     check("src=\"http" not in html and "href=\"http" not in html,
           "the build must not reference anything external")
 
+
+
+
+# --- world geometry --------------------------------------------------------
+# Two doors on the same building leading to the same room has now shipped
+# twice: Ondo's bottom-right house opened into the shop, and Sable City had two
+# doors into the same flat. It is invisible in the source and obvious in play,
+# so it gets a check rather than a promise to be careful.
+CUTSCENE_EXITS = {"fall"}      # exits handled by a story beat, not a room load
+_world = (ROOT / "game" / "src" / "30_world.js").read_text()
+_game_src = (ROOT / "game" / "src" / "70_game.js").read_text()
+_rooms = {}
+for _m in re.finditer(r"\n  (\w+): \{", _world):
+    _rest = _world[_m.end():]
+    _rooms[_m.group(1)] = _rest[:_rest.find("\n  },")]
+
+def _exits_of(body):
+    """The exits array, sliced by bracket depth.
+
+    Not by searching for the next "]," — an exit whose `at: [7, 5]` is followed
+    by `sfx` ends in exactly that sequence, so the naive slice stopped after two
+    exits and this check silently read a fraction of every room.
+    """
+    if "exits:" not in body:
+        return []
+    i = body.index("exits:")
+    i = body.index("[", i)
+    depth, j = 0, i
+    while j < len(body):
+        if body[j] == "[":
+            depth += 1
+        elif body[j] == "]":
+            depth -= 1
+            if depth == 0:
+                break
+        j += 1
+    return re.findall(r"to: '(\w+)'", body[i:j])
+
+
+for _name, _body in _rooms.items():
+    _dests = _exits_of(_body)
+    if not _dests:
+        continue
+    _dupes = sorted({d for d in _dests if _dests.count(d) > 1})
+    # Bellhouse Commons is non-Euclidean by design and says so in the room. Any
+    # room that has not claimed that is making a mistake.
+    if "impossible: true" not in _body:
+        check(not _dupes,
+              f"{_name} has more than one exit leading to {', '.join(_dupes)} — "
+              f"two doors on one street that go to the same room")
+    else:
+        check(bool(_dupes),
+              f"{_name} is marked impossible but every exit goes somewhere different")
+    for _d in _dests:
+        # `fall` is a cutscene, not a room: the corridor ends by dropping him.
+        check(_d in _rooms or _d in CUTSCENE_EXITS,
+              f"{_name} has an exit to {_d}, which is neither a room nor a cutscene")
+
+# Every room must be reachable from somewhere, or it is content that exists and
+# cannot be walked to. Two are reached by a cutscene rather than by a door: the
+# bedroom is where the game starts, and the void is where sleeping puts him.
+CUTSCENE_ROOMS = {"bedroom", "void"}
+_linked = {d for b in _rooms.values() for d in _exits_of(b)} | CUTSCENE_ROOMS
+for _name in _rooms:
+    check(_name in _linked, f"no exit or cutscene anywhere leads to {_name}")
+for _r in CUTSCENE_ROOMS:
+    check(f"World.load('{_r}')" in _game_src,
+          f"{_r} is only reachable by cutscene, but nothing loads it")
 
 # --- report ----------------------------------------------------------------
 

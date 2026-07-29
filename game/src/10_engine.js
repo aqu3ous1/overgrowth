@@ -234,16 +234,70 @@ const Audio_ = {
     if (this.pendingTrack) this.play(this.pendingTrack);
   },
 
-  tone(freq, dur, { type = 'square', gain = 0.2, dest = null, detune = 0, attack = 0.005 } = {}) {
+  tone(freq, dur, { type = 'square', gain = 0.2, dest = null, detune = 0,
+                    attack = 0.005, when = 0, vibrato = 0, decay = 0 } = {}) {
     if (!this.ac) return;
     const o = this.ac.createOscillator(), g = this.ac.createGain();
     o.type = type; o.frequency.value = freq; o.detune.value = detune;
-    const now = this.ac.currentTime;
+    const now = this.ac.currentTime + when;
     g.gain.setValueAtTime(0.0001, now);
     g.gain.exponentialRampToValueAtTime(gain, now + attack);
+    // A held note that only ramps down at the very end reads as an organ. A
+    // short drop to a sustain level first is what makes it read as plucked,
+    // which is most of the difference between this and the flat tone it was.
+    if (decay > 0) {
+      g.gain.exponentialRampToValueAtTime(gain * decay, now + attack + dur * 0.28);
+    }
     g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
     o.connect(g); g.connect(dest || this.sfxGain);
+    // A slow, shallow wobble on the melody voice only. SNES leads almost never
+    // sit perfectly still, and a perfectly still square is the sound of a
+    // placeholder.
+    if (vibrato) {
+      const lfo = this.ac.createOscillator(), amt = this.ac.createGain();
+      lfo.frequency.value = 5.2; amt.gain.value = vibrato;
+      lfo.connect(amt); amt.connect(o.detune);
+      lfo.start(now); lfo.stop(now + dur + 0.02);
+    }
     o.start(now); o.stop(now + dur + 0.02);
+  },
+
+  // --- kit ---------------------------------------------------------------
+  // Three voices, synthesised rather than sampled, all routed to the music bus
+  // so the volume setting moves them with the rest of the track.
+  burst(dur, { gain = 0.15, freq = 1200, q = 1, when = 0, type = 'bandpass', dest = null } = {}) {
+    if (!this.ac) return;
+    const n = Math.max(1, Math.floor(this.ac.sampleRate * dur));
+    const buf = this.ac.createBuffer(1, n, this.ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
+    const src = this.ac.createBufferSource(); src.buffer = buf;
+    const f = this.ac.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+    const g = this.ac.createGain(); g.gain.value = gain;
+    src.connect(f); f.connect(g); g.connect(dest || this.musicGain);
+    src.start(this.ac.currentTime + when);
+  },
+
+  kick(when, gain = 0.20) {
+    if (!this.ac) return;
+    const o = this.ac.createOscillator(), g = this.ac.createGain();
+    const t0 = this.ac.currentTime + when;
+    o.type = 'sine';
+    o.frequency.setValueAtTime(150, t0);
+    o.frequency.exponentialRampToValueAtTime(46, t0 + 0.11);
+    g.gain.setValueAtTime(gain, t0);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+    o.connect(g); g.connect(this.musicGain);
+    o.start(t0); o.stop(t0 + 0.18);
+  },
+
+  snare(when, gain = 0.11) {
+    this.burst(0.13, { gain, freq: 1750, q: 0.7, when });
+    this.tone(196, 0.07, { type: 'triangle', gain: gain * 0.5, dest: this.musicGain, when });
+  },
+
+  hat(when, gain = 0.035, open = false) {
+    this.burst(open ? 0.13 : 0.035, { gain, freq: 8200, q: 0.6, when, type: 'highpass' });
   },
 
   noise(dur, { gain = 0.15, freq = 1200, q = 1 } = {}) {
@@ -332,88 +386,215 @@ const Audio_ = {
     this.drones = [];
   },
 
+  hz(semitones) { return 220 * Math.pow(2, semitones / 12); },
+
   update(dt) {
-    if (!this.ac || !this.seq || !this.seq.steps) return;
+    if (!this.ac || !this.seq) return;
+    const t = this.seq;
+    if (!t.lead && !t.drums && !t.chords) return;   // drone-only rooms
     this.seqTime += dt;
-    const step = 60 / this.seq.bpm / 2;
+    const step = 60 / t.bpm / 2;                    // one step is an eighth note
     while (this.seqTime >= step) {
       this.seqTime -= step;
-      const s = this.seq.steps[this.seqStep % this.seq.steps.length];
-      if (s !== null && s !== undefined) {
-        const f = 220 * Math.pow(2, s / 12);
-        this.tone(f, step * (this.seq.legato || 1.7), {
-          type: this.seq.type || 'square', gain: this.seq.gain || 0.055,
-          dest: this.musicGain, detune: this.seq.detune || 0, attack: 0.02,
-        });
-        if (this.seq.bass && this.seqStep % 4 === 0) {
-          this.tone(f / 4, step * 2.2, { type: 'triangle', gain: 0.05, dest: this.musicGain, attack: 0.02 });
-        }
-      }
+      this.step(t, this.seqStep, step);
       this.seqStep++;
     }
   },
+
+  // One eighth note, across every voice the track has. The four are deliberately
+  // driven off the same counter rather than four sequencers: a melody that can
+  // drift out of phase with its own bass line is worse than having no bass.
+  step(t, i, step) {
+    // Swing: hold the offbeats back. Straight eighths are the single biggest
+    // reason the old tracks sounded like a test tone rather than music.
+    const late = (i % 2 === 1) ? (t.swing || 0) * step : 0;
+    const bar = t.chordEvery || 8;
+
+    if (t.lead) {
+      const L = t.lead;
+      const s = L.steps[i % L.steps.length];
+      if (s !== null && s !== undefined) {
+        this.tone(this.hz(s + (t.key || 0)), step * (L.legato || 1.7), {
+          type: L.type || 'square', gain: L.gain || 0.055, dest: this.musicGain,
+          detune: L.detune || 0, attack: 0.015, when: late,
+          vibrato: L.vibrato || 0, decay: L.decay || 0,
+        });
+      }
+    }
+
+    if (t.chords) {
+      const [root, quality] = t.chords[Math.floor(i / bar) % t.chords.length];
+      const notes = CHORDS[quality] || CHORDS.maj;
+      const at = i % bar;
+      // Comping. Spread by a few milliseconds per note so the chord is strummed
+      // rather than stamped.
+      if (t.comp && t.comp[at % t.comp.length] === 'x') {
+        notes.forEach((n, k) => this.tone(
+          this.hz(root + n + (t.key || 0) - 12), step * (t.compLen || 0.9), {
+            type: t.padType || 'square', gain: t.padGain || 0.018,
+            dest: this.musicGain, attack: 0.012, when: late + k * 0.006, decay: 0.5,
+          }));
+      }
+      if (t.bassLine) {
+        const c = t.bassLine[at % t.bassLine.length];
+        if (c !== '-') {
+          // r root, 3 third, 5 fifth, 7 seventh, 8 the octave above.
+          const deg = c === 'r' ? 0 : c === '3' ? notes[1] : c === '5' ? notes[2]
+                    : c === '7' ? (notes[3] === undefined ? 10 : notes[3]) : 12;
+          this.tone(this.hz(root + deg + (t.key || 0) - 24), step * (t.bassLen || 1.5), {
+            type: t.bassType || 'triangle', gain: t.bassGain || 0.062,
+            dest: this.musicGain, attack: 0.008, when: late, decay: 0.45,
+          });
+        }
+      }
+    }
+
+    if (t.drums) {
+      const d = t.drums[i % t.drums.length];
+      if (d === 'k') this.kick(late, t.kickGain || 0.2);
+      else if (d === 's') this.snare(late, t.snareGain || 0.11);
+      else if (d === 'h') this.hat(late, t.hatGain || 0.03);
+      else if (d === 'H') this.hat(late, (t.hatGain || 0.03) * 1.4, true);
+      else if (d === 'K') { this.kick(late, t.kickGain || 0.2); this.hat(late, t.hatGain || 0.03); }
+    }
+  },
+};
+
+// Chord shapes, as semitone offsets from the chord's root. The sevenths and
+// ninths are the point: triads alone sound like a hymn, and this game's
+// reference is a SNES RPG that never met a major seventh it did not like.
+const CHORDS = {
+  maj:  [0, 4, 7],       min:  [0, 3, 7],
+  maj7: [0, 4, 7, 11],   min7: [0, 3, 7, 10],
+  dom7: [0, 4, 7, 10],   min9: [0, 3, 7, 10, 14],
+  maj9: [0, 4, 7, 11, 14], add9: [0, 4, 7, 14],
+  sus4: [0, 5, 7],       sus2: [0, 2, 7],
+  dim:  [0, 3, 6],       dim7: [0, 3, 6, 9],
+  aug:  [0, 4, 8],       m7b5: [0, 3, 6, 10],
+  six:  [0, 4, 7, 9],    m6:   [0, 3, 7, 9],
 };
 addEventListener('pointerdown', () => Audio_.unlock(), { once: false });
 addEventListener('keydown', () => Audio_.unlock(), { once: false });
 
-// n.b. offsets are semitones from A3.
+// Offsets are semitones from A3 (220 Hz). A track is up to four voices sharing
+// one clock: `lead` carries the tune, `chords` gives the harmony that `comp` and
+// `bassLine` are read against, and `drums` is a step string — k kick, s snare,
+// h hat, H open hat, K kick and hat together, - rest.
 const TRACKS = {
-  // Okobo: the prettiest thing in the game. Warm, detuned, a little wistful.
+  // Okobo: the prettiest thing in the game. Amaj7 - F#m7 - Dmaj7 - E7, which is
+  // about as EarthBound as four chords get: a plain major key with the sevenths
+  // left in so it never quite resolves into something cheerful.
   okobo: {
-    bpm: 104, type: 'triangle', gain: 0.075, detune: 7, legato: 1.9, bass: true,
-    steps: [
-      0, null, 4, 7, 9, null, 7, 4, 5, null, 9, 12, 11, null, 9, 7,
-      0, null, 4, 7, 9, null, 12, 14, 16, null, 14, 12, 9, null, 7, null,
-      -3, null, 2, 5, 7, null, 5, 2, 4, null, 7, 11, 9, null, 7, 4,
-      0, null, 4, 7, 9, null, 7, 4, 2, null, 0, null, null, null, null, null,
-    ],
+    bpm: 104, swing: 0.16, chordEvery: 16,
+    chords: [[0, 'maj7'], [-3, 'min7'], [-7, 'maj9'], [-5, 'dom7']],
+    comp: '--x--x-x--x--x-x', padType: 'triangle', padGain: 0.020, compLen: 1.1,
+    bassLine: 'r--5--3-r--5--7-', bassGain: 0.058,
+    drums: 'k--h-s-hk-Kh-s-h', kickGain: 0.15, snareGain: 0.075, hatGain: 0.022,
+    lead: {
+      type: 'triangle', gain: 0.072, detune: 7, legato: 1.9, vibrato: 9, decay: 0.62,
+      steps: [
+        0, null, 4, 7, 9, null, 7, 4, 5, null, 9, 12, 11, null, 9, 7,
+        0, null, 4, 7, 9, null, 12, 14, 16, null, 14, 12, 9, null, 7, null,
+        -3, null, 2, 5, 7, null, 5, 2, 4, null, 7, 11, 9, null, 7, 4,
+        0, null, 4, 7, 9, null, 7, 4, 2, null, 0, null, null, null, null, null,
+      ],
+    },
   },
-  // Ondo: the capital. Same warmth as Okobo, wider intervals, slower — a town
-  // that used to be grander and knows it.
+
+  // Ondo: the capital. Same language, slower, and voiced lower — a town that
+  // used to be grander and knows it. Emaj7 - C#m7 - Amaj7 - Bm7.
   ondo: {
-    bpm: 88, type: 'triangle', gain: 0.07, detune: 9, legato: 2.1, bass: true,
-    steps: [
-      -5, null, 0, 2, 3, null, 2, 0, -2, null, 3, 7, 5, null, 3, 2,
-      -5, null, 0, 3, 7, null, 10, 12, 10, null, 7, 3, 2, null, 0, null,
-      -7, null, -2, 2, 5, null, 3, -2, 0, null, 5, 9, 7, null, 5, 2,
-      -5, null, 0, 2, 3, null, 0, -2, -5, null, null, null, null, null, null, null,
-    ],
+    bpm: 88, swing: 0.18, chordEvery: 16,
+    chords: [[-5, 'maj7'], [-8, 'min7'], [-12, 'maj9'], [-10, 'min7']],
+    comp: '--x-----x-x-----', padType: 'triangle', padGain: 0.022, compLen: 1.8,
+    bassLine: 'r-------5---3---', bassGain: 0.060, bassLen: 2.4,
+    drums: 'k-------s-----h-', kickGain: 0.13, snareGain: 0.055, hatGain: 0.018,
+    lead: {
+      type: 'triangle', gain: 0.068, detune: 9, legato: 2.1, vibrato: 11, decay: 0.7,
+      steps: [
+        -5, null, 0, 2, 3, null, 2, 0, -2, null, 3, 7, 5, null, 3, 2,
+        -5, null, 0, 3, 7, null, 10, 12, 10, null, 7, 3, 2, null, 0, null,
+        -7, null, -2, 2, 5, null, 3, -2, 0, null, 5, 9, 7, null, 5, 2,
+        -5, null, 0, 2, 3, null, 0, -2, -5, null, null, null, null, null, null, null,
+      ],
+    },
   },
-  // Kestrel Works: cold, mechanically dead, one held tone and a hum.
-  kestrel: { drones: [{ freq: 43.7, gain: 0.055, type: 'sine' },
-                      { freq: 87.9, gain: 0.02, type: 'triangle' },
-                      { freq: 131.2, gain: 0.008, type: 'sine' }] },
-  // Battle: upbeat and cheerful against whatever is being revealed.
+
+  // Kestrel Works: cold and mechanically dead. No harmony and no kit, but the
+  // hum is on a slow pulse now, because a factory that is merely silent reads
+  // as an empty channel rather than as a building.
+  kestrel: {
+    bpm: 52, chordEvery: 8,
+    drones: [{ freq: 43.7, gain: 0.055, type: 'sine' },
+             { freq: 87.9, gain: 0.02, type: 'triangle' },
+             { freq: 131.2, gain: 0.008, type: 'sine' }],
+    drums: '-------h--------k-------h-------',
+    kickGain: 0.07, hatGain: 0.012,
+  },
+
+  // Battle: upbeat and cheerful against whatever is being revealed. A funk vamp
+  // on Am7 - D9 - Am7 - E7, swung, because the joke of this game's battle theme
+  // is that it is having a much better time than the player is.
   battle: {
-    bpm: 168, type: 'square', gain: 0.05, detune: 4, legato: 1.2, bass: true,
-    steps: [
-      0, 0, 7, 0, 10, 0, 7, 0, 3, 3, 10, 3, 12, 3, 10, 3,
-      5, 5, 12, 5, 15, 5, 12, 5, 3, 3, 10, 3, 7, 7, 3, 0,
-    ],
+    bpm: 168, swing: 0.14, chordEvery: 8,
+    chords: [[0, 'min7'], [5, 'dom7'], [0, 'min7'], [7, 'dom7']],
+    comp: '--x--x-x', padType: 'square', padGain: 0.016, compLen: 0.6,
+    bassLine: 'r-r-5-7-', bassGain: 0.070, bassLen: 0.9, bassType: 'sawtooth',
+    drums: 'k-hks-hhk-hks-hs', kickGain: 0.19, snareGain: 0.10, hatGain: 0.026,
+    lead: {
+      type: 'square', gain: 0.048, detune: 4, legato: 1.2, vibrato: 5, decay: 0.5,
+      steps: [
+        0, 0, 7, 0, 10, 0, 7, 0, 3, 3, 10, 3, 12, 3, 10, 3,
+        5, 5, 12, 5, 15, 5, 12, 5, 3, 3, 10, 3, 7, 7, 3, 0,
+      ],
+    },
   },
+
+  // Boss: the same kit, driven harder, over chords that will not sit still.
+  // Diminished into a flat second — nothing here resolves.
   boss: {
-    bpm: 176, type: 'sawtooth', gain: 0.042, detune: 11, legato: 1.1, bass: true,
-    steps: [
-      0, 1, 0, -1, 0, 3, 5, 3, 0, 1, 0, -1, 0, 6, 5, 3,
-      -2, -1, -2, -3, -2, 1, 3, 1, 0, 5, 7, 5, 3, 1, 0, -1,
-    ],
+    bpm: 176, chordEvery: 8,
+    chords: [[0, 'dim7'], [1, 'dim7'], [0, 'm7b5'], [-1, 'dom7']],
+    comp: 'x---x-x-', padType: 'square', padGain: 0.014, compLen: 0.5,
+    bassLine: 'r-r-r-3-', bassGain: 0.075, bassLen: 0.8, bassType: 'sawtooth',
+    drums: 'kkhsk-hsk-hskshs', kickGain: 0.21, snareGain: 0.12, hatGain: 0.028,
+    lead: {
+      type: 'sawtooth', gain: 0.040, detune: 11, legato: 1.1, vibrato: 14, decay: 0.45,
+      steps: [
+        0, 1, 0, -1, 0, 3, 5, 3, 0, 1, 0, -1, 0, 6, 5, 3,
+        -2, -1, -2, -3, -2, 1, 3, 1, 0, 5, 7, 5, 3, 1, 0, -1,
+      ],
+    },
   },
-  // Liminal rooms: no melody, just a held tone and a hum.
-  // Sable City: fast, bright, and too many voices at once.
+
+  // Sable City: fast, bright, and too many voices at once. Four-on-the-floor
+  // under add9s, which is the sound of somewhere that would like you to keep
+  // moving.
   sable: {
-    bpm: 152, type: 'square', gain: 0.045, detune: 9, legato: 1.1, bass: true,
-    steps: [
-      7, 12, 14, 12, 7, 12, 14, 16, 14, 12, 7, 5, 7, null, 5, 3,
-      5, 10, 12, 10, 5, 10, 12, 14, 12, 10, 5, 3, 5, null, 3, 2,
-      0, 7, 12, 7, 0, 7, 12, 14, 12, 7, 0, -2, 0, null, -2, -4,
-      3, 10, 15, 10, 3, 10, 15, 17, 15, 10, 3, 2, 0, null, null, null,
-    ],
+    bpm: 152, swing: 0.08, chordEvery: 16,
+    chords: [[7, 'add9'], [5, 'maj9'], [3, 'min7'], [2, 'dom7']],
+    comp: '-x-x-x-x-x-x-x-x', padType: 'square', padGain: 0.014, compLen: 0.55,
+    bassLine: 'r-5-r-5-r-5-3-7-', bassGain: 0.066, bassLen: 0.9,
+    drums: 'k-hks-hkk-hks-hs', kickGain: 0.18, snareGain: 0.095, hatGain: 0.030,
+    lead: {
+      type: 'square', gain: 0.044, detune: 9, legato: 1.1, vibrato: 6, decay: 0.5,
+      steps: [
+        7, 12, 14, 12, 7, 12, 14, 16, 14, 12, 7, 5, 7, null, 5, 3,
+        5, 10, 12, 10, 5, 10, 12, 14, 12, 10, 5, 3, 5, null, 3, 2,
+        0, 7, 12, 7, 0, 7, 12, 14, 12, 7, 0, -2, 0, null, -2, -4,
+        3, 10, 15, 10, 3, 10, 15, 17, 15, 10, 3, 2, 0, null, null, null,
+      ],
+    },
   },
-  // Bellhouse: a corridor. Two tones a semitone apart, and nothing else.
+
+  // Bellhouse: a corridor. Two tones a semitone apart, and a door somewhere
+  // else in the building.
   bellhouse: {
+    bpm: 46, chordEvery: 8,
     drones: [{ freq: 58, gain: 0.05, type: 'sine' },
              { freq: 61.4, gain: 0.03, type: 'sine' },
              { freq: 174, gain: 0.012, type: 'triangle' }],
+    drums: '---------------s', snareGain: 0.03,
   },
   gallery:  { drones: [{ freq: 55, gain: 0.05, type: 'sine' }, { freq: 110.3, gain: 0.022, type: 'sine' }] },
   orchard:  { drones: [{ freq: 73.4, gain: 0.045, type: 'sine' }, { freq: 147.6, gain: 0.014, type: 'triangle' }] },

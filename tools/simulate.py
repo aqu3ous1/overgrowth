@@ -41,17 +41,86 @@ DIVISOR = 12.0
 DEF_COEFF = 0.5
 CRIT = progression["crit"]
 REGEN = progression["resource_regen"]
+MILESTONES = progression["milestones"]
+
+
+def regen(level):
+    """The per-turn trickle at a given level, milestone bonuses included.
+
+    Modelling the flat 2 alone would tune every boss against a player who runs
+    dry sooner than the real one does - by level 40 the difference is 10 PP a
+    turn, which is a whole extra Punch and most of a special.
+    """
+    bump = (level // MILESTONES["every"]) * MILESTONES["regen_bonus"]
+    return REGEN["PP"] + bump, REGEN["SP"] + bump
+
+
+# Which act a level belongs to, taken from where the bosses sit rather than
+# guessed: a player at level 20 has cleared the act 2 boss and is shopping in
+# act 3's shop.
+ACT_LEVELS = sorted(
+    {e["act"]: e["internal_level"] for e in bosses_data["encounters"]}.items())
+
+
+def act_at(level):
+    for act, boss_level in ACT_LEVELS:
+        if level <= boss_level:
+            return act
+    return ACT_LEVELS[-1][0]
+
+
+# When an act's gear is actually in hand: the midpoint between the previous
+# boss and this one. Gating on the act alone dressed a level 2 player in a Tent
+# Stake and a Patched Coat, which is 350 Rell they have not earned yet - shopping
+# happens partway through an act, not on the first step of it.
+def _acquire_levels():
+    out, prev = {}, 1
+    for act, boss_level in ACT_LEVELS:
+        out[act] = (prev + boss_level) / 2
+        prev = boss_level
+    return out
+
+
+ACQUIRED_AT = _acquire_levels()
+
+
+def gear_at(level):
+    """What the player is wearing, as a stat bonus.
+
+    The same rule economy.py buys by - the cheapest piece of that act actually
+    stocked - so the two tools model one player rather than two. Modelling a
+    player in Bare Hands would tune every boss against someone the game does not
+    produce: gear is sold in every act and dropped by every boss.
+    """
+    bonus = {"HP": 0, "ATK": 0, "SPATK": 0, "DEF": 0, "SPDEF": 0, "SPD": 0}
+    for slot in ("weapon", "body"):
+        options = [p for p in items["equipment"][slot]
+                   if "shop" in p.get("sources", [])
+                   and level >= ACQUIRED_AT.get(p.get("act", 99), 99)]
+        if not options:
+            continue
+        best_act = max(p["act"] for p in options)
+        tier = [p for p in options if p["act"] == best_act]
+        pick = min(tier, key=lambda p: p.get("price", 0))
+        for stat in bonus:
+            bonus[stat] += pick.get(stat, 0)
+    return bonus
 
 
 def player_stats(level):
-    """Interpolate the authored stat curve to any level."""
+    """Interpolate the authored stat curve to any level, then dress the player."""
     keys = sorted(CURVE)
     lo = max(k for k in keys if k <= level)
     hi = min(k for k in keys if k >= level)
     if lo == hi:
-        return dict(CURVE[lo])
-    t = (level - lo) / (hi - lo)
-    return {s: CURVE[lo][s] + t * (CURVE[hi][s] - CURVE[lo][s]) for s in CURVE[lo]}
+        base = dict(CURVE[lo])
+    else:
+        t = (level - lo) / (hi - lo)
+        base = {s: CURVE[lo][s] + t * (CURVE[hi][s] - CURVE[lo][s]) for s in CURVE[lo]}
+    for stat, n in gear_at(level).items():
+        if n and stat in base:
+            base[stat] = max(1, base[stat] + n)
+    return base
 
 
 def enemy_stats(level, role):
@@ -252,8 +321,9 @@ def fight(level, enemy, heal_items, homesick=False, boss=None, max_turns=60):
         if hp <= 0:
             return False, turns, 1.0, stuck
 
-        pp = min(ps["PP"], pp + REGEN["PP"])
-        sp = min(ps["SP"], sp + REGEN["SP"])
+        pp_back, sp_back = regen(level)
+        pp = min(ps["PP"], pp + pp_back)
+        sp = min(ps["SP"], sp + sp_back)
 
     return False, turns, (hp_max - hp + healed) / hp_max, stuck
 

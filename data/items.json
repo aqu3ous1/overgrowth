@@ -103,7 +103,11 @@
         "SPATK": 0,
         "DEF": 0,
         "SPD": 0,
-        "price": 0
+        "price": 0,
+        "sources": [
+          "start"
+        ],
+        "flavour": "Yours. Cold at the knuckles."
       },
       {
         "name": "Tent Stake",
@@ -112,7 +116,12 @@
         "SPATK": 0,
         "DEF": 0,
         "SPD": 0,
-        "price": 150
+        "price": 150,
+        "sources": [
+          "shop",
+          "boss:The Fruiting Tree"
+        ],
+        "flavour": "Somebody camped here once and left in a hurry."
       },
       {
         "name": "Magic Baton",
@@ -121,7 +130,12 @@
         "SPATK": 5,
         "DEF": 0,
         "SPD": 1,
-        "price": 620
+        "price": 620,
+        "sources": [
+          "shop",
+          "drop"
+        ],
+        "flavour": "Light for its size. Warm at the grip, and it should not be."
       },
       {
         "name": "Anvil-Laden Sword",
@@ -130,7 +144,12 @@
         "SPATK": 0,
         "DEF": 1,
         "SPD": -4,
-        "price": 560
+        "price": 560,
+        "sources": [
+          "shop",
+          "boss:The Memorial"
+        ],
+        "flavour": "Swinging it is a decision you commit to early."
       },
       {
         "name": "Length of Pipe",
@@ -139,7 +158,12 @@
         "SPATK": 0,
         "DEF": 0,
         "SPD": -1,
-        "price": 1400
+        "price": 1400,
+        "sources": [
+          "shop",
+          "boss:Line Supervisor"
+        ],
+        "flavour": "Threaded at one end. It came off something."
       },
       {
         "name": "Signal Rod",
@@ -148,7 +172,12 @@
         "SPATK": 9,
         "DEF": 0,
         "SPD": 0,
-        "price": 1650
+        "price": 1650,
+        "sources": [
+          "shop",
+          "boss:Tenant"
+        ],
+        "flavour": "It hums when you face a certain direction. You stop checking which."
       },
       {
         "name": "Foreman's Wrench",
@@ -157,7 +186,12 @@
         "SPATK": 0,
         "DEF": 2,
         "SPD": -3,
-        "price": 3000
+        "price": 3000,
+        "sources": [
+          "shop",
+          "boss:Account Manager"
+        ],
+        "flavour": "Initials filed off the handle. Not worn off — filed."
       },
       {
         "name": "Quiet Instrument",
@@ -166,7 +200,12 @@
         "SPATK": 12,
         "DEF": 0,
         "SPD": 2,
-        "price": 5200
+        "price": 5200,
+        "sources": [
+          "shop",
+          "boss:Something Left Over"
+        ],
+        "flavour": "It makes no sound at all, and you can hear that it doesn't."
       }
     ],
     "body": [
@@ -177,7 +216,11 @@
         "SPDEF": 0,
         "SPD": 0,
         "HP": 0,
-        "price": 0
+        "price": 0,
+        "sources": [
+          "start"
+        ],
+        "flavour": "Washed on a Sunday by someone who is not here."
       },
       {
         "name": "Patched Coat",
@@ -186,7 +229,12 @@
         "SPDEF": 1,
         "SPD": 0,
         "HP": 0,
-        "price": 200
+        "price": 200,
+        "sources": [
+          "shop",
+          "drop"
+        ],
+        "flavour": "The patches are neater than the coat deserves."
       },
       {
         "name": "Fancy Suit",
@@ -195,7 +243,11 @@
         "SPDEF": 5,
         "SPD": 0,
         "HP": 0,
-        "price": 700
+        "price": 700,
+        "sources": [
+          "shop"
+        ],
+        "flavour": "Cut for someone half a head taller."
       },
       {
         "name": "Featherweight Coat",
@@ -204,7 +256,12 @@
         "SPDEF": 0,
         "SPD": 3,
         "HP": 0,
-        "price": 500
+        "price": 500,
+        "sources": [
+          "shop",
+          "drop"
+        ],
+        "flavour": "You keep checking you are still wearing it."
       },
       {
         "name": "Work Jacket",
@@ -213,7 +270,12 @@
         "SPDEF": 2,
         "SPD": -1,
         "HP": 0,
-        "price": 1500
+        "price": 1500,
+        "sources": [
+          "shop",
+          "boss:Line Supervisor"
+        ],
+        "flavour": "A name tape, unpicked. The stitch holes are still there."
       },
       {
         "name": "Static Vest",
@@ -222,7 +284,12 @@
         "SPDEF": 10,
         "SPD": 0,
         "HP": 0,
-        "price": 3200
+        "price": 3200,
+        "sources": [
+          "shop",
+          "boss:The Custodian"
+        ],
+        "flavour": "Your hair stands up. It stays up."
       },
       {
         "name": "Lead Apron",
@@ -231,7 +298,11 @@
         "SPDEF": 6,
         "SPD": -6,
         "HP": 0,
-        "price": 2800
+        "price": 2800,
+        "sources": [
+          "shop"
+        ],
+        "flavour": "From somewhere that needed one."
       },
       {
         "name": "Overgrown Coat",
@@ -240,7 +311,11 @@
         "SPDEF": 6,
         "SPD": 2,
         "HP": 20,
-        "found_only": true
+        "found_only": true,
+        "sources": [
+          "found"
+        ],
+        "flavour": "Green."
       }
     ]
   },

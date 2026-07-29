@@ -152,16 +152,24 @@ can't fix.
 
 Kept deliberately small — five statuses, all curable, none permanent.
 
-| Status | Effect | Cure |
-|---|---|---|
-| **Static** | 25% chance to lose the turn. | 3 turns, or an item. |
-| **Fog** | −40% accuracy. | 4 turns, or an item. |
-| **Drained** | PP/SP regen suppressed; SP costs +50%. | 4 turns, or an item. |
-| **Numb** | DEF and SPDEF halved. | 3 turns, or an item. |
-| **Homesick** | Lose 5% max HP at end of each turn. Cannot be cured by items — only by winning, fleeing, or the `Quiet Room` special. | — |
+Every status can land on either combatant, and **the same status does not mean the same thing on
+both sides** — an enemy has no PP to suppress, no bag to reach for, and no cost sheet. Each one
+therefore carries two readings, and `data/moves.json` holds both.
+
+| Status | On the player | On an enemy | Cure |
+|---|---|---|---|
+| **Static** | 25% chance to lose the turn. | 25% chance to lose the turn. | 3 turns, or an item. |
+| **Fog** | −40% accuracy. | −40% accuracy. | 4 turns, or an item. |
+| **Drained** | PP/SP regen suppressed; SP costs +50%. | Attack power −25%. | 4 turns, or an item. |
+| **Numb** | DEF and SPDEF halved. | DEF halved. | 3 turns, or an item. |
+| **Homesick** | Lose 5% max HP at end of each turn. Cannot be cured by items — only by winning, fleeing, or the `Quiet Room` special. | *Never lands on an enemy.* | — |
 
 **Homesick** is the thematic status and should be rare: two enemy species, one mini-boss, and the
-Custodian both times. It's the only status the bag can't fix.
+Custodian both times. It's the only status the bag can't fix, and the only one with no enemy-side
+reading at all — it is the player's, and it is what the game is about.
+
+`Clean Rag` cures exactly **one** status, the oldest one on the player. It will not touch Homesick,
+and says so when Homesick is the only thing wrong.
 
 ## Stat stages
 
@@ -170,6 +178,28 @@ Buffs and debuffs move a stat by stages, EarthBound-style, ±3 max in either dir
 combatant.
 
 Affectable: ATK, SPATK, DEF, SPDEF, SPD, and accuracy.
+
+Stages are where most of the bag's contents live. Six of the boosts and one of the debuffs do
+nothing but move a stage, and `Gut Check` takes a step off the enemy's attack 40% of the time it
+lands. `Second Wind` moves all five at once, which is why it costs 400 and is not sold before Act 4.
+
+`Last Word` (the level 40 passive) grants a virtual +1 to ATK and SPATK while the player is below a
+quarter HP. It is not a real stage: it cannot be stacked, it does not show on the counter, and it
+goes away the moment the HP bar comes back up.
+
+### Counter Stance
+
+`Counter Stance` is the one move that is neither damage nor a stage, and it needs stating plainly
+because its wording is easy to get wrong. It **soaks half of the next attack that lands, and returns
+half of what it soaked.**
+
+It lasts **through the enemy's next attack**, not "until the end of this turn". Those are the same
+thing only when the player acts first. If it expired at end of turn, bracing would do nothing
+whenever the player was slower — which is precisely the turn a player reaches for it.
+
+If the blow it soaks is small enough to be fully absorbed, the log says the hit went nowhere rather
+than reporting zero damage. The counter can kill; if it does, and the player is still standing, the
+fight ends there.
 
 ## Encounters
 

@@ -1,6 +1,6 @@
 # 19 — The Playable Build
 
-**0.4.1 — Acts 0 through 3, playable, on a desktop or a phone.** Title screen through
+**0.5.0 — Acts 0 through 3, playable, on a desktop or a phone.** Title screen through
 **Main Boss 2**, in a browser, in one self-contained HTML file with no assets and no dependencies.
 
 ```
@@ -9,6 +9,122 @@ python3 tools/build_game.py        # game/src/*.js + data/*.json -> game/overgro
 python3 tools/playtest.py          # drives it with a keyboard, fails on any error
 python3 tools/playtest_mobile.py   # drives it with a thumb, on an emulated phone
 ```
+
+## 0.5.0 — everything the docs described and the game did not do
+
+Two bugs were reported. Neither turned out to be a bug on its own.
+
+### "Counter Stance does not work at all"
+
+It didn't. It also wasn't alone. `Counter Stance` fell into a branch that read
+`if (!move.power)` and printed *Nothing obvious happened.* — and so did thirteen other things:
+
+```
+MOVES with no damage
+  Counter Stance   INERT   Halves physical damage this turn; returns 50% of what was blocked.
+  Mind Fog         INERT   Fog
+  Static Pulse     INERT   Also drops target SPD one stage.
+ITEMS that are not heal/pp/sp
+  Clean Rag, Knuckle Wrap, Cold Compress, Thin Static, Wool Lining,
+  Loose Laces, Second Wind, Dropped Call, Loose Wire, Dead Battery, Shed Skin
+```
+
+All fourteen were missing the same system: **stat stages and statuses**. The shop sold six boosters
+and four debuffs, the docs priced them, and the fight had no branch for any of them. Fixing only the
+reported one would have guaranteed the next report was `Knuckle Wrap`.
+
+There was a second half to it. Four enemy species inflict `Fog`, `Static`, `Numb` and `Drained` on
+the *player*, and only `Homesick` was ever wired up — the other four simply attacked instead. The
+player's status bag did not exist. `this.drained` was read in one place and set in none.
+
+So statuses now land on either side, and **the same status does not mean the same thing on both
+sides**: an enemy has no PP to suppress and no bag to reach for. Each one carries both readings in
+`data/moves.json`, and the fight reads the numbers rather than having them typed into it.
+`validate.py` fails if a status means nothing to anyone, or if a `kind` in that table is read by no
+code.
+
+The reported symptom — *"the fog status didn't really do anything, not sure what the status does"* —
+was exactly right, and applied to four of the five.
+
+### "Some of the houses in Sable City lead to the same place"
+
+Two doors opened into `sable_flat`. One is now an **arcade** with six demo pods, one of which
+contains the Sable kid's mother — a place the game had been referring to for an act without having.
+
+This has now shipped twice (Ondo's bottom-right house opened into the shop), so it is a check
+rather than a promise to be careful: duplicate exit destinations, exits to rooms that do not exist,
+and rooms nothing reaches. Bellhouse Commons is *supposed* to have doors that go the same place, so
+it carries `impossible: true` and the check asserts the opposite for it.
+
+Writing that check found a bug in itself first. Slicing the exits array on `"],"` matched inside
+`at: [7, 5],` whenever `sfx` followed, so it read two exits per room and missed the very duplicate
+it existed to catch.
+
+### Equipment
+
+Sixteen pieces, two slots, described in full in [06](06-items-and-equipment.md) since the first
+draft — stat columns, prices, trade-off rules, act pacing. `data/items.json` held the numbers.
+`data/shops.json` stocked them. `data/bosses.json` dropped three of them. **The build had no slots
+at all**, and no shop anywhere sold a single one, because the shop stock was retyped in
+`70_game.js` and the export only ever carried act 1.
+
+Now: a `GEAR` tab that shows the difference between what is worn and what is under the cursor, gear
+in every act's shop, and a piece from every boss. Rare drops from common enemies, at about one fight
+in six hundred, from a small pool of early pieces.
+
+### Drops
+
+An enemy leaves something about **one fight in six**. Rarity is keyed to **price** rather than to a
+hand-written tier list, so retuning what a Spray III costs moves it through the table on its own.
+Nothing drops that the player could not already have been sold at that level.
+
+### Milestones
+
+Every tenth level pays twice: `+2` to the PP/SP trickle, automatically, and **one of two passives**,
+chosen. No two passives share a mechanic, and each pair is an axis rather than a strength tier. The
+prompt waits for the field — a menu that opens over the level-up text is a menu nobody reads.
+
+### The music
+
+The old tracks were one monophonic line with the melody's root dropped two octaves under it. Now a
+track is **four voices on one clock**: lead, chord comping, a real bass line, and a synthesised kit.
+Okobo is Amaj7 – F#m7 – Dmaj9 – E7 with a soft shuffle; the battle theme is a swung funk vamp;
+Kestrel is still a hum, but with a clank in it. Details in [01](01-art-and-audio.md).
+
+### What it cost in balance
+
+Implementing equipment made the player materially stronger, and six matchups fell out of their
+target bands — every fight was too *short*. `simulate.py` had been modelling a player in Bare Hands
+for the whole project, which was accurate right up until it wasn't.
+
+The simulator now dresses the player the same way `economy.py` buys: cheapest stocked piece of the
+act, acquired at the midpoint between one boss and the next, so the two tools model one player
+rather than two. Boss HP was then re-solved per boss against a target shape that escalates — 8, 14,
+10, 15, 8, 18, 14, 17 turns — rather than scaled uniformly, because the gear advantage grows across
+the game and a first boss should not be a war of attrition.
+
+`wall` and `support` attack multipliers went up (0.70 → 0.85, 0.55 → 0.68). With a body slot in
+play, a role that barely hit stopped registering at all, and band 2 — two walls in five species —
+fell out of its attrition band. A wall is supposed to grind, not to be harmless.
+
+### Guards proven, not assumed
+
+Both new guards were verified by reintroducing the bug and watching them fail:
+
+- passing `e.spd` to the enemy's damage roll → *FAIL: the enemy's attack passes a speed to roll(),
+  which lets enemies crit*
+- removing the item-effect parse from the build → *11 failed*, naming every inert item by price
+
+The crit guard also had to be rewritten. It matched the argument text of both `roll()` call sites
+literally, so renaming a local variable broke it and reported that crits were off when nothing about
+them had moved. It counts arity now.
+
+`playtest.py` had the same class of problem: it addressed pause-menu tabs by index, and inserting
+`GEAR` between `BAG` and `MOVES` silently repointed every call at the wrong tab. The failures it
+produced — *"the MOVES tab lists nothing"* — described the test's confusion rather than anything
+wrong with the game. It addresses them by name now.
+
+**1092 checks, 57 matchups in target, both playtests clean.**
 
 ## 0.4.0 — Act 3, critical hits, and buildings that look like buildings
 

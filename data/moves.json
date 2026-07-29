@@ -163,31 +163,68 @@
       "name": "Static",
       "effect": "25% chance to lose the turn",
       "duration": 3,
-      "item_curable": true
+      "item_curable": true,
+      "player_effect": {
+        "kind": "skip",
+        "chance": 0.25
+      },
+      "enemy_effect": {
+        "kind": "skip",
+        "chance": 0.25
+      }
     },
     {
       "name": "Fog",
       "effect": "-40% accuracy",
       "duration": 4,
-      "item_curable": true
+      "item_curable": true,
+      "player_effect": {
+        "kind": "miss",
+        "chance": 0.4
+      },
+      "enemy_effect": {
+        "kind": "miss",
+        "chance": 0.4
+      }
     },
     {
       "name": "Drained",
       "effect": "PP/SP regen suppressed, SP costs +50%",
       "duration": 4,
-      "item_curable": true
+      "item_curable": true,
+      "player_effect": {
+        "kind": "drain",
+        "sp_cost_multiplier": 1.5
+      },
+      "enemy_effect": {
+        "kind": "weaken",
+        "multiplier": 0.75
+      }
     },
     {
       "name": "Numb",
       "effect": "DEF and SPDEF halved",
       "duration": 3,
-      "item_curable": true
+      "item_curable": true,
+      "player_effect": {
+        "kind": "soften",
+        "multiplier": 0.5
+      },
+      "enemy_effect": {
+        "kind": "soften",
+        "multiplier": 0.5
+      }
     },
     {
       "name": "Homesick",
       "effect": "lose 5% max HP at end of turn",
       "duration": null,
-      "item_curable": false
+      "item_curable": false,
+      "player_effect": {
+        "kind": "chip",
+        "fraction": 0.05
+      },
+      "enemy_effect": null
     }
   ]
 }

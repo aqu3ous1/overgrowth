@@ -11,6 +11,8 @@ const Save = {
       hp: Player.hp, pp: Player.pp, sp: Player.sp, money: Player.money,
       bag: Player.bag, flags: Player.flags, notes: Player.notes, seen: Player.seen,
       collectibles: Player.collectibles, room: World.id,
+      equip: Player.equip, owned: Player.owned,
+      passives: Player.passives, owed: Player.owed,
       x: Math.round(Player.x), y: Math.round(Player.y), stamp: Date.now(),
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(d)); return true; }
@@ -26,7 +28,16 @@ const Save = {
       name: d.name, level: d.level, exp: d.exp, hp: d.hp, pp: d.pp, sp: d.sp,
       money: d.money, bag: d.bag || {}, flags: d.flags || {}, notes: d.notes || [],
       collectibles: d.collectibles || 0, seen: d.seen || [],
+      // Saves written before gear existed have none of this; fall back to what
+      // a new game starts in rather than leaving the slots undefined.
+      equip: Object.assign({}, DATA.equipStart, d.equip || {}),
+      owned: d.owned || {}, passives: d.passives || {}, owed: d.owed || [],
     });
+    // A save from before milestones existed can be past level 10 with nothing
+    // chosen. Re-queue anything it is owed rather than silently skipping it.
+    for (const lv of Player.milestonesUpTo(Player.level)) {
+      if (!Player.passives[lv] && !Player.owed.includes(lv)) Player.owed.push(lv);
+    }
     World.load(d.room || 'okobo');
     Player.x = d.x; Player.y = d.y;
     World.centerCamera();
@@ -493,12 +504,86 @@ function agoText(stamp) {
 }
 
 // --- pause menu --------------------------------------------------------
-const TAB_STATUS = 0, TAB_BAG = 1, TAB_MOVES = 2, TAB_MAP = 3, TAB_NOTES = 4,
-      TAB_SAVE = 5, TAB_OPTIONS = 6;
+// --- the milestone pick ---------------------------------------------------
+// Every tenth level offers two passives and takes one. It is shown out in the
+// field rather than on the victory screen: the choice is worth a moment, and a
+// fight is not the place to spend one. Player.owed queues them.
+const Milestone = {
+  cursor: 0, rep: {}, t: 0, level: 0,
+  boxes() {
+    const w = 128, h = 66, y = 72, gap = 10;
+    const x0 = (W - (w * 2 + gap)) / 2;
+    return this.choices().map((c, i) => ({ c, x: x0 + i * (w + gap), y, w, h }));
+  },
+  choices() { return DATA.milestones.choices[this.level] || []; },
+
+  pending() { return Player.owed.length ? Player.owed[0] : 0; },
+
+  enter() {
+    this.level = this.pending();
+    this.cursor = 0; this.t = 0;
+    TouchPad.takeTap();
+    Audio_.play('found');
+  },
+
+  choose(pick) {
+    Player.passives[this.level] = pick.id;
+    Player.owed = Player.owed.filter(lv => lv !== this.level);
+    Audio_.sfx('levelup');
+    // More than one can be owed at once if the player was handed several levels
+    // by a boss, so this re-enters rather than assuming it is finished.
+    if (this.pending()) { this.enter(); return; }
+    Game.mode = 'field';
+  },
+
+  update(dt) {
+    this.t += dt;
+    const list = this.choices();
+    if (!list.length) { Game.mode = 'field'; return; }
+    const n = list.length;
+    if (Input.repeat('left', this.rep)) { this.cursor = (this.cursor + n - 1) % n; Audio_.sfx('blip'); }
+    if (Input.repeat('right', this.rep)) { this.cursor = (this.cursor + 1) % n; Audio_.sfx('blip'); }
+    const tap = TouchPad.takeTap();
+    if (tap) {
+      for (const b of this.boxes()) {
+        if (tap[0] >= b.x && tap[0] <= b.x + b.w && tap[1] >= b.y && tap[1] <= b.y + b.h) {
+          this.choose(b.c); return;
+        }
+      }
+    }
+    if (Input.hit('ok')) this.choose(list[this.cursor]);
+  },
+
+  draw() {
+    rect(0, 0, W, H, 'rgba(4,4,8,0.94)');
+    textCentered(`LEVEL ${this.level}`, W / 2, 22, '#e8d24a', 2);
+    textCentered('SOMETHING SETTLES. PICK ONE.', W / 2, 44, '#9a9aa4');
+    textCentered(`PP AND SP NOW RETURN ${DATA.regen.PP + Player.regenBonus} A TURN.`,
+                 W / 2, 56, '#6e7a8a');
+    const boxes = this.boxes();
+    for (let i = 0; i < boxes.length; i++) {
+      const b = boxes[i], sel = i === this.cursor;
+      rect(b.x, b.y, b.w, b.h, sel ? '#141922' : '#0d0f15');
+      const edge = sel ? '#e8d24a' : '#3a3a44';
+      rect(b.x, b.y, b.w, 1, edge); rect(b.x, b.y + b.h - 1, b.w, 1, edge);
+      rect(b.x, b.y, 1, b.h, edge); rect(b.x + b.w - 1, b.y, 1, b.h, edge);
+      textCentered(b.c.name.toUpperCase(), b.x + b.w / 2, b.y + 10, sel ? '#f0ece2' : '#8a8a94');
+      const lines = wrap(b.c.effect, b.w - 16);
+      for (let j = 0; j < Math.min(4, lines.length); j++) {
+        textCentered(lines[j], b.x + b.w / 2, b.y + 28 + j * 10, sel ? '#b8b8c2' : '#6e6e7a');
+      }
+    }
+    const hint = 'LEFT / RIGHT      Z  TAKE IT';
+    textCentered(hint, W / 2, H - 16, '#5a5a66');
+  },
+};
+
+const TAB_STATUS = 0, TAB_BAG = 1, TAB_GEAR = 2, TAB_MOVES = 3, TAB_MAP = 4,
+      TAB_NOTES = 5, TAB_SAVE = 6, TAB_OPTIONS = 7;
 
 const Menu = {
   open: false, tab: 0, cursor: 0, rep: {},
-  tabs: ['STATUS', 'BAG', 'MOVES', 'MAP', 'NOTES', 'SAVE', 'OPTIONS'],
+  tabs: ['STATUS', 'BAG', 'GEAR', 'MOVES', 'MAP', 'NOTES', 'SAVE', 'OPTIONS'],
   message: '', messageT: 0, savedT: 0,
   toggle() { this.open = !this.open; this.cursor = 0; this.messageT = 0; Audio_.sfx(this.open ? 'ok' : 'cancel'); },
   update(dt) {
@@ -526,7 +611,23 @@ const Menu = {
         Dialogue.say(NOTES[note].pages.map(t => ({ text: t, speaker: 'system' })));
       }
       if (ok && this.tab === TAB_BAG) this.useFromBag(list[this.cursor]);
+      if (ok && this.tab === TAB_GEAR) this.wearFromList(list[this.cursor]);
     }
+  },
+
+  wearFromList(name) {
+    const piece = DATA.equipment[name];
+    if (!piece) return;
+    if (Player.equip[piece.slot] === name) {
+      this.message = 'Already on.';
+      this.messageT = 1.4;
+      Audio_.sfx('wrong');
+      return;
+    }
+    Player.wear(name);
+    Audio_.sfx('ok');
+    this.message = `${name.toUpperCase()} ON.`;
+    this.messageT = 1.6;
   },
 
   // Writing it down and resting are different things. An inn bed restores HP,
@@ -592,7 +693,23 @@ const Menu = {
     if (this.tab === TAB_BAG) return Object.keys(Player.bag);
     if (this.tab === TAB_MOVES) return Player.moves('physical').concat(Player.moves('special'));
     if (this.tab === TAB_NOTES) return Player.notes;
+    if (this.tab === TAB_GEAR) return this.gearList();
     return [];
+  },
+
+  // Weapons then body, each in the order the world hands them out, so a new
+  // piece appears at the bottom of its own group instead of somewhere in the
+  // middle of an alphabet.
+  gearList() {
+    const owned = Object.keys(Player.owned).filter(n => DATA.equipment[n]);
+    for (const slot in Player.equip) {
+      if (!owned.includes(Player.equip[slot])) owned.push(Player.equip[slot]);
+    }
+    const order = { weapon: 0, body: 1 };
+    return owned.sort((a, b) => {
+      const A = DATA.equipment[a], B = DATA.equipment[b];
+      return (order[A.slot] - order[B.slot]) || (A.act - B.act) || (A.price - B.price);
+    });
   },
   draw() {
     rect(0, 0, W, H, 'rgba(4,4,8,0.88)');
@@ -611,6 +728,7 @@ const Menu = {
     if (this.tab === TAB_MAP) { this.drawMap(); }
     else if (this.tab === TAB_MOVES) { this.drawMoves(); }
     else if (this.tab === TAB_SAVE) { this.drawSave(); }
+    else if (this.tab === TAB_GEAR) { this.drawGear(); }
     else if (this.tab === 0) {
       const rows = [
         ['NAME', Player.name], ['LEVEL', Player.level],
@@ -662,8 +780,57 @@ const Menu = {
       text(this.message, (W - w) / 2 + 6, H - 43, '#e8d24a');
     }
     const hint = this.tab === TAB_BAG ? 'Z  USE     C / X  CLOSE'
+               : this.tab === TAB_GEAR ? 'Z  WEAR    C / X  CLOSE'
                : (this.tab === TAB_MAP || this.tab === TAB_SAVE) ? '' : 'C / X  CLOSE';
     if (hint) text(hint, W - textWidth(hint) - 10, H - 12, '#5a5a66');
+  },
+
+  // Two slots, and the thing that matters is the difference between what is on
+  // and what is under the cursor — so that is what the bottom of the panel says,
+  // rather than making the player hold two stat blocks in their head.
+  drawGear() {
+    const list = this.gearList();
+    const inset = TouchPad.on ? 46 : 0;
+    const STATS = [['atk', 'ATK'], ['spatk', 'SPATK'], ['def', 'DEF'],
+                   ['spdef', 'SPDEF'], ['spd', 'SPD'], ['hp', 'HP']];
+    if (!list.length) { text('NOTHING BUT WHAT HE CAME IN.', 14, 32, '#70707c'); return; }
+
+    // Flattened to rows first, headers included, so the scroll window is over
+    // what is actually drawn. Windowing the item list instead lets a slot
+    // heading push the selected row off the bottom once the wardrobe fills up.
+    const rows = [];
+    let lastSlot = null;
+    for (let i = 0; i < list.length; i++) {
+      const piece = DATA.equipment[list[i]];
+      if (piece.slot !== lastSlot) { rows.push({ head: piece.slot }); lastSlot = piece.slot; }
+      rows.push({ i, piece });
+    }
+    const MAX = 10;
+    const at = rows.findIndex(r => r.i === this.cursor);
+    const start = Math.max(0, Math.min(rows.length - MAX, at - MAX + 2));
+    for (let r = 0; r < Math.min(MAX, rows.length - start); r++) {
+      const e = rows[start + r], y = 30 + r * 11;
+      if (e.head) { text(e.head.toUpperCase(), 12 + inset, y, '#5a6a7a'); continue; }
+      const on = Player.equip[e.piece.slot] === list[e.i];
+      const lit = e.i === this.cursor;
+      text(list[e.i].toUpperCase(), 20 + inset, y, lit ? '#f0ece2' : (on ? '#b8c8a8' : '#9a9aa4'));
+      if (on) text('WORN', W - 40 - inset, y, '#8ac06a');
+      if (lit) text('>', 12 + inset, y, '#e8d24a');
+    }
+
+    const sel = DATA.equipment[list[this.cursor]];
+    const worn = DATA.equipment[Player.equip[sel.slot]] || { stats: {} };
+    let dx = 14;
+    for (const [key, label] of STATS) {
+      const delta = (sel.stats[key] || 0) - (worn.stats[key] || 0);
+      if (!delta) continue;
+      const s = `${label} ${delta > 0 ? '+' : ''}${delta}`;
+      text(s, dx, H - 27, delta > 0 ? '#8ac06a' : '#c07a7a');
+      dx += textWidth(s) + 8;
+    }
+    if (dx === 14) text(Player.equip[sel.slot] === list[this.cursor] ? 'WORN.' : 'NO CHANGE.',
+                        14, H - 27, '#6e6e7a');
+    text(wrap(sel.flavour, W - 30)[0], 14, H - 16, '#8a8a94');
   },
 
   // Every move he knows, with what it costs and what it does. This is the only
@@ -792,36 +959,65 @@ const Menu = {
 
 // --- shop --------------------------------------------------------------
 const Shop = {
-  open: false, cursor: 0, rep: {}, stock: [],
-  start(stock, title) { this.open = true; this.stock = stock; this.cursor = 0; this.title = title || 'SHOP'; },
+  open: false, cursor: 0, scroll: 0, rep: {}, stock: [],
+  ROWS: 10,
+  start(stock, title) {
+    this.open = true; this.stock = stock; this.cursor = 0; this.scroll = 0;
+    this.title = title || 'SHOP';
+  },
+
+  // A shop sells consumables and gear from one list, so everything below asks
+  // "what is this name?" rather than assuming which table it came from.
+  entry(name) {
+    const gear = DATA.equipment[name];
+    if (gear) return { price: gear.price, gear: true, blurb: gear.flavour, slot: gear.slot };
+    const it = DATA.items[name] || { price: 0, effect: '' };
+    return { price: it.price, gear: false, blurb: it.effect };
+  },
+
+  buy(name) {
+    const e = this.entry(name);
+    if (e.gear && Player.owned[name]) { Audio_.sfx('wrong'); return; }
+    if (Player.money < e.price) { Audio_.sfx('wrong'); return; }
+    Player.money -= e.price;
+    if (e.gear) Player.ownGear(name); else Player.addItem(name);
+    Audio_.sfx('found');
+  },
+
   update(dt) {
     if (Input.hit('no') || Input.hit('menu')) { this.open = false; Audio_.sfx('cancel'); return; }
-    if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + this.stock.length) % this.stock.length; Audio_.sfx('blip'); }
-    if (Input.repeat('down', this.rep)) { this.cursor = (this.cursor + 1) % this.stock.length; Audio_.sfx('blip'); }
-    if (Input.hit('ok')) {
-      const name = this.stock[this.cursor];
-      const it = DATA.items[name];
-      if (Player.money >= it.price) {
-        Player.money -= it.price; Player.addItem(name);
-        Audio_.sfx('found');
-      } else Audio_.sfx('wrong');
-    }
+    const n = this.stock.length;
+    if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + n) % n; Audio_.sfx('blip'); }
+    if (Input.repeat('down', this.rep)) { this.cursor = (this.cursor + 1) % n; Audio_.sfx('blip'); }
+    // A late-act shop stocks more than fits on a 180-pixel screen, so the list
+    // scrolls. Without this, everything past the tenth line was unreachable.
+    this.scroll = Math.max(0, Math.min(this.cursor - this.ROWS + 1,
+                                       Math.max(0, n - this.ROWS)));
+    if (this.cursor < this.scroll) this.scroll = this.cursor;
+    if (Input.hit('ok')) this.buy(this.stock[this.cursor]);
   },
+
   draw() {
     rect(0, 0, W, H, 'rgba(4,4,8,0.9)');
     text(this.title || 'SHOP', 14, 10, '#f0ece2');
     text('RELL ' + Player.money, W - textWidth('RELL ' + Player.money) - 12, 10, '#e8d24a');
     rect(8, 22, W - 16, 1, '#3a3a44');
-    for (let i = 0; i < this.stock.length; i++) {
-      const name = this.stock[i], it = DATA.items[name], y = 32 + i * 12;
-      const afford = Player.money >= it.price;
+    const shown = Math.min(this.ROWS, this.stock.length - this.scroll);
+    for (let r = 0; r < shown; r++) {
+      const i = this.scroll + r, name = this.stock[i], e = this.entry(name), y = 30 + r * 12;
+      const owned = e.gear && Player.owned[name];
+      const afford = Player.money >= e.price && !owned;
       text(name, 22, y, i === this.cursor ? '#f0ece2' : (afford ? '#9a9aa4' : '#5f5f68'));
-      text(String(it.price), W - 60, y, afford ? '#b8b8c2' : '#5f5f68');
-      text('x' + (Player.bag[name] || 0), W - 30, y, '#70707c');
+      text(String(e.price), W - 66, y, afford ? '#b8b8c2' : '#5f5f68');
+      text(e.gear ? (owned ? 'HAVE' : e.slot.slice(0, 4).toUpperCase())
+                  : 'x' + (Player.bag[name] || 0),
+           W - 34, y, owned ? '#8ac06a' : '#70707c');
       if (i === this.cursor) text('>', 12, y, '#e8d24a');
     }
-    const sel = DATA.items[this.stock[this.cursor]];
-    if (sel) text(wrap(sel.effect || '', W - 28)[0], 14, H - 26, '#8a8a94');
+    if (this.scroll > 0) text('^', W - 16, 30, '#5a5a66');
+    if (this.scroll + shown < this.stock.length) text('v', W - 16, 30 + (shown - 1) * 12, '#5a5a66');
+    const sel = this.entry(this.stock[this.cursor]);
+    if (sel) text(wrap(sel.blurb || '', W - 28)[0], 14, H - 26, '#8a8a94');
     text('Z BUY    X LEAVE', 14, H - 14, '#5a5a66');
   },
 };

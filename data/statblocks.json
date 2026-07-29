@@ -35,9 +35,10 @@
     },
     "wall": {
       "HP": 1.2,
-      "ATK": 0.7,
+      "ATK": 0.85,
       "DEF": 1.5,
-      "SPD": 0.75
+      "SPD": 0.75,
+      "why": " Raised in 0.5.0 alongside equipment: with a body slot in play, a role that barely hit stopped registering at all, and band 2 - which has two walls in five species - fell out of its attrition band. A wall is supposed to grind, not to be harmless."
     },
     "glass": {
       "HP": 0.65,
@@ -47,21 +48,22 @@
     },
     "support": {
       "HP": 0.85,
-      "ATK": 0.55,
+      "ATK": 0.68,
       "DEF": 1.0,
-      "SPD": 1.05
+      "SPD": 1.05,
+      "why": " Raised in 0.5.0 alongside equipment: with a body slot in play, a role that barely hit stopped registering at all, and band 2 - which has two walls in five species - fell out of its attrition band. A wall is supposed to grind, not to be harmless."
     }
   },
   "bosses": {
     "The Fruiting Tree": {
       "role": "standard",
-      "hp_multiplier": 1.48,
+      "hp_multiplier": 2.35,
       "atk_multiplier": 0.98,
       "phases": 1
     },
     "The Memorial": {
       "role": "wall",
-      "hp_multiplier": 1.78,
+      "hp_multiplier": 2.97,
       "atk_multiplier": 1.17,
       "phases": 3,
       "tiers": {
@@ -81,28 +83,28 @@
     },
     "Line Supervisor": {
       "role": "standard",
-      "hp_multiplier": 1.63,
+      "hp_multiplier": 2.28,
       "atk_multiplier": 1.3,
       "phases": 1,
       "self_buffs": 2
     },
     "Tenant": {
       "role": "standard",
-      "hp_multiplier": 2.1,
+      "hp_multiplier": 3.6,
       "atk_multiplier": 1.23,
       "phases": 3,
       "splits": true
     },
     "Account Manager": {
       "role": "support",
-      "hp_multiplier": 1.78,
+      "hp_multiplier": 2.49,
       "atk_multiplier": 1.36,
       "phases": 1,
       "inflicts": "Drained"
     },
     "The Custodian": {
       "role": "standard",
-      "hp_multiplier": 2.07,
+      "hp_multiplier": 2.9,
       "atk_multiplier": 1.36,
       "phases": 2,
       "restores_once_to": 0.5,
@@ -110,14 +112,14 @@
     },
     "Something Left Over": {
       "role": "brute",
-      "hp_multiplier": 1.78,
+      "hp_multiplier": 2.49,
       "atk_multiplier": 1.3,
       "phases": 1,
       "inflicts": "Homesick"
     },
     "The Custodian, Unfinished": {
       "role": "standard",
-      "hp_multiplier": 2.5,
+      "hp_multiplier": 3.82,
       "atk_multiplier": 1.41,
       "phases": 4,
       "inflicts": "Homesick",

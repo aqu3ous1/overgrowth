@@ -125,6 +125,40 @@ SPATK overtakes ATK around level 24 — intentional. Physical is the early game'
 becomes the late game's, which mirrors the story's shift from a kid throwing punches to a kid doing
 things that shouldn't be possible.
 
+## Milestones
+
+The stat bump at levels 10, 20, 30 and 40 is joined by two other things, and this is the only place
+in the game where two players at the same level are built differently.
+
+**1. The trickle goes up by a flat 2.** PP and SP return 2 per turn at level 1, 4 from level 10, 6
+from 20, 8 from 30, 10 from 40. This is automatic and unmissable. It exists so that late-game
+specials stay castable without having to cheapen them: a move that costs 18 SP is a real decision at
+level 22 and an ordinary one at level 40, and that is the correct shape — the cost never changes,
+the player's ability to absorb it does.
+
+**2. The player picks one of two passives.** Different pair each time, and no two passives share a
+mechanic, so each milestone is a genuine fork rather than a re-skin of the last one.
+
+| Level | Option A | Option B |
+|---|---|---|
+| **10** | **Steady Breathing** — recover 5 HP at the start of every turn. | **Sharp Eye** — criticals come 6% more often. |
+| **20** | **Thick Skin** — take 15% less damage. | **Long Reach** — multi-hit moves land one extra hit 35% of the time. |
+| **30** | **Clear Head** — statuses on you wear off twice as fast. | **Open Line** — specials cost 25% less SP. |
+| **40** | **Follow Through** — a critical hits for 40% more on top. | **Last Word** — below a quarter HP, ATK and SPATK rise a stage. |
+
+The pairs are built as axes, not as strength tiers: sustain against damage at 10, durability against
+output at 20, recovery against economy at 30, and at 40 two different answers to the same question
+about being in trouble. Neither option in any pair is the correct one.
+
+The choice is offered **out in the field**, not on the victory screen. A milestone earned mid-fight
+is queued and asked after the fight ends, because a menu that opens over the level-up text is a menu
+the player dismisses without reading. Several can be owed at once — a boss can hand over two levels —
+and they are asked one at a time in order.
+
+Choices are permanent within a run. There is no respec: two decisions across a whole playthrough is
+not a build system worth undoing, and being able to swap them at will would make picking one mean
+nothing.
+
 ## Move learnset
 
 Moves are learned automatically on level-up, announced with a short box. Nothing is missable and

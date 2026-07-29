@@ -36,12 +36,12 @@ one long walk out.
 | [16 — Combat Math](docs/16-combat-math.md) | Enemy stat derivation, damage formula, measured difficulty |
 | [17 — Economy](docs/17-economy.md) | Shops, prices, and the per-act ledger |
 | [18 — Vertical Slice](docs/18-vertical-slice.md) | What to build first, and how to know it worked |
-| [19 — The Playable Build](docs/19-build.md) | What 0.4.1 contains, and where it deviates |
+| [19 — The Playable Build](docs/19-build.md) | What 0.5.0 contains, and where it deviates |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
 
 ## Play it
 
-**0.4.1 is playable — Acts 0 through 3, on a desktop or a phone.** `game/overgrowth.html` runs from
+**0.5.0 is playable — Acts 0 through 3, on a desktop or a phone.** `game/overgrowth.html` runs from
 the bedroom to **Tenant** at the top of Bellhouse Commons: the Gallery, Okobo, the Sunken Orchard,
 Ondo, Kestrel Works, the border, Sable City and the Commons — four bosses, forty-six rooms, an
 illustrated world map, save anywhere, and touch controls, in one self-contained file with no assets

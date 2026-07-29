@@ -219,31 +219,68 @@ const DATA = {
    "name": "Static",
    "effect": "25% chance to lose the turn",
    "duration": 3,
-   "item_curable": true
+   "item_curable": true,
+   "player_effect": {
+    "kind": "skip",
+    "chance": 0.25
+   },
+   "enemy_effect": {
+    "kind": "skip",
+    "chance": 0.25
+   }
   },
   {
    "name": "Fog",
    "effect": "-40% accuracy",
    "duration": 4,
-   "item_curable": true
+   "item_curable": true,
+   "player_effect": {
+    "kind": "miss",
+    "chance": 0.4
+   },
+   "enemy_effect": {
+    "kind": "miss",
+    "chance": 0.4
+   }
   },
   {
    "name": "Drained",
    "effect": "PP/SP regen suppressed, SP costs +50%",
    "duration": 4,
-   "item_curable": true
+   "item_curable": true,
+   "player_effect": {
+    "kind": "drain",
+    "sp_cost_multiplier": 1.5
+   },
+   "enemy_effect": {
+    "kind": "weaken",
+    "multiplier": 0.75
+   }
   },
   {
    "name": "Numb",
    "effect": "DEF and SPDEF halved",
    "duration": 3,
-   "item_curable": true
+   "item_curable": true,
+   "player_effect": {
+    "kind": "soften",
+    "multiplier": 0.5
+   },
+   "enemy_effect": {
+    "kind": "soften",
+    "multiplier": 0.5
+   }
   },
   {
    "name": "Homesick",
    "effect": "lose 5% max HP at end of turn",
    "duration": null,
-   "item_curable": false
+   "item_curable": false,
+   "player_effect": {
+    "kind": "chip",
+    "fraction": 0.05
+   },
+   "enemy_effect": null
   }
  ],
  "enemies": {
@@ -309,7 +346,8 @@ const DATA = {
   "Ration Tin": {
    "level": 10,
    "role": "standard",
-   "band": 3
+   "band": 3,
+   "drop_designed": true
   },
   "Someone's Bicycle": {
    "level": 11,
@@ -369,7 +407,8 @@ const DATA = {
   "Surplus Crate": {
    "level": 18,
    "role": "standard",
-   "band": 5
+   "band": 5,
+   "drop_designed": true
   },
   "Long Coat": {
    "level": 19,
@@ -506,9 +545,10 @@ const DATA = {
   },
   "wall": {
    "HP": 1.2,
-   "ATK": 0.7,
+   "ATK": 0.85,
    "DEF": 1.5,
-   "SPD": 0.75
+   "SPD": 0.75,
+   "why": " Raised in 0.5.0 alongside equipment: with a body slot in play, a role that barely hit stopped registering at all, and band 2 - which has two walls in five species - fell out of its attrition band. A wall is supposed to grind, not to be harmless."
   },
   "glass": {
    "HP": 0.65,
@@ -518,9 +558,10 @@ const DATA = {
   },
   "support": {
    "HP": 0.85,
-   "ATK": 0.55,
+   "ATK": 0.68,
    "DEF": 1.0,
-   "SPD": 1.05
+   "SPD": 1.05,
+   "why": " Raised in 0.5.0 alongside equipment: with a body slot in play, a role that barely hit stopped registering at all, and band 2 - which has two walls in five species - fell out of its attrition band. A wall is supposed to grind, not to be harmless."
   }
  },
  "enemyCurve": {
@@ -546,13 +587,13 @@ const DATA = {
  "bosses": {
   "The Fruiting Tree": {
    "role": "standard",
-   "hp_multiplier": 1.48,
+   "hp_multiplier": 2.35,
    "atk_multiplier": 0.98,
    "phases": 1
   },
   "The Memorial": {
    "role": "wall",
-   "hp_multiplier": 1.78,
+   "hp_multiplier": 2.97,
    "atk_multiplier": 1.17,
    "phases": 3,
    "tiers": {
@@ -572,28 +613,28 @@ const DATA = {
   },
   "Line Supervisor": {
    "role": "standard",
-   "hp_multiplier": 1.63,
+   "hp_multiplier": 2.28,
    "atk_multiplier": 1.3,
    "phases": 1,
    "self_buffs": 2
   },
   "Tenant": {
    "role": "standard",
-   "hp_multiplier": 2.1,
+   "hp_multiplier": 3.6,
    "atk_multiplier": 1.23,
    "phases": 3,
    "splits": true
   },
   "Account Manager": {
    "role": "support",
-   "hp_multiplier": 1.78,
+   "hp_multiplier": 2.49,
    "atk_multiplier": 1.36,
    "phases": 1,
    "inflicts": "Drained"
   },
   "The Custodian": {
    "role": "standard",
-   "hp_multiplier": 2.07,
+   "hp_multiplier": 2.9,
    "atk_multiplier": 1.36,
    "phases": 2,
    "restores_once_to": 0.5,
@@ -601,14 +642,14 @@ const DATA = {
   },
   "Something Left Over": {
    "role": "brute",
-   "hp_multiplier": 1.78,
+   "hp_multiplier": 2.49,
    "atk_multiplier": 1.3,
    "phases": 1,
    "inflicts": "Homesick"
   },
   "The Custodian, Unfinished": {
    "role": "standard",
-   "hp_multiplier": 2.5,
+   "hp_multiplier": 3.82,
    "atk_multiplier": 1.41,
    "phases": 4,
    "inflicts": "Homesick",
@@ -619,42 +660,70 @@ const DATA = {
   "The Fruiting Tree": {
    "internal_level": 10,
    "exp": 300,
-   "act": 1
+   "act": 1,
+   "drops": [
+    "Tent Stake",
+    "Spray II x3"
+   ]
   },
   "The Memorial": {
    "internal_level": 16,
    "exp": 900,
-   "act": 2
+   "act": 2,
+   "drops": [
+    "Anvil-Laden Sword",
+    "Second Wind x1"
+   ]
   },
   "Line Supervisor": {
    "internal_level": 20,
    "exp": 1200,
-   "act": 3
+   "act": 3,
+   "drops": [
+    "Length of Pipe",
+    "Work Jacket"
+   ]
   },
   "Tenant": {
    "internal_level": 28,
    "exp": 2400,
-   "act": 3
+   "act": 3,
+   "drops": [
+    "Signal Rod",
+    "Full Spray x2"
+   ]
   },
   "Account Manager": {
    "internal_level": 32,
    "exp": 2900,
-   "act": 4
+   "act": 4,
+   "drops": [
+    "Foreman's Wrench",
+    "Second Wind x2"
+   ]
   },
   "The Custodian": {
    "internal_level": 36,
    "exp": 4000,
-   "act": 4
+   "act": 4,
+   "drops": [
+    "Static Vest"
+   ]
   },
   "Something Left Over": {
    "internal_level": 42,
    "exp": 4200,
-   "act": 5
+   "act": 5,
+   "drops": [
+    "Quiet Instrument",
+    "Full Spray x3"
+   ]
   },
   "The Custodian, Unfinished": {
    "internal_level": 48,
    "exp": 0,
-   "act": 5
+   "act": 5,
+   "drops": []
   }
  },
  "items": {
@@ -703,57 +772,82 @@ const DATA = {
   "Clean Rag": {
    "price": 25,
    "effect": "cure one status",
-   "battle": true
+   "battle": true,
+   "cure": true
   },
   "Knuckle Wrap": {
    "price": 70,
    "effect": "+1 ATK stage",
-   "battle": true
+   "battle": true,
+   "stage": 1,
+   "stat": "atk",
+   "at": "self"
   },
   "Cold Compress": {
    "price": 70,
    "effect": "+1 DEF stage",
-   "battle": true
+   "battle": true,
+   "stage": 1,
+   "stat": "def",
+   "at": "self"
   },
   "Thin Static": {
    "price": 80,
    "effect": "+1 SPATK stage",
-   "battle": true
+   "battle": true,
+   "stage": 1,
+   "stat": "spatk",
+   "at": "self"
   },
   "Wool Lining": {
    "price": 80,
    "effect": "+1 SPDEF stage",
-   "battle": true
+   "battle": true,
+   "stage": 1,
+   "stat": "spdef",
+   "at": "self"
   },
   "Loose Laces": {
    "price": 110,
    "effect": "+2 SPD stages",
-   "battle": true
+   "battle": true,
+   "stage": 2,
+   "stat": "spd",
+   "at": "self"
   },
   "Second Wind": {
    "price": 400,
    "effect": "+1 all stages",
-   "battle": true
+   "battle": true,
+   "stage": 1,
+   "stat": "all",
+   "at": "self"
   },
   "Dropped Call": {
    "price": 55,
    "effect": "inflict Fog",
-   "battle": true
+   "battle": true,
+   "inflict": "Fog"
   },
   "Loose Wire": {
    "price": 65,
    "effect": "inflict Static",
-   "battle": true
+   "battle": true,
+   "inflict": "Static"
   },
   "Dead Battery": {
    "price": 90,
    "effect": "inflict Drained",
-   "battle": true
+   "battle": true,
+   "inflict": "Drained"
   },
   "Shed Skin": {
    "price": 120,
    "effect": "-2 DEF stages",
-   "battle": true
+   "battle": true,
+   "stage": -2,
+   "stat": "def",
+   "at": "enemy"
   },
   "Letter": {
    "price": 0,
@@ -776,11 +870,367 @@ const DATA = {
   "HP": 0,
   "why": "Must be >= the cheapest move's cost (Punch, 2 PP) or the player alternates between acting and standing still."
  },
- "shopStock": [
-  "Spray",
-  "Clean Rag",
-  "Tent Stake",
-  "Patched Coat"
- ],
+ "milestones": {
+  "every": 10,
+  "regen_bonus": 2,
+  "why": "Every tenth level pays out twice: the PP/SP trickle goes up by a flat 2, and the player picks one of two passives. The trickle is the automatic half - it keeps late-game specials castable without touching their costs. The pick is the half the player owns, and it is the only place in the game where two runs at the same level are built differently.",
+  "choices": {
+   "10": [
+    {
+     "id": "steady_breathing",
+     "name": "Steady Breathing",
+     "effect": "Recover 5 HP at the start of every turn.",
+     "kind": "hp_regen",
+     "value": 5
+    },
+    {
+     "id": "sharp_eye",
+     "name": "Sharp Eye",
+     "effect": "Criticals come 6% more often.",
+     "kind": "crit_bonus",
+     "value": 0.06
+    }
+   ],
+   "20": [
+    {
+     "id": "thick_skin",
+     "name": "Thick Skin",
+     "effect": "Take 15% less damage.",
+     "kind": "damage_taken",
+     "value": 0.85
+    },
+    {
+     "id": "long_reach",
+     "name": "Long Reach",
+     "effect": "Multi-hit moves land one extra hit 35% of the time.",
+     "kind": "extra_hit",
+     "value": 0.35
+    }
+   ],
+   "30": [
+    {
+     "id": "clear_head",
+     "name": "Clear Head",
+     "effect": "Statuses on you wear off twice as fast.",
+     "kind": "status_shed",
+     "value": 2
+    },
+    {
+     "id": "open_line",
+     "name": "Open Line",
+     "effect": "Specials cost 25% less SP.",
+     "kind": "sp_discount",
+     "value": 0.75
+    }
+   ],
+   "40": [
+    {
+     "id": "follow_through",
+     "name": "Follow Through",
+     "effect": "A critical hits for 40% more on top.",
+     "kind": "crit_followup",
+     "value": 0.4
+    },
+    {
+     "id": "last_word",
+     "name": "Last Word",
+     "effect": "Below a quarter HP, ATK and SPATK rise a stage.",
+     "kind": "desperate",
+     "value": 0.25
+    }
+   ]
+  }
+ },
+ "equipment": {
+  "Bare Hands": {
+   "slot": "weapon",
+   "act": 1,
+   "price": 0,
+   "stats": {},
+   "flavour": "Yours. Cold at the knuckles."
+  },
+  "Tent Stake": {
+   "slot": "weapon",
+   "act": 1,
+   "price": 150,
+   "stats": {
+    "atk": 3
+   },
+   "flavour": "Somebody camped here once and left in a hurry."
+  },
+  "Magic Baton": {
+   "slot": "weapon",
+   "act": 2,
+   "price": 620,
+   "stats": {
+    "spatk": 5,
+    "spd": 1
+   },
+   "flavour": "Light for its size. Warm at the grip, and it should not be."
+  },
+  "Anvil-Laden Sword": {
+   "slot": "weapon",
+   "act": 2,
+   "price": 560,
+   "stats": {
+    "atk": 5,
+    "def": 1,
+    "spd": -4
+   },
+   "flavour": "Swinging it is a decision you commit to early."
+  },
+  "Length of Pipe": {
+   "slot": "weapon",
+   "act": 3,
+   "price": 1400,
+   "stats": {
+    "atk": 7,
+    "spd": -1
+   },
+   "flavour": "Threaded at one end. It came off something."
+  },
+  "Signal Rod": {
+   "slot": "weapon",
+   "act": 3,
+   "price": 1650,
+   "stats": {
+    "atk": -2,
+    "spatk": 9
+   },
+   "flavour": "It hums when you face a certain direction. You stop checking which."
+  },
+  "Foreman's Wrench": {
+   "slot": "weapon",
+   "act": 4,
+   "price": 3000,
+   "stats": {
+    "atk": 11,
+    "def": 2,
+    "spd": -3
+   },
+   "flavour": "Initials filed off the handle. Not worn off — filed."
+  },
+  "Quiet Instrument": {
+   "slot": "weapon",
+   "act": 5,
+   "price": 5200,
+   "stats": {
+    "atk": 4,
+    "spatk": 12,
+    "spd": 2
+   },
+   "flavour": "It makes no sound at all, and you can hear that it doesn't."
+  },
+  "School Clothes": {
+   "slot": "body",
+   "act": 1,
+   "price": 0,
+   "stats": {},
+   "flavour": "Washed on a Sunday by someone who is not here."
+  },
+  "Patched Coat": {
+   "slot": "body",
+   "act": 1,
+   "price": 200,
+   "stats": {
+    "def": 3,
+    "spdef": 1
+   },
+   "flavour": "The patches are neater than the coat deserves."
+  },
+  "Fancy Suit": {
+   "slot": "body",
+   "act": 2,
+   "price": 700,
+   "stats": {
+    "def": 2,
+    "spdef": 5
+   },
+   "flavour": "Cut for someone half a head taller."
+  },
+  "Featherweight Coat": {
+   "slot": "body",
+   "act": 2,
+   "price": 500,
+   "stats": {
+    "def": -2,
+    "spd": 3
+   },
+   "flavour": "You keep checking you are still wearing it."
+  },
+  "Work Jacket": {
+   "slot": "body",
+   "act": 3,
+   "price": 1500,
+   "stats": {
+    "def": 8,
+    "spdef": 2,
+    "spd": -1
+   },
+   "flavour": "A name tape, unpicked. The stitch holes are still there."
+  },
+  "Static Vest": {
+   "slot": "body",
+   "act": 4,
+   "price": 3200,
+   "stats": {
+    "def": 1,
+    "spdef": 10
+   },
+   "flavour": "Your hair stands up. It stays up."
+  },
+  "Lead Apron": {
+   "slot": "body",
+   "act": 4,
+   "price": 2800,
+   "stats": {
+    "def": 14,
+    "spdef": 6,
+    "spd": -6
+   },
+   "flavour": "From somewhere that needed one."
+  },
+  "Overgrown Coat": {
+   "slot": "body",
+   "act": 5,
+   "price": 0,
+   "found": true,
+   "stats": {
+    "def": 6,
+    "spdef": 6,
+    "spd": 2,
+    "hp": 20
+   },
+   "flavour": "Green."
+  }
+ },
+ "equipStart": {
+  "weapon": "Bare Hands",
+  "body": "School Clothes"
+ },
+ "gearDrops": {
+  "why": "Gear off a common enemy is the rarest thing in the drop table on purpose: it is a story about the world being full of other people's belongings, not a reliable way to shop. The pool is deliberately small and early - a late boss piece must still be earned.",
+  "chance": 0.012,
+  "pool": [
+   "Magic Baton",
+   "Patched Coat",
+   "Featherweight Coat"
+  ]
+ },
+ "drops": {
+  "note": "What a defeated enemy leaves behind, on top of the Rell in docs/17. Rarity is keyed to price rather than to a hand-written tier list, so retuning an item's cost moves it through the table automatically and the two can never disagree about which things are precious.",
+  "common_enemy": {
+   "chance": 0.16,
+   "why": "About one fight in six. Low enough that a drop is a small event, high enough that a player who grinds a corridor for ten minutes is paid for it. The tiers below decide what, given that something dropped.",
+   "tiers": [
+    {
+     "tier": "common",
+     "weight": 62,
+     "max_price": 70,
+     "why": "Sprays, tablets, rags, the cheap wraps. The floor of the table."
+    },
+    {
+     "tier": "uncommon",
+     "weight": 27,
+     "max_price": 130,
+     "why": "The better boosters and the first two debuffs."
+    },
+    {
+     "tier": "rare",
+     "weight": 10,
+     "max_price": 700,
+     "why": "Spray III, Second Wind. Worth stopping for."
+    },
+    {
+     "tier": "gear",
+     "weight": 1,
+     "equipment": true,
+     "why": "The pool in equipment.json. One drop in six hundred fights."
+    }
+   ]
+  },
+  "level_gate": {
+   "why": "An enemy never drops something the player could not have been sold by now. Without this a level 3 rat in the first field can hand over a Spray III and flatten the whole early economy.",
+   "price_per_level": 26,
+   "floor": 60
+  },
+  "designed": {
+   "why": "Two species exist to be opened rather than fought - docs/12 marks them drop_designed. They always drop, and they drop from one tier up.",
+   "always_drops": true,
+   "tier_shift": 1
+  },
+  "starting": {
+   "weapon": "Bare Hands",
+   "body": "School Clothes"
+  },
+  "gear": {
+   "why": "Gear off a common enemy is the rarest thing in the drop table on purpose: it is a story about the world being full of other people's belongings, not a reliable way to shop. The pool is deliberately small and early - a late boss piece must still be earned.",
+   "chance": 0.012,
+   "pool": [
+    "Magic Baton",
+    "Patched Coat",
+    "Featherweight Coat"
+   ]
+  }
+ },
+ "shopStock": {
+  "1": [
+   "Spray",
+   "Clean Rag",
+   "Tent Stake",
+   "Patched Coat"
+  ],
+  "2": [
+   "Spray",
+   "Spray II",
+   "Chalk Tablet",
+   "Bitter Tonic",
+   "Clean Rag",
+   "Knuckle Wrap",
+   "Cold Compress",
+   "Dropped Call",
+   "Magic Baton",
+   "Anvil-Laden Sword",
+   "Fancy Suit",
+   "Featherweight Coat"
+  ],
+  "3": [
+   "Spray II",
+   "Spray III",
+   "Chalk Tablet",
+   "Bitter Tonic",
+   "Clean Rag",
+   "Knuckle Wrap",
+   "Cold Compress",
+   "Thin Static",
+   "Wool Lining",
+   "Loose Laces",
+   "Dropped Call",
+   "Loose Wire",
+   "Dead Battery",
+   "Shed Skin",
+   "Length of Pipe",
+   "Signal Rod",
+   "Work Jacket"
+  ],
+  "4": [
+   "Spray II",
+   "Spray III",
+   "Full Spray",
+   "Chalk Tablet",
+   "Bitter Tonic",
+   "Clean Rag",
+   "Thin Static",
+   "Wool Lining",
+   "Loose Laces",
+   "Second Wind",
+   "Dead Battery",
+   "Shed Skin",
+   "Foreman's Wrench",
+   "Static Vest",
+   "Lead Apron",
+   "Quiet Instrument"
+  ]
+ },
  "currency": "Rell"
 };

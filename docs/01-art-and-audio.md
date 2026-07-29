@@ -58,6 +58,32 @@ Rules for placing it:
 **Rule:** Overgrowth has no jump scares. Not one. If a moment can only land with a volume spike, it
 gets cut.
 
+### How the tracks are built
+
+Everything is synthesised at runtime — there are no audio files, and the whole soundtrack is a few
+hundred lines of tables. A track is up to **four voices sharing one clock**, which is the part that
+matters: a melody that can drift out of phase with its own bass line is worse than having no bass.
+
+| Voice | What it is |
+|---|---|
+| **Lead** | The tune. A step array of semitone offsets, with vibrato and a plucked envelope — an SNES lead almost never sits perfectly still, and a perfectly still square is the sound of a placeholder. |
+| **Chords** | The harmony the other voices are read against. One chord per bar, named by root and quality. |
+| **Bass** | A pattern over the current chord — root, third, fifth, seventh — rather than the melody dropped two octaves. |
+| **Kit** | Kick, snare and hat, synthesised. A step string: `k` `s` `h` `H` `K` `-`. |
+
+Three things do most of the work of making it sound like a SNES RPG rather than a test tone:
+
+1. **Sevenths and ninths, not triads.** Okobo is Amaj7 – F#m7 – Dmaj9 – E7. Triads alone sound like
+   a hymn; the reference is a console RPG that never met a major seventh it did not like.
+2. **Swing.** The offbeats are held back 8–18% depending on the track. Straight eighths were the
+   single biggest reason the early tracks sounded mechanical.
+3. **A separate bass line and a kit.** The town themes get a soft one, the battle themes a hard one,
+   and the liminal zones get almost nothing — Kestrel is a hum with a clank every eight bars, and
+   Bellhouse is two tones a semitone apart and a door somewhere else in the building.
+
+The liminal rooms keep their drones. That direction was right the first time; what they gained is a
+pulse, because a corridor that is merely silent reads as an empty channel rather than as a building.
+
 ## Text boxes and UI
 
 EarthBound-style scrolling dialogue in a bordered box at screen bottom, with a distinct font per

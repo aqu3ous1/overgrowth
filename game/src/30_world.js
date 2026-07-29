@@ -1289,7 +1289,7 @@ const ROOMS = {
       { x: 24, y: 4, to: 'sable_transit', at: [8, 7], sfx: 'door' },
       { x: 30, y: 4, to: 'sable_flat', at: [6, 5], sfx: 'door' },
       { x: 10, y: 13, w: 1, h: 1, to: 'sable_works', at: [2, 7], sfx: 'door' },
-      { x: 24, y: 13, w: 1, h: 1, to: 'sable_flat', at: [6, 5], sfx: 'door' },
+      { x: 24, y: 13, w: 1, h: 1, to: 'sable_arcade', at: [7, 6], sfx: 'door' },
       { x: 30, y: 15, w: 2, h: 1, to: 'bellhouse_ext', at: [11, 8] },
     ],
     start: [2, 9],
@@ -1398,6 +1398,39 @@ const ROOMS = {
   },
 
   // The industrial district. Mini-Boss 2 is at the end of it.
+  // The arcade. Six pods, and somebody's mother is in one of them.
+  sable_arcade: {
+    floor: 'plank', wall: 'plaster', light: 0.3, music: 'sable', grain: 0.04,
+    tint: ['#7aa8ff', 0.06],
+    map: [
+      '###############',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#......D......#',
+      '###############',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'counter' }, { x: 12, y: 1, t: 'cabinet' },
+      { x: 2, y: 5, t: 'plant' }, { x: 12, y: 5, t: 'lamp' },
+      { x: 7, y: 6, t: 'rug' },
+    ],
+    objects: [
+      { x: 4, y: 2, t: 'pod', label: 'demo pod' },
+      { x: 7, y: 2, t: 'pod', label: 'demo pod' },
+      { x: 10, y: 2, t: 'pod', label: 'demo pod' },
+      { x: 4, y: 5, t: 'pod', label: 'demo pod' },
+      { x: 10, y: 5, t: 'pod', label: 'demo pod' },
+      { x: 7, y: 5, t: 'pod_mother', label: 'demo pod' },
+    ],
+    npcs: [{ art: 'vix_rep', x: 12, y: 3, key: 'arcade_attendant' }],
+    exits: [{ x: 7, y: 7, to: 'sable', at: [24, 14], sfx: 'door' }],
+    start: [7, 6],
+  },
+
   sable_works: {
     floor: 'concrete', wall: 'concrete', light: 0.34, music: 'sable', grain: 0.06,
     map: [
@@ -1481,6 +1514,8 @@ const ROOMS = {
   // The halls are longer than the building. Management has asked us to note
   // that the halls are not long.
   bellhouse_1: {
+    // Both ends of this hall arrive in the same place, on purpose.
+    impossible: true,
     floor: 'carpet', wall: 'plaster', light: 0.6, music: 'bellhouse', grain: 0.06,
     map: [
       '#######################',
@@ -1514,6 +1549,8 @@ const ROOMS = {
 
   // Both ends of the hall above arrive here. Neither is the way back.
   bellhouse_2: {
+    // Both ends of this hall arrive in the same place, on purpose.
+    impossible: true,
     floor: 'carpet', wall: 'plaster', light: 0.66, music: 'bellhouse', grain: 0.065,
     map: [
       '########################',

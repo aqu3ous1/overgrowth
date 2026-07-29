@@ -94,5 +94,76 @@
     "money_lost_fraction": 0.5,
     "items_lost": false,
     "progress_lost": false
+  },
+  "milestones": {
+    "every": 10,
+    "regen_bonus": 2,
+    "why": "Every tenth level pays out twice: the PP/SP trickle goes up by a flat 2, and the player picks one of two passives. The trickle is the automatic half - it keeps late-game specials castable without touching their costs. The pick is the half the player owns, and it is the only place in the game where two runs at the same level are built differently.",
+    "choices": {
+      "10": [
+        {
+          "id": "steady_breathing",
+          "name": "Steady Breathing",
+          "effect": "Recover 5 HP at the start of every turn.",
+          "kind": "hp_regen",
+          "value": 5
+        },
+        {
+          "id": "sharp_eye",
+          "name": "Sharp Eye",
+          "effect": "Criticals come 6% more often.",
+          "kind": "crit_bonus",
+          "value": 0.06
+        }
+      ],
+      "20": [
+        {
+          "id": "thick_skin",
+          "name": "Thick Skin",
+          "effect": "Take 15% less damage.",
+          "kind": "damage_taken",
+          "value": 0.85
+        },
+        {
+          "id": "long_reach",
+          "name": "Long Reach",
+          "effect": "Multi-hit moves land one extra hit 35% of the time.",
+          "kind": "extra_hit",
+          "value": 0.35
+        }
+      ],
+      "30": [
+        {
+          "id": "clear_head",
+          "name": "Clear Head",
+          "effect": "Statuses on you wear off twice as fast.",
+          "kind": "status_shed",
+          "value": 2
+        },
+        {
+          "id": "open_line",
+          "name": "Open Line",
+          "effect": "Specials cost 25% less SP.",
+          "kind": "sp_discount",
+          "value": 0.75
+        }
+      ],
+      "40": [
+        {
+          "id": "follow_through",
+          "name": "Follow Through",
+          "effect": "A critical hits for 40% more on top.",
+          "kind": "crit_followup",
+          "value": 0.4
+        },
+        {
+          "id": "last_word",
+          "name": "Last Word",
+          "effect": "Below a quarter HP, ATK and SPATK rise a stage.",
+          "kind": "desperate",
+          "value": 0.25
+        }
+      ]
+    }
   }
 }

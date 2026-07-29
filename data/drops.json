@@ -1,0 +1,56 @@
+{
+  "note": "What a defeated enemy leaves behind, on top of the Rell in docs/17. Rarity is keyed to price rather than to a hand-written tier list, so retuning an item's cost moves it through the table automatically and the two can never disagree about which things are precious.",
+  "common_enemy": {
+    "chance": 0.16,
+    "why": "About one fight in six. Low enough that a drop is a small event, high enough that a player who grinds a corridor for ten minutes is paid for it. The tiers below decide what, given that something dropped.",
+    "tiers": [
+      {
+        "tier": "common",
+        "weight": 62,
+        "max_price": 70,
+        "why": "Sprays, tablets, rags, the cheap wraps. The floor of the table."
+      },
+      {
+        "tier": "uncommon",
+        "weight": 27,
+        "max_price": 130,
+        "why": "The better boosters and the first two debuffs."
+      },
+      {
+        "tier": "rare",
+        "weight": 10,
+        "max_price": 700,
+        "why": "Spray III, Second Wind. Worth stopping for."
+      },
+      {
+        "tier": "gear",
+        "weight": 1,
+        "equipment": true,
+        "why": "The pool in equipment.json. One drop in six hundred fights."
+      }
+    ]
+  },
+  "level_gate": {
+    "why": "An enemy never drops something the player could not have been sold by now. Without this a level 3 rat in the first field can hand over a Spray III and flatten the whole early economy.",
+    "price_per_level": 26,
+    "floor": 60
+  },
+  "designed": {
+    "why": "Two species exist to be opened rather than fought - docs/12 marks them drop_designed. They always drop, and they drop from one tier up.",
+    "always_drops": true,
+    "tier_shift": 1
+  },
+  "starting": {
+    "weapon": "Bare Hands",
+    "body": "School Clothes"
+  },
+  "gear": {
+    "why": "Gear off a common enemy is the rarest thing in the drop table on purpose: it is a story about the world being full of other people's belongings, not a reliable way to shop. The pool is deliberately small and early - a late boss piece must still be earned.",
+    "chance": 0.012,
+    "pool": [
+      "Magic Baton",
+      "Patched Coat",
+      "Featherweight Coat"
+    ]
+  }
+}

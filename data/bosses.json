@@ -14,6 +14,7 @@
       ],
       "area": "The Sunken Orchard",
       "drops": [
+        "Tent Stake",
         "Spray II x3"
       ],
       "exp": 300,
@@ -36,6 +37,7 @@
       "area": "Kestrel Works",
       "primitive": "obelisk",
       "drops": [
+        "Anvil-Laden Sword",
         "Second Wind x1"
       ],
       "exp": 900,
@@ -57,6 +59,7 @@
       ],
       "area": "Sable City",
       "drops": [
+        "Length of Pipe",
         "Work Jacket"
       ],
       "exp": 1200,
@@ -101,6 +104,7 @@
       ],
       "area": "Vixtry Regional Campus",
       "drops": [
+        "Foreman's Wrench",
         "Second Wind x2"
       ],
       "exp": 2900,
@@ -144,6 +148,7 @@
       ],
       "area": "The Root",
       "drops": [
+        "Quiet Instrument",
         "Full Spray x3"
       ],
       "exp": 4200,

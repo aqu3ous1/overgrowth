@@ -118,16 +118,22 @@ const NOTES = {
   },
 };
 
-const SHOP_STOCK = ['Spray', 'Clean Rag'];
-const ONDO_STOCK = ['Spray', 'Spray II', 'Chalk Tablet', 'Bitter Tonic',
-                    'Clean Rag', 'Knuckle Wrap', 'Cold Compress', 'Dropped Call'];
+// Every counter sells the list data/shops.json gives its act, gear included.
+// The lists used to be retyped here, which is how the game shipped three acts
+// where no shop anywhere stocked a single piece of equipment: the design had
+// them, the export only ever carried act 1, and this copy carried none.
+const actStock = act => (DATA.shopStock[act] || []).slice();
+
 // Food, not equipment. Cheaper per point than the market row and he knows it.
 const GROCER_STOCK = ['Spray', 'Chalk Tablet', 'Bitter Tonic'];
-const SABLE_STOCK = ['Spray II', 'Spray III', 'Chalk Tablet', 'Bitter Tonic',
-                     'Clean Rag', 'Knuckle Wrap', 'Thin Static', 'Loose Laces',
-                     'Dead Battery'];
-const STOCKS = { ondo: ONDO_STOCK, grocer: GROCER_STOCK, sable: SABLE_STOCK };
-const SHOP_TITLES = { ondo: 'ONDO', grocer: 'GROCER', sable: 'SABLE CITY' };
+const STOCKS = {
+  okobo: actStock(1),
+  ondo: actStock(2),
+  grocer: GROCER_STOCK,
+  sable: actStock(3),
+};
+const SHOP_STOCK = STOCKS.okobo;
+const SHOP_TITLES = { okobo: 'OKOBO', ondo: 'ONDO', grocer: 'GROCER', sable: 'SABLE CITY' };
 
 // --- NPC lines ---------------------------------------------------------
 // Limpo villagers attach a redundant location to statements about time.
@@ -313,6 +319,11 @@ const NPCS = {
     'Rent here is four times Ondo and I still could not tell you why.',
     'You get used to the light. The window does not open.',
   ]),
+  arcade_attendant: () => ([
+    'Six pods, all booked. It is always six pods and always booked.',
+    'Sessions run as long as you like. That is the whole appeal.',
+    'People do come out. I have seen it.',
+  ]),
   sable_shopkeeper: () => ([
     'Everything is in. Everything is always in. That is Sable.',
   ]),
@@ -489,6 +500,14 @@ function interact() {
         ? [{ text: 'A boiler. It is the only warm thing left in the works.', speaker: 'system' },
             { text: 'Nobody has been down here to light it.', speaker: 'system' }]
         : [{ text: 'A machine, stopped mid-cycle. Cold all the way through.', speaker: 'system' }]);
+      return;
+    // The one the boy outside was talking about. He does not know that.
+    case 'pod_mother':
+      Dialogue.say([
+        { text: 'A demo pod. A woman, lying back, eyes open.', speaker: 'system' },
+        { text: 'The screen is showing her a kitchen. Somebody is at the table.', speaker: 'system' },
+        { text: 'If you wave at the glass she waves back. It takes a moment.', speaker: 'system' },
+      ]);
       return;
     case 'pod':
       Dialogue.say([
@@ -1000,9 +1019,16 @@ const Game = {
     if (this.mode === 'menu') { Menu.update(dt); if (!Menu.open && this.mode === 'menu') this.mode = 'field'; return; }
     if (this.mode === 'battle') { Battle.update(dt); return; }
 
+    if (this.mode === 'milestone') { Milestone.update(dt); return; }
+
     // field
     if (Dialogue.active) { Dialogue.update(dt); return; }
     if (Fade.busy) return;
+
+    // A milestone earned mid-fight waits for the fight to be over and the
+    // screen to be still. Checked here rather than on the victory screen so it
+    // never lands on top of the level-up text.
+    if (Player.owed.length) { Milestone.enter(); this.mode = 'milestone'; return; }
 
     if (Input.hit('menu')) { Menu.open = true; Menu.cursor = 0; this.mode = 'menu'; Audio_.sfx('ok'); return; }
 
@@ -1096,6 +1122,7 @@ const Game = {
     grain(r.grain !== undefined ? r.grain : 0.04);
 
     if (this.mode === 'shop') Shop.draw();
+    else if (this.mode === 'milestone') Milestone.draw();
     else if (this.mode === 'menu') Menu.draw();
     else Hud.draw();
 

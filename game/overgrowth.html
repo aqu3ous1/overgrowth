@@ -4927,8 +4927,8 @@ const ROOMS = {
       '#....######........######........#',
       '#....######........######........#',
       '#....#####D........#####D........#',
-      '#................................#',
-      '#..............................PP#',
+      'P................................#',
+      'P..............................PP#',
       '##################################',
     ],
     decor: [
@@ -4952,6 +4952,7 @@ const ROOMS = {
     ],
     exits: [
       { x: 0, y: 7, w: 1, h: 2, to: 'sable_road', at: [22, 6] },
+      { x: 0, y: 14, w: 1, h: 2, to: 'sable_market', at: [2, 5] },
       { x: 8, y: 4, to: 'sable_shop', at: [7, 5], sfx: 'door' },
       { x: 16, y: 4, to: 'sable_inn', at: [7, 5], sfx: 'door' },
       { x: 24, y: 4, to: 'sable_transit', at: [8, 7], sfx: 'door' },
@@ -5014,7 +5015,7 @@ const ROOMS = {
   sable_transit: {
     floor: 'plank', wall: 'plaster', light: 0.26, music: 'sable', grain: 0.035,
     map: [
-      '#################',
+      '####D############',
       '#...............#',
       '#...............#',
       '#..===...===....#',
@@ -5038,7 +5039,10 @@ const ROOMS = {
       { art: 'vix_rep', x: 4, y: 4, key: 'vixtry_recruiter' },
       { art: 'sab_wait', x: 8, y: 5, key: 'sable_waiting' },
     ],
-    exits: [{ x: 8, y: 8, to: 'sable', at: [24, 5], sfx: 'door' }],
+    exits: [
+      { x: 8, y: 8, to: 'sable', at: [24, 5], sfx: 'door' },
+      { x: 4, y: 0, to: 'sable_overpass', at: [2, 3], sfx: 'door' },
+    ],
     start: [8, 7],
   },
 
@@ -5097,6 +5101,116 @@ const ROOMS = {
     npcs: [{ art: 'vix_rep', x: 12, y: 3, key: 'arcade_attendant' }],
     exits: [{ x: 7, y: 7, to: 'sable', at: [24, 14], sfx: 'door' }],
     start: [7, 6],
+  },
+
+  // --- the market row, the overpass, and what is under it ---------------
+  // Act 3 used to be one street with six doors off it and a corridor at the
+  // end. These three make a loop: market to overpass to service level and back
+  // out onto the street, walkable in either direction and none of it required.
+  sable_market: {
+    floor: 'pavement', wall: 'concrete', light: 0.22, music: 'sable', grain: 0.05,
+    tint: ['#ffb060', 0.07],
+    map: [
+      '#########################',
+      '#.......................#',
+      '#.===..===..===..===..==#',
+      '#.......................#',
+      '#.......................#',
+      'P.......................D',
+      'P.......................#',
+      '#.......................#',
+      '#.===..===..===..===..==#',
+      '#.......................#',
+      '#########################',
+    ],
+    decor: [
+      { x: 3, y: 3, t: 'bunting' }, { x: 11, y: 3, t: 'bunting' },
+      { x: 19, y: 3, t: 'bunting' }, { x: 7, y: 7, t: 'bunting' },
+      { x: 15, y: 7, t: 'bunting' },
+      { x: 2, y: 6, t: 'crates' }, { x: 22, y: 3, t: 'barrel' },
+      { x: 12, y: 5, t: 'plant' },
+    ],
+    objects: [
+      { x: 5, y: 4, t: 'counter', label: 'stall' },
+      { x: 13, y: 4, t: 'counter', label: 'stall' },
+      { x: 20, y: 7, t: 'counter', label: 'stall' },
+      { x: 9, y: 9, t: 'note', note: 'market_pricing' },
+    ],
+    npcs: [
+      { art: 'sab_shop', x: 5, y: 5, key: 'market_fruit' },
+      { art: 'sab_local', x: 13, y: 5, key: 'market_repairs' },
+      { art: 'sab_wait', x: 20, y: 6, key: 'market_leaving' },
+    ],
+    exits: [
+      { x: 0, y: 5, w: 1, h: 2, to: 'sable', at: [2, 15] },
+      { x: 24, y: 5, to: 'sable_under', at: [1, 4], sfx: 'door' },
+    ],
+    start: [2, 5],
+  },
+
+  sable_overpass: {
+    floor: 'concrete', wall: 'concrete', light: 0.06, music: 'sable', grain: 0.05,
+    bright: true, tint: ['#7aa8ff', 0.10],
+    map: [
+      '#########################',
+      '#.......................#',
+      'D.......................#',
+      '#.......................#',
+      '#.......................P',
+      '#.......................P',
+      '#.......................#',
+      '#########.......#########',
+      '########.........########',
+      '#######...........#######',
+    ],
+    decor: [
+      { x: 4, y: 1, t: 'neon_sign' }, { x: 12, y: 1, t: 'neon_sign' },
+      { x: 20, y: 1, t: 'neon_sign' },
+      { x: 8, y: 6, t: 'pipe' }, { x: 16, y: 6, t: 'pipe' },
+    ],
+    objects: [
+      { x: 12, y: 3, t: 'billboard', label: 'billboard' },
+      { x: 3, y: 5, t: 'note', note: 'overpass_sign' },
+      { x: 21, y: 2, t: 'pod', label: 'demo pod' },
+    ],
+    npcs: [{ art: 'sab_rail', x: 17, y: 4, key: 'overpass_watcher' }],
+    exits: [
+      { x: 0, y: 2, to: 'sable_transit', at: [8, 3], sfx: 'door' },
+      { x: 24, y: 4, w: 1, h: 2, to: 'sable_under', at: [21, 2] },
+    ],
+    start: [2, 3],
+  },
+
+  sable_under: {
+    floor: 'concrete', wall: 'concrete', light: 0.55, music: 'kestrel', grain: 0.07,
+    map: [
+      '#######################',
+      'D.....................#',
+      '#.....................P',
+      '#..##....##....##.....P',
+      '#..##....##....##.....#',
+      '#.....................#',
+      '#.....................#',
+      '#..##....##....##.....#',
+      '#..##....##....##.....#',
+      '#.....................#',
+      '#######################',
+    ],
+    decor: [
+      { x: 6, y: 2, t: 'pipe' }, { x: 14, y: 2, t: 'pipe' },
+      { x: 6, y: 6, t: 'pipe' }, { x: 14, y: 6, t: 'pipe' },
+      { x: 19, y: 5, t: 'crates' }, { x: 2, y: 8, t: 'barrel' },
+    ],
+    objects: [
+      { x: 10, y: 5, t: 'note', note: 'under_the_rail' },
+      { x: 19, y: 8, t: 'machine', label: 'junction box' },
+    ],
+    spawn: [{ name: 'Ration Tin', n: 1 }, { name: 'Coil', n: 2 }],
+    exits: [
+      { x: 0, y: 1, to: 'sable_market', at: [22, 5], sfx: 'door' },
+      { x: 22, y: 2, w: 1, h: 2, to: 'sable_overpass', at: [22, 4] },
+    ],
+    start: [2, 1],
   },
 
   sable_works: {
@@ -5186,7 +5300,7 @@ const ROOMS = {
     impossible: true,
     floor: 'carpet', wall: 'plaster', light: 0.6, music: 'bellhouse', grain: 0.06,
     map: [
-      '#######################',
+      '####D##################',
       '#.....................#',
       'D.....................D',
       '#.....................#',
@@ -5195,7 +5309,7 @@ const ROOMS = {
       '#.....................#',
       '#.....................#',
       '#.........PP..........#',
-      '#########DPP##########',
+      '#########DPP###########',
     ],
     decor: [
       { x: 3, y: 3, t: 'mural_wall' }, { x: 11, y: 3, t: 'mural_wall' },
@@ -5209,6 +5323,7 @@ const ROOMS = {
     spawn: [{ name: 'Hall Mirror', n: 1 }, { name: "Tenant's Cat", n: 1 }],
     exits: [
       { x: 9, y: 9, w: 3, h: 1, to: 'bellhouse_ext', at: [11, 6], sfx: 'door' },
+      { x: 4, y: 0, to: 'bellhouse_mural', at: [2, 2], sfx: 'door' },
       { x: 0, y: 2, to: 'bellhouse_2', at: [21, 5], sfx: 'door' },
       { x: 22, y: 2, to: 'bellhouse_2', at: [2, 5], sfx: 'door' },
     ],
@@ -5226,11 +5341,11 @@ const ROOMS = {
       '#......................#',
       '#..####.....####.......#',
       '#..####.....####.......#',
-      'D..####.....####.......D',
+      'D..#D##.....####.......D',
       '#......................#',
       '#......................#',
       '#.........PP...........#',
-      '#########DPP###########',
+      '#########DPP############',
     ],
     decor: [
       { x: 7, y: 2, t: 'mural_wall' }, { x: 16, y: 2, t: 'mural_wall' },
@@ -5238,15 +5353,16 @@ const ROOMS = {
     ],
     objects: [
       { x: 12, y: 6, t: 'note', note: 'maintenance_log' },
-      { x: 5, y: 5, t: 'apartment', label: 'door', unit: '4C' },
+
       { x: 18, y: 3, t: 'collectible', which: 'spare_key' },
     ],
     spawn: [{ name: 'Unit 4C', n: 1 }, { name: 'Mural', n: 1 },
             { name: "Tenant's Cat", n: 1 }],
     exits: [
       { x: 9, y: 9, w: 3, h: 1, to: 'bellhouse_1', at: [10, 2], sfx: 'door' },
-      { x: 0, y: 5, to: 'bellhouse_3', at: [10, 8], sfx: 'door' },
-      { x: 23, y: 5, to: 'bellhouse_3', at: [10, 8], sfx: 'door' },
+      { x: 0, y: 5, to: 'bellhouse_3', at: [10, 7], sfx: 'door' },
+      { x: 23, y: 5, to: 'bellhouse_3', at: [10, 7], sfx: 'door' },
+      { x: 4, y: 5, to: 'bellhouse_4c', at: [7, 5], sfx: 'door' },
     ],
     start: [10, 8],
   },
@@ -5263,7 +5379,7 @@ const ROOMS = {
       '#...................#',
       '#...................#',
       '#........PP.........#',
-      '#########PP#########',
+      '#########PP##########',
     ],
     decor: [
       { x: 10, y: 1, t: 'mural_wall' }, { x: 3, y: 7, t: 'lamp' },
@@ -5278,7 +5394,7 @@ const ROOMS = {
     exits: [
       { x: 9, y: 8, w: 2, h: 2, to: 'bellhouse_2', at: [10, 2], sfx: 'door' },
       { x: 7, y: 5, to: 'bellhouse_7b', at: [5, 4], sfx: 'door' },
-      { x: 15, y: 5, to: 'bellhouse_top', at: [9, 14], sfx: 'door' },
+      { x: 15, y: 5, to: 'bellhouse_top', at: [9, 12], sfx: 'door' },
     ],
     start: [10, 8],
   },
@@ -5311,6 +5427,89 @@ const ROOMS = {
 
   // The room at the top. It is a perfect cube and it is bigger than the floor
   // it is on.
+  // The docs say roughly four apartments are occupied and the murals match
+  // nothing about the exterior. Only 7B existed; the maintenance log has been
+  // naming 4C since Act 3 shipped, and nothing was behind it.
+  bellhouse_4c: {
+    floor: 'carpet', wall: 'plaster', light: 0.42, music: 'bellhouse', grain: 0.04,
+    map: [
+      '###############',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#......D......#',
+      '###############',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'cabinet' }, { x: 12, y: 1, t: 'shelf' },
+      { x: 2, y: 4, t: 'lamp' }, { x: 7, y: 5, t: 'rug' },
+    ],
+    objects: [
+      { x: 4, y: 2, t: 'television', label: 'television' },
+      { x: 10, y: 2, t: 'table', label: 'table' },
+      { x: 12, y: 4, t: 'note', note: 'four_c_door' },
+    ],
+    npcs: [{ art: 'tenant_three', x: 7, y: 3, key: 'tenant_4c' }],
+    exits: [{ x: 7, y: 6, to: 'bellhouse_2', at: [4, 6], sfx: 'door' }],
+    start: [7, 5],
+  },
+
+  bellhouse_mural: {
+    floor: 'carpet', wall: 'plaster', light: 0.5, music: 'bellhouse', grain: 0.05,
+    tint: ['#c05ad0', 0.09],
+    map: [
+      '#########################',
+      'D.......................D',
+      '#.......................#',
+      '#.......................#',
+      '#########################',
+    ],
+    decor: [
+      { x: 3, y: 0, t: 'mural_wall' }, { x: 8, y: 0, t: 'mural_wall' },
+      { x: 13, y: 0, t: 'mural_wall' }, { x: 18, y: 0, t: 'mural_wall' },
+      { x: 6, y: 4, t: 'mural_wall' }, { x: 16, y: 4, t: 'mural_wall' },
+    ],
+    objects: [
+      { x: 11, y: 2, t: 'note', note: 'mural_key' },
+      { x: 20, y: 2, t: 'painting', label: 'frame' },
+    ],
+    exits: [
+      { x: 0, y: 1, to: 'bellhouse_1', at: [4, 1], sfx: 'door' },
+      { x: 24, y: 1, to: 'bellhouse_laundry', at: [2, 4], sfx: 'door' },
+    ],
+    start: [2, 2],
+  },
+
+  bellhouse_laundry: {
+    floor: 'plank', wall: 'plaster', light: 0.36, music: 'bellhouse', grain: 0.05,
+    map: [
+      '#################',
+      '#...............#',
+      '#..===...===....#',
+      '#...............#',
+      'D...............#',
+      '#...............#',
+      '#..===...===....#',
+      '#...............#',
+      '#################',
+    ],
+    decor: [
+      { x: 13, y: 1, t: 'sink' }, { x: 13, y: 6, t: 'barrel' },
+      { x: 2, y: 7, t: 'crates' },
+    ],
+    objects: [
+      { x: 4, y: 3, t: 'machine', label: 'washer' },
+      { x: 9, y: 3, t: 'machine', label: 'washer' },
+      { x: 6, y: 5, t: 'note', note: 'still_in_the_drum' },
+      { x: 13, y: 3, t: 'warp', label: 'something on the lid' },
+    ],
+    npcs: [{ art: 'tenant_five', x: 9, y: 5, key: 'tenant_laundry' }],
+    exits: [{ x: 0, y: 4, to: 'bellhouse_mural', at: [22, 1], sfx: 'door' }],
+    start: [2, 4],
+  },
+
   bellhouse_top: {
     floor: 'carpet', wall: 'plaster', light: 0.85, music: 'bellhouse', grain: 0.08, dark: true,
     map: [
@@ -7533,27 +7732,29 @@ const ROUTE = [
   { label: 'HOME',            rooms: ['bedroom'] },
   { label: 'THE GALLERY',     rooms: ['void', 'gallery_ext', 'gallery_hall', 'gallery_room',
                                       'gallery_corridor'] },
-  { label: 'OKOBO',           rooms: ['arrival', 'okobo', 'shop', 'inn', 'house'],
+  { warpTo: 'okobo', label: 'OKOBO',           rooms: ['arrival', 'okobo', 'shop', 'inn', 'house'],
     at: [56, 82], kind: 'town', short: 'OKOBO' },
   { label: 'THE NORTH ROAD',  rooms: ['north_road'], at: [74, 70], kind: 'road' },
-  { label: 'SUNKEN ORCHARD',  rooms: ['orchard1', 'orchard2', 'orchard3', 'clearing'],
+  { warpTo: 'orchard1', label: 'SUNKEN ORCHARD',  rooms: ['orchard1', 'orchard2', 'orchard3', 'clearing'],
     at: [100, 60], kind: 'orchard', short: 'ORCHARD' },
   { label: 'THE ROAD TO ONDO', rooms: ['road_ondo'], at: [124, 50], kind: 'road' },
-  { label: 'ONDO',            rooms: ['ondo', 'ondo_shop', 'ondo_inn', 'ondo_grocer',
+  { warpTo: 'ondo', label: 'ONDO',            rooms: ['ondo', 'ondo_shop', 'ondo_inn', 'ondo_grocer',
                                       'boarding_house', 'records_room'],
     at: [148, 40], kind: 'city', short: 'ONDO' },
   { label: 'THE WINTER ROAD', rooms: ['winter_road'], at: [162, 24], kind: 'road' },
-  { label: 'KESTREL WORKS',   rooms: ['kestrel_yard', 'kestrel_f1', 'kestrel_f2', 'kestrel_f3',
+  { warpTo: 'kestrel_yard', label: 'KESTREL WORKS',   rooms: ['kestrel_yard', 'kestrel_f1', 'kestrel_f2', 'kestrel_f3',
                                       'kestrel_boiler', 'kestrel_office', 'kestrel_locker'],
     at: [190, 13], kind: 'works', short: 'KESTREL' },
   // Yettallia: across the water, on the landmass he could only see before.
   { label: 'THE BORDER',      rooms: ['border'], at: [222, 26], kind: 'road' },
-  { label: 'SABLE CITY',      rooms: ['sable', 'sable_road', 'sable_shop', 'sable_inn',
-                                      'sable_transit', 'sable_flat', 'sable_works',
+  { warpTo: 'sable', label: 'SABLE CITY',      rooms: ['sable', 'sable_road', 'sable_shop', 'sable_inn',
+                                      'sable_transit', 'sable_flat', 'sable_arcade', 'sable_works',
+                                      'sable_market', 'sable_overpass', 'sable_under',
                                       'sable_floor'],
     at: [252, 44], kind: 'city', short: 'SABLE' },
-  { label: 'BELLHOUSE COMMONS', rooms: ['bellhouse_ext', 'bellhouse_1', 'bellhouse_2',
-                                        'bellhouse_3', 'bellhouse_7b', 'bellhouse_top'],
+  { warpTo: 'bellhouse_ext', label: 'BELLHOUSE COMMONS', rooms: ['bellhouse_ext', 'bellhouse_1', 'bellhouse_2',
+                                        'bellhouse_3', 'bellhouse_7b', 'bellhouse_top',
+                                        'bellhouse_4c', 'bellhouse_mural', 'bellhouse_laundry'],
     at: [268, 74], kind: 'works', short: 'BELLHOUSE' },
 ];
 function routeIndexOf(roomId) {
@@ -7779,6 +7980,7 @@ const Menu = {
       this.open = false; Options.enter('menu'); Game.mode = 'options'; Audio_.sfx('ok'); return;
     }
     if (this.tab === TAB_SAVE && ok) { this.saveHere(); return; }
+    if (this.tab === TAB_MAP) { this.mapInput(ok); return; }
     const list = this.list();
     if (list.length) {
       if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + list.length) % list.length; Audio_.sfx('blip'); }
@@ -7792,6 +7994,39 @@ const Menu = {
       if (ok && this.tab === TAB_BAG) this.useFromBag(list[this.cursor]);
       if (ok && this.tab === TAB_GEAR) this.wearFromList(list[this.cursor]);
     }
+  },
+
+  // --- fast travel -----------------------------------------------------
+  // The map is a picture until the first warp device turns up in Bellhouse
+  // Commons, at which point the whole explored world opens at once (docs/06).
+  // That is deliberately a single beat rather than a drip: it should read as a
+  // reward, and it is the moment the game stops being a corridor.
+  warpTargets() {
+    if (!Player.flags.warp) return [];
+    return ROUTE.map((a, i) => i)
+      .filter(i => ROUTE[i].at && Player.seen.includes(i) && ROUTE[i].warpTo);
+  },
+
+  mapInput(ok) {
+    const list = this.warpTargets();
+    if (!list.length) return;
+    if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + list.length) % list.length; Audio_.sfx('blip'); }
+    if (Input.repeat('down', this.rep)) { this.cursor = (this.cursor + 1) % list.length; Audio_.sfx('blip'); }
+    if (!ok) return;
+    const to = ROUTE[list[this.cursor % list.length]];
+    if (to.rooms.includes(World.id)) {
+      this.message = 'HE IS ALREADY HERE.';
+      this.messageT = 1.5;
+      Audio_.sfx('wrong');
+      return;
+    }
+    Audio_.sfx('found');
+    this.open = false;
+    Game.mode = 'field';
+    Fade.out(() => {
+      World.load(to.warpTo);
+      Audio_.play(World.room.music || 'none');
+    }, 1.8);
   },
 
   wearFromList(name) {
@@ -8127,12 +8362,28 @@ const Menu = {
       }
     }
 
+    // With a warp device, the picked destination gets its own ring, so the
+    // cursor is on the map rather than in a list beside it.
+    const targets = this.warpTargets();
+    if (targets.length) {
+      const t = ROUTE[targets[this.cursor % targets.length]];
+      const px = ox + t.at[0], py = oy + t.at[1];
+      const r = 7 + Math.round(Math.sin(Time.t * 4) * 1.5);
+      cx.strokeStyle = '#8ad0e8'; cx.lineWidth = 1;
+      cx.strokeRect(px - r + 0.5, py - r + 0.5, r * 2, r * 2);
+    }
+
     // The one place on his walk that this map has no square for.
     const label = here >= 0 && ROUTE[here].at ? ROUTE[here].label
                 : here >= 0 ? 'NOT ON ANY MAP' : '';
     if (label) text(label, 16, H - 12, here >= 0 && ROUTE[here].at ? '#e8d24a' : '#8a7a4a');
     const count = `${reached.length} / ${ROUTE.filter(a => a.at).length}`;
     text(count, W - textWidth(count) - 16, H - 12, '#5a5a66');
+    if (targets.length) {
+      const to = ROUTE[targets[this.cursor % targets.length]].label;
+      const hint = `Z  GO TO ${to}`;
+      text(hint, W - textWidth(hint) - 16, H - 22, '#8ad0e8');
+    }
   },
 };
 
@@ -8339,6 +8590,37 @@ const NOTES = {
     title: 'ON THE DOOR',
     pages: ["Whoever is last out, the yard lights are on the panel by the gate.",
             'Nobody is coming to do it.'],
+  },
+  // --- Act 3, the parts of Sable and Bellhouse that are optional ------
+  market_pricing: {
+    title: 'PRICING SHEET',
+    pages: ['Stallholders are reminded that the rent is calculated on footfall.',
+            'Footfall is measured at the entrance, not at the stall.'],
+  },
+  overpass_sign: {
+    title: 'ON THE RAILING',
+    pages: ['THIS WALKWAY IS FOR THE CONVENIENCE OF PEDESTRIANS.',
+            'Underneath, in marker: it is for the convenience of the road.'],
+  },
+  under_the_rail: {
+    title: 'SERVICE NOTICE',
+    pages: ['Access below the line is restricted to authorised staff.',
+            'The lock was replaced in the spring. The door was not.'],
+  },
+  four_c_door: {
+    title: 'TAPED INSIDE 4C',
+    pages: ['They came about the door four times.',
+            'The door was never the thing that was wrong.'],
+  },
+  mural_key: {
+    title: 'MURAL KEY',
+    pages: ['Panel 1: the orchard. Panel 2: the works. Panel 3: the hill.',
+            'Panel 4 is not listed. Panel 4 is a bedroom.'],
+  },
+  still_in_the_drum: {
+    title: 'ON THE LID',
+    pages: ['Sorry - back for these Tuesday.',
+            'The load inside is dry. It has been dry a long time.'],
   },
 };
 
@@ -8548,6 +8830,54 @@ const NPCS = {
     'Sessions run as long as you like. That is the whole appeal.',
     'People do come out. I have seen it.',
   ]),
+  // --- the market row -------------------------------------------------
+  // Yettallians do the opposite of the Limpo tic: they strip time out of
+  // sentences that need it, so everything sounds like it is happening now.
+  market_fruit: () => ([
+    'Fruit is fruit. You want the orchard stuff, that is two countries back.',
+    'This is greenhouse. Grows under a light, tastes like it.',
+    'Nobody complains. Everybody buys.',
+  ]),
+  market_repairs: () => {
+    if (Player.flags.marketRepairs) {
+      return ['Still here. Still fixing things nobody collects.'];
+    }
+    Player.flags.marketRepairs = true;
+    return ['I fix things. Radios, mostly, and radios are mostly nothing now.',
+            'People bring them in, I mend them, they do not come back for them.',
+            'I have a shelf of other people\'s music at the back.',
+            'You want a thing to carry? Take a look. It is not doing anything here.'];
+  },
+  market_leaving: () => ([
+    'Selling up. Not going to Vixtry, before you ask - everyone asks.',
+    'Just going. There is a difference and I am tired of explaining it.',
+  ]),
+  overpass_watcher: () => {
+    if (Player.flags.overpassSeen) {
+      return ['Still counting. It does not go down.'];
+    }
+    Player.flags.overpassSeen = true;
+    return ['Good spot, this. You can see the whole line from here.',
+            'I count the ones going in and the ones coming out.',
+            'The numbers do not match. They have not matched for a while.',
+            'I am not saying anything by that. I am just saying the numbers.'];
+  },
+  // --- Bellhouse: the occupied apartments -----------------------------
+  tenant_4c: () => ([
+    'The door was fine. I told them four times the door was fine.',
+    'It is the hallway. The hallway is the wrong length on Tuesdays.',
+    'They sent a man about the door.',
+  ]),
+  tenant_laundry: () => {
+    if (Player.flags.laundrySeen) {
+      return ['Tuesday. I said Tuesday.'];
+    }
+    Player.flags.laundrySeen = true;
+    return ['That is not my load. Mine is the far one.',
+            'That one has been in since before I moved up.',
+            'You do not take somebody else\'s things out. That is not done.',
+            'They will come back for it. Tuesday, probably.'];
+  },
   sable_shopkeeper: () => ([
     'Everything is in. Everything is always in. That is Sable.',
   ]),
@@ -8856,6 +9186,27 @@ function interact() {
       if (!Player.notes.includes(o.note)) Player.notes.push(o.note);
       Audio_.sfx('found');
       Dialogue.say(n.pages.map(t => ({ text: t, speaker: 'system' })));
+      return;
+    }
+    // The first warp device (docs/06). It opens every place he has already
+    // been, all at once, and that is deliberately one beat rather than a drip:
+    // it is the moment the game stops being a corridor.
+    case 'warp': {
+      if (Player.flags.warp) {
+        Dialogue.say([{ text: 'The lid is warm. It has been warm a while.',
+                        speaker: 'system' }]);
+        return;
+      }
+      Player.flags.warp = true;
+      World.entities = World.entities.filter(e => e !== o);
+      Audio_.sfx('found');
+      Dialogue.say([
+        { text: 'Something small and warm was sitting on the lid.', speaker: 'system' },
+        { text: 'It is the shape of a place. Several places, if you turn it.',
+          speaker: 'system' },
+        { text: 'THE MAP OPENS. HE CAN GO BACK TO ANYWHERE HE HAS BEEN.',
+          speaker: 'system' },
+      ]);
       return;
     }
     case 'collectible': {

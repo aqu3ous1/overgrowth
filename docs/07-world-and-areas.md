@@ -104,6 +104,15 @@ against Vixtry subordinates.
 
 **Mini-Boss 2** in the industrial district.
 
+**The loop.** Off the main street, three places make a circuit rather than a line: a covered
+**market row** to the west, an elevated **overpass** reached from the transit hub, and the
+**service level under the rail** joining the two. It is walkable in either direction and none of it
+is on the way to anything — which is the point. Sable is the first hub the player can get lost in on
+purpose, and the first place where the fastest route and the interesting one differ.
+
+The **arcade** off the main street holds six demo pods, one of which contains the mother the Sable
+kid keeps mentioning.
+
 ### 7. Bellhouse Commons — *Act 3 liminal zone*
 
 An enormous apartment complex, mostly empty. The interior is non-Euclidean: corridors longer than
@@ -111,10 +120,20 @@ the building, stairwells that arrive on the floor they left, rooms that connect 
 Wall murals throughout are trippy and elaborate and match nothing about the exterior.
 
 Roughly four apartments are occupied. The tenants are polite, home, and completely uninterested in
-him. One is watching television with the screen facing the wall.
+him. One is watching television with the screen facing the wall. **4C** — the unit the maintenance
+log names three times — has someone in it who will explain, patiently, that the door was never the
+thing that was wrong.
+
+Off the first floor: the **mural corridor**, whose key lists three panels and does not list the
+fourth, and a **laundry room** where one load has been in the drum a very long time and its owner is
+coming back for it Tuesday.
 
 **Third Custodian sighting** — first time he speaks. `Never leave.` Cannot be attacked.
-**First warp device** is found here. **Main Boss 2** at the top. (Cube.)
+**First warp device** is found here, on the lid of that machine. **Main Boss 2** at the top. (Cube.)
+
+The warp device is the structural turn of the whole game: it opens **every place already walked, all
+at once**, and from that point the map in the pause menu is a travel screen rather than a picture.
+Backtracking stops being punishing exactly when the game starts asking for it ([06](06-items-and-equipment.md)).
 
 ### 8. Vixtry Regional Campus — *Act 4*
 

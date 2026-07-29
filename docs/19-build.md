@@ -124,7 +124,49 @@ them had moved. It counts arity now.
 produced — *"the MOVES tab lists nothing"* — described the test's confusion rather than anything
 wrong with the game. It addresses them by name now.
 
-**1092 checks, 57 matchups in target, both playtests clean.**
+### Act 3 opens up
+
+Act 3 was one street with six doors off it and a corridor at the end. Six rooms were added, and none
+of them are on the way to anything:
+
+- **Sable City** gets a covered **market row**, an elevated **overpass**, and the **service level
+  under the rail** that joins them — a loop off the main street, walkable in either direction.
+- **Bellhouse Commons** gets **4C** (named three times in a maintenance log that had nothing behind
+  it), the **mural corridor**, and a **laundry room**.
+
+Six new lore notes and six new speaking parts. The Yettallian tic is the inverse of Limpo's: they
+strip time out of sentences that need it, so everything sounds like it is happening now.
+
+### The warp device
+
+Designed in [06](06-items-and-equipment.md) since the first draft and never built. It sits on the
+lid of the washing machine in the Bellhouse laundry, and picking it up opens **every place already
+walked, all at once**. From then on the map in the pause menu is a travel screen: arrow to a square,
+press Z, arrive.
+
+This is the single biggest change to how the game feels to move around in, and it is deliberately
+one beat rather than a drip — it is the moment the game stops being a corridor.
+
+### The audit that found three bugs by being rewritten
+
+`playtest.py` checked every room transition against a **hand-maintained list of pairs**, which meant
+a new room was audited only if somebody remembered to add it. It derives the list from the room
+table now — every exit in the game, no exceptions — and immediately found three arrivals that land
+the player exactly on the door leading back:
+
+```
+FAIL: bellhouse_2 -> bellhouse_3: lands on an exit and stays there
+FAIL: bellhouse_3 -> bellhouse_top: lands on an exit and stays there
+```
+
+Both had shipped since Act 3 and neither pair was on the list.
+
+It also found that three Bellhouse rooms had a **bottom map row one character short**, leaving the
+last column of that row undefined. That is invisible in the source and shows up only as a wall you
+can walk through, so it is a check now — along with one that every room appears on exactly one leg
+of the map's route, since a room the map does not know about is a room the warp device cannot name.
+
+**1228 checks, 57 matchups in target, both playtests clean.**
 
 ## 0.4.0 — Act 3, critical hits, and buildings that look like buildings
 

@@ -116,6 +116,37 @@ const NOTES = {
     pages: ["Whoever is last out, the yard lights are on the panel by the gate.",
             'Nobody is coming to do it.'],
   },
+  // --- Act 3, the parts of Sable and Bellhouse that are optional ------
+  market_pricing: {
+    title: 'PRICING SHEET',
+    pages: ['Stallholders are reminded that the rent is calculated on footfall.',
+            'Footfall is measured at the entrance, not at the stall.'],
+  },
+  overpass_sign: {
+    title: 'ON THE RAILING',
+    pages: ['THIS WALKWAY IS FOR THE CONVENIENCE OF PEDESTRIANS.',
+            'Underneath, in marker: it is for the convenience of the road.'],
+  },
+  under_the_rail: {
+    title: 'SERVICE NOTICE',
+    pages: ['Access below the line is restricted to authorised staff.',
+            'The lock was replaced in the spring. The door was not.'],
+  },
+  four_c_door: {
+    title: 'TAPED INSIDE 4C',
+    pages: ['They came about the door four times.',
+            'The door was never the thing that was wrong.'],
+  },
+  mural_key: {
+    title: 'MURAL KEY',
+    pages: ['Panel 1: the orchard. Panel 2: the works. Panel 3: the hill.',
+            'Panel 4 is not listed. Panel 4 is a bedroom.'],
+  },
+  still_in_the_drum: {
+    title: 'ON THE LID',
+    pages: ['Sorry - back for these Tuesday.',
+            'The load inside is dry. It has been dry a long time.'],
+  },
 };
 
 // Every counter sells the list data/shops.json gives its act, gear included.
@@ -324,6 +355,54 @@ const NPCS = {
     'Sessions run as long as you like. That is the whole appeal.',
     'People do come out. I have seen it.',
   ]),
+  // --- the market row -------------------------------------------------
+  // Yettallians do the opposite of the Limpo tic: they strip time out of
+  // sentences that need it, so everything sounds like it is happening now.
+  market_fruit: () => ([
+    'Fruit is fruit. You want the orchard stuff, that is two countries back.',
+    'This is greenhouse. Grows under a light, tastes like it.',
+    'Nobody complains. Everybody buys.',
+  ]),
+  market_repairs: () => {
+    if (Player.flags.marketRepairs) {
+      return ['Still here. Still fixing things nobody collects.'];
+    }
+    Player.flags.marketRepairs = true;
+    return ['I fix things. Radios, mostly, and radios are mostly nothing now.',
+            'People bring them in, I mend them, they do not come back for them.',
+            'I have a shelf of other people\'s music at the back.',
+            'You want a thing to carry? Take a look. It is not doing anything here.'];
+  },
+  market_leaving: () => ([
+    'Selling up. Not going to Vixtry, before you ask - everyone asks.',
+    'Just going. There is a difference and I am tired of explaining it.',
+  ]),
+  overpass_watcher: () => {
+    if (Player.flags.overpassSeen) {
+      return ['Still counting. It does not go down.'];
+    }
+    Player.flags.overpassSeen = true;
+    return ['Good spot, this. You can see the whole line from here.',
+            'I count the ones going in and the ones coming out.',
+            'The numbers do not match. They have not matched for a while.',
+            'I am not saying anything by that. I am just saying the numbers.'];
+  },
+  // --- Bellhouse: the occupied apartments -----------------------------
+  tenant_4c: () => ([
+    'The door was fine. I told them four times the door was fine.',
+    'It is the hallway. The hallway is the wrong length on Tuesdays.',
+    'They sent a man about the door.',
+  ]),
+  tenant_laundry: () => {
+    if (Player.flags.laundrySeen) {
+      return ['Tuesday. I said Tuesday.'];
+    }
+    Player.flags.laundrySeen = true;
+    return ['That is not my load. Mine is the far one.',
+            'That one has been in since before I moved up.',
+            'You do not take somebody else\'s things out. That is not done.',
+            'They will come back for it. Tuesday, probably.'];
+  },
   sable_shopkeeper: () => ([
     'Everything is in. Everything is always in. That is Sable.',
   ]),
@@ -632,6 +711,27 @@ function interact() {
       if (!Player.notes.includes(o.note)) Player.notes.push(o.note);
       Audio_.sfx('found');
       Dialogue.say(n.pages.map(t => ({ text: t, speaker: 'system' })));
+      return;
+    }
+    // The first warp device (docs/06). It opens every place he has already
+    // been, all at once, and that is deliberately one beat rather than a drip:
+    // it is the moment the game stops being a corridor.
+    case 'warp': {
+      if (Player.flags.warp) {
+        Dialogue.say([{ text: 'The lid is warm. It has been warm a while.',
+                        speaker: 'system' }]);
+        return;
+      }
+      Player.flags.warp = true;
+      World.entities = World.entities.filter(e => e !== o);
+      Audio_.sfx('found');
+      Dialogue.say([
+        { text: 'Something small and warm was sitting on the lid.', speaker: 'system' },
+        { text: 'It is the shape of a place. Several places, if you turn it.',
+          speaker: 'system' },
+        { text: 'THE MAP OPENS. HE CAN GO BACK TO ANYWHERE HE HAS BEEN.',
+          speaker: 'system' },
+      ]);
       return;
     }
     case 'collectible': {

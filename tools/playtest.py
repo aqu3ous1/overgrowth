@@ -852,6 +852,68 @@ def main():
             errors.append("turning the television round paid nothing")
         shot("47-7b")
 
+        # --- the parts of Act 3 that are optional
+        # The market row, the overpass and the service level under the rail make
+        # a loop off the main street; the mural corridor and the laundry hang off
+        # Bellhouse's first floor. None of it is on the way to anything, which is
+        # the only reason it needs walking here.
+        for room, tx, ty, face, key, dest in (
+            ("sable", 1, 14, "left", "ArrowLeft", "sable_market"),
+            ("sable_market", 23, 5, "right", "ArrowRight", "sable_under"),
+            ("sable_under", 21, 3, "right", "ArrowRight", "sable_overpass"),
+            ("sable_overpass", 1, 2, "left", "ArrowLeft", "sable_transit"),
+            ("bellhouse_1", 4, 1, "up", "ArrowUp", "bellhouse_mural"),
+            ("bellhouse_mural", 23, 1, "right", "ArrowRight", "bellhouse_laundry"),
+            ("bellhouse_2", 4, 6, "up", "ArrowUp", "bellhouse_4c"),
+        ):
+            idle(page); put(page, room, tx, ty, face)
+            walk(page, key, 600, dest)
+            if page.evaluate("() => World.id") != dest:
+                errors.append(f"{dest} cannot be reached from {room}")
+        shot("50-market")
+
+        # Each new room has to have something in it worth the walk.
+        for room, note in (("sable_market", "market_pricing"),
+                           ("sable_overpass", "overpass_sign"),
+                           ("sable_under", "under_the_rail"),
+                           ("bellhouse_4c", "four_c_door"),
+                           ("bellhouse_mural", "mural_key"),
+                           ("bellhouse_laundry", "still_in_the_drum")):
+            has = page.evaluate("""([room, note]) =>
+              (ROOMS[room].objects || []).some(o => o.note === note)""", [room, note])
+            if not has:
+                errors.append(f"{room} does not hold the {note} note")
+            if note not in page.evaluate("() => Object.keys(NOTES)"):
+                errors.append(f"the note {note} is placed in the world and has no text")
+
+        # --- the warp device (docs/06): found in Bellhouse, opens everywhere
+        # already walked, all at once.
+        page.evaluate("() => { Player.flags.warp = false; }")
+        if page.evaluate("() => Menu.warpTargets().length"):
+            errors.append("the map offers fast travel before the device is found")
+        idle(page); put(page, "bellhouse_laundry", 13, 4, "up")
+        press(page, "z")
+        page.wait_for_timeout(300)
+        advance(page)
+        if not page.evaluate("() => !!Player.flags.warp"):
+            errors.append("the warp device could not be picked up")
+        targets = page.evaluate("() => Menu.warpTargets().map(i => ROUTE[i].label)")
+        if len(targets) < 4:
+            errors.append(f"the warp device opened only {targets}")
+        # And it must actually move him.
+        page.evaluate("""() => {
+          Game.mode = 'menu'; Menu.open = true;
+          Menu.tab = Menu.tabs.indexOf('MAP');
+          Menu.cursor = Menu.warpTargets().findIndex(i => ROUTE[i].warpTo === 'okobo');
+        }""")
+        press(page, "z")
+        page.wait_for_timeout(1600)
+        if page.evaluate("() => World.id") != "okobo":
+            errors.append("warping to Okobo did not arrive in Okobo")
+        if page.evaluate("() => Game.mode") != "field":
+            errors.append("warping left the game in a menu")
+        shot("51-warped")
+
         # Main Boss 2, at the top.
         page.evaluate("() => { Player.level = 26; Player.exp = Player.expToReach(26);"
                       " Player.restore(); Player.addItem('Spray III', 6); }")
@@ -878,25 +940,29 @@ def main():
 
         # --- every transition must be survivable in both directions
         # (the 0.1.0 bug: landing on the return path bounced you straight back)
-        pairs = [("okobo", "north_road"), ("north_road", "orchard1"),
-                 ("orchard1", "orchard2"), ("orchard2", "orchard3"),
-                 ("orchard3", "clearing"), ("okobo", "arrival"),
-                 ("okobo", "shop"), ("okobo", "inn"), ("okobo", "house"),
-                 ("clearing", "road_ondo"), ("road_ondo", "ondo"),
-                 ("ondo", "ondo_shop"), ("ondo", "ondo_inn"),
-                 ("ondo", "boarding_house"), ("ondo", "records_room"),
-                 ("ondo", "winter_road"), ("winter_road", "kestrel_yard"),
-                 ("kestrel_yard", "kestrel_f1"), ("kestrel_f1", "kestrel_f2"),
-                 ("kestrel_f2", "kestrel_f3"), ("kestrel_f1", "kestrel_boiler"),
-                 ("kestrel_f2", "kestrel_office"), ("kestrel_f3", "kestrel_locker"),
-                 ("ondo", "ondo_grocer"), ("kestrel_yard", "border"),
-                 ("border", "sable_road"), ("sable_road", "sable"),
-                 ("sable", "sable_shop"), ("sable", "sable_inn"),
-                 ("sable", "sable_transit"), ("sable", "sable_works"),
-                 ("sable_works", "sable_floor"), ("sable", "bellhouse_ext"),
-                 ("bellhouse_ext", "bellhouse_1"), ("bellhouse_3", "bellhouse_7b")]
+        # Every exit in the game, taken from the room table rather than from a
+        # list kept here. The list was hand-maintained, which meant a new room
+        # was audited only if somebody remembered to add it - and unreachable
+        # content is exactly the class of bug no consistency checker can see.
+        pairs = page.evaluate("""() => {
+          const out = [];
+          for (const id in ROOMS) {
+            for (const x of (ROOMS[id].exits || [])) {
+              if (!ROOMS[x.to]) continue;        // 'fall' and friends are cutscenes
+              out.push([id, x.to]);
+            }
+          }
+          return out;
+        }""")
+        # Forward only. A one-way exit is a legitimate thing - you fall into the
+        # Gallery and you do not climb back into the void - and the return leg,
+        # where there is one, is its own entry in this list already.
+        seen_pairs = set()
         for a, b in pairs:
-            for src, dst in ((a, b), (b, a)):
+            for src, dst in ((a, b),):
+                if (src, dst) in seen_pairs:
+                    continue
+                seen_pairs.add((src, dst))
                 ok = page.evaluate("""([src, dst]) => {
                   const r = ROOMS[src];
                   const x = (r.exits || []).find(e => e.to === dst);

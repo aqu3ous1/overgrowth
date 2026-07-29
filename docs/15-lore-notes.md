@@ -6,7 +6,7 @@ delivery mechanism ([00](00-overview.md), pillar 3) and **every one of them is o
 ## Rules
 
 1. **A note is never about the plot. It's about a person's Tuesday.** The plot is what a player
-   assembles from thirty of them. Any note that summarizes, explains, or warns has failed.
+   assembles from three dozen of them. Any note that summarizes, explains, or warns has failed.
 2. **Written by people who didn't know anyone would read this.** Real documents: notices, schedules,
    letters, forms. No diaries addressed to nobody, no convenient exposition.
 3. **Permanently kept and re-readable** from the bag ([06](06-items-and-equipment.md)). A player

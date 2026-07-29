@@ -1259,8 +1259,8 @@ const ROOMS = {
       '#....######........######........#',
       '#....######........######........#',
       '#....#####D........#####D........#',
-      '#................................#',
-      '#..............................PP#',
+      'P................................#',
+      'P..............................PP#',
       '##################################',
     ],
     decor: [
@@ -1284,6 +1284,7 @@ const ROOMS = {
     ],
     exits: [
       { x: 0, y: 7, w: 1, h: 2, to: 'sable_road', at: [22, 6] },
+      { x: 0, y: 14, w: 1, h: 2, to: 'sable_market', at: [2, 5] },
       { x: 8, y: 4, to: 'sable_shop', at: [7, 5], sfx: 'door' },
       { x: 16, y: 4, to: 'sable_inn', at: [7, 5], sfx: 'door' },
       { x: 24, y: 4, to: 'sable_transit', at: [8, 7], sfx: 'door' },
@@ -1346,7 +1347,7 @@ const ROOMS = {
   sable_transit: {
     floor: 'plank', wall: 'plaster', light: 0.26, music: 'sable', grain: 0.035,
     map: [
-      '#################',
+      '####D############',
       '#...............#',
       '#...............#',
       '#..===...===....#',
@@ -1370,7 +1371,10 @@ const ROOMS = {
       { art: 'vix_rep', x: 4, y: 4, key: 'vixtry_recruiter' },
       { art: 'sab_wait', x: 8, y: 5, key: 'sable_waiting' },
     ],
-    exits: [{ x: 8, y: 8, to: 'sable', at: [24, 5], sfx: 'door' }],
+    exits: [
+      { x: 8, y: 8, to: 'sable', at: [24, 5], sfx: 'door' },
+      { x: 4, y: 0, to: 'sable_overpass', at: [2, 3], sfx: 'door' },
+    ],
     start: [8, 7],
   },
 
@@ -1429,6 +1433,116 @@ const ROOMS = {
     npcs: [{ art: 'vix_rep', x: 12, y: 3, key: 'arcade_attendant' }],
     exits: [{ x: 7, y: 7, to: 'sable', at: [24, 14], sfx: 'door' }],
     start: [7, 6],
+  },
+
+  // --- the market row, the overpass, and what is under it ---------------
+  // Act 3 used to be one street with six doors off it and a corridor at the
+  // end. These three make a loop: market to overpass to service level and back
+  // out onto the street, walkable in either direction and none of it required.
+  sable_market: {
+    floor: 'pavement', wall: 'concrete', light: 0.22, music: 'sable', grain: 0.05,
+    tint: ['#ffb060', 0.07],
+    map: [
+      '#########################',
+      '#.......................#',
+      '#.===..===..===..===..==#',
+      '#.......................#',
+      '#.......................#',
+      'P.......................D',
+      'P.......................#',
+      '#.......................#',
+      '#.===..===..===..===..==#',
+      '#.......................#',
+      '#########################',
+    ],
+    decor: [
+      { x: 3, y: 3, t: 'bunting' }, { x: 11, y: 3, t: 'bunting' },
+      { x: 19, y: 3, t: 'bunting' }, { x: 7, y: 7, t: 'bunting' },
+      { x: 15, y: 7, t: 'bunting' },
+      { x: 2, y: 6, t: 'crates' }, { x: 22, y: 3, t: 'barrel' },
+      { x: 12, y: 5, t: 'plant' },
+    ],
+    objects: [
+      { x: 5, y: 4, t: 'counter', label: 'stall' },
+      { x: 13, y: 4, t: 'counter', label: 'stall' },
+      { x: 20, y: 7, t: 'counter', label: 'stall' },
+      { x: 9, y: 9, t: 'note', note: 'market_pricing' },
+    ],
+    npcs: [
+      { art: 'sab_shop', x: 5, y: 5, key: 'market_fruit' },
+      { art: 'sab_local', x: 13, y: 5, key: 'market_repairs' },
+      { art: 'sab_wait', x: 20, y: 6, key: 'market_leaving' },
+    ],
+    exits: [
+      { x: 0, y: 5, w: 1, h: 2, to: 'sable', at: [2, 15] },
+      { x: 24, y: 5, to: 'sable_under', at: [1, 4], sfx: 'door' },
+    ],
+    start: [2, 5],
+  },
+
+  sable_overpass: {
+    floor: 'concrete', wall: 'concrete', light: 0.06, music: 'sable', grain: 0.05,
+    bright: true, tint: ['#7aa8ff', 0.10],
+    map: [
+      '#########################',
+      '#.......................#',
+      'D.......................#',
+      '#.......................#',
+      '#.......................P',
+      '#.......................P',
+      '#.......................#',
+      '#########.......#########',
+      '########.........########',
+      '#######...........#######',
+    ],
+    decor: [
+      { x: 4, y: 1, t: 'neon_sign' }, { x: 12, y: 1, t: 'neon_sign' },
+      { x: 20, y: 1, t: 'neon_sign' },
+      { x: 8, y: 6, t: 'pipe' }, { x: 16, y: 6, t: 'pipe' },
+    ],
+    objects: [
+      { x: 12, y: 3, t: 'billboard', label: 'billboard' },
+      { x: 3, y: 5, t: 'note', note: 'overpass_sign' },
+      { x: 21, y: 2, t: 'pod', label: 'demo pod' },
+    ],
+    npcs: [{ art: 'sab_rail', x: 17, y: 4, key: 'overpass_watcher' }],
+    exits: [
+      { x: 0, y: 2, to: 'sable_transit', at: [8, 3], sfx: 'door' },
+      { x: 24, y: 4, w: 1, h: 2, to: 'sable_under', at: [21, 2] },
+    ],
+    start: [2, 3],
+  },
+
+  sable_under: {
+    floor: 'concrete', wall: 'concrete', light: 0.55, music: 'kestrel', grain: 0.07,
+    map: [
+      '#######################',
+      'D.....................#',
+      '#.....................P',
+      '#..##....##....##.....P',
+      '#..##....##....##.....#',
+      '#.....................#',
+      '#.....................#',
+      '#..##....##....##.....#',
+      '#..##....##....##.....#',
+      '#.....................#',
+      '#######################',
+    ],
+    decor: [
+      { x: 6, y: 2, t: 'pipe' }, { x: 14, y: 2, t: 'pipe' },
+      { x: 6, y: 6, t: 'pipe' }, { x: 14, y: 6, t: 'pipe' },
+      { x: 19, y: 5, t: 'crates' }, { x: 2, y: 8, t: 'barrel' },
+    ],
+    objects: [
+      { x: 10, y: 5, t: 'note', note: 'under_the_rail' },
+      { x: 19, y: 8, t: 'machine', label: 'junction box' },
+    ],
+    spawn: [{ name: 'Ration Tin', n: 1 }, { name: 'Coil', n: 2 }],
+    exits: [
+      { x: 0, y: 1, to: 'sable_market', at: [22, 5], sfx: 'door' },
+      { x: 22, y: 2, w: 1, h: 2, to: 'sable_overpass', at: [22, 4] },
+    ],
+    start: [2, 1],
   },
 
   sable_works: {
@@ -1518,7 +1632,7 @@ const ROOMS = {
     impossible: true,
     floor: 'carpet', wall: 'plaster', light: 0.6, music: 'bellhouse', grain: 0.06,
     map: [
-      '#######################',
+      '####D##################',
       '#.....................#',
       'D.....................D',
       '#.....................#',
@@ -1527,7 +1641,7 @@ const ROOMS = {
       '#.....................#',
       '#.....................#',
       '#.........PP..........#',
-      '#########DPP##########',
+      '#########DPP###########',
     ],
     decor: [
       { x: 3, y: 3, t: 'mural_wall' }, { x: 11, y: 3, t: 'mural_wall' },
@@ -1541,6 +1655,7 @@ const ROOMS = {
     spawn: [{ name: 'Hall Mirror', n: 1 }, { name: "Tenant's Cat", n: 1 }],
     exits: [
       { x: 9, y: 9, w: 3, h: 1, to: 'bellhouse_ext', at: [11, 6], sfx: 'door' },
+      { x: 4, y: 0, to: 'bellhouse_mural', at: [2, 2], sfx: 'door' },
       { x: 0, y: 2, to: 'bellhouse_2', at: [21, 5], sfx: 'door' },
       { x: 22, y: 2, to: 'bellhouse_2', at: [2, 5], sfx: 'door' },
     ],
@@ -1558,11 +1673,11 @@ const ROOMS = {
       '#......................#',
       '#..####.....####.......#',
       '#..####.....####.......#',
-      'D..####.....####.......D',
+      'D..#D##.....####.......D',
       '#......................#',
       '#......................#',
       '#.........PP...........#',
-      '#########DPP###########',
+      '#########DPP############',
     ],
     decor: [
       { x: 7, y: 2, t: 'mural_wall' }, { x: 16, y: 2, t: 'mural_wall' },
@@ -1570,15 +1685,16 @@ const ROOMS = {
     ],
     objects: [
       { x: 12, y: 6, t: 'note', note: 'maintenance_log' },
-      { x: 5, y: 5, t: 'apartment', label: 'door', unit: '4C' },
+
       { x: 18, y: 3, t: 'collectible', which: 'spare_key' },
     ],
     spawn: [{ name: 'Unit 4C', n: 1 }, { name: 'Mural', n: 1 },
             { name: "Tenant's Cat", n: 1 }],
     exits: [
       { x: 9, y: 9, w: 3, h: 1, to: 'bellhouse_1', at: [10, 2], sfx: 'door' },
-      { x: 0, y: 5, to: 'bellhouse_3', at: [10, 8], sfx: 'door' },
-      { x: 23, y: 5, to: 'bellhouse_3', at: [10, 8], sfx: 'door' },
+      { x: 0, y: 5, to: 'bellhouse_3', at: [10, 7], sfx: 'door' },
+      { x: 23, y: 5, to: 'bellhouse_3', at: [10, 7], sfx: 'door' },
+      { x: 4, y: 5, to: 'bellhouse_4c', at: [7, 5], sfx: 'door' },
     ],
     start: [10, 8],
   },
@@ -1595,7 +1711,7 @@ const ROOMS = {
       '#...................#',
       '#...................#',
       '#........PP.........#',
-      '#########PP#########',
+      '#########PP##########',
     ],
     decor: [
       { x: 10, y: 1, t: 'mural_wall' }, { x: 3, y: 7, t: 'lamp' },
@@ -1610,7 +1726,7 @@ const ROOMS = {
     exits: [
       { x: 9, y: 8, w: 2, h: 2, to: 'bellhouse_2', at: [10, 2], sfx: 'door' },
       { x: 7, y: 5, to: 'bellhouse_7b', at: [5, 4], sfx: 'door' },
-      { x: 15, y: 5, to: 'bellhouse_top', at: [9, 14], sfx: 'door' },
+      { x: 15, y: 5, to: 'bellhouse_top', at: [9, 12], sfx: 'door' },
     ],
     start: [10, 8],
   },
@@ -1643,6 +1759,89 @@ const ROOMS = {
 
   // The room at the top. It is a perfect cube and it is bigger than the floor
   // it is on.
+  // The docs say roughly four apartments are occupied and the murals match
+  // nothing about the exterior. Only 7B existed; the maintenance log has been
+  // naming 4C since Act 3 shipped, and nothing was behind it.
+  bellhouse_4c: {
+    floor: 'carpet', wall: 'plaster', light: 0.42, music: 'bellhouse', grain: 0.04,
+    map: [
+      '###############',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#......D......#',
+      '###############',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'cabinet' }, { x: 12, y: 1, t: 'shelf' },
+      { x: 2, y: 4, t: 'lamp' }, { x: 7, y: 5, t: 'rug' },
+    ],
+    objects: [
+      { x: 4, y: 2, t: 'television', label: 'television' },
+      { x: 10, y: 2, t: 'table', label: 'table' },
+      { x: 12, y: 4, t: 'note', note: 'four_c_door' },
+    ],
+    npcs: [{ art: 'tenant_three', x: 7, y: 3, key: 'tenant_4c' }],
+    exits: [{ x: 7, y: 6, to: 'bellhouse_2', at: [4, 6], sfx: 'door' }],
+    start: [7, 5],
+  },
+
+  bellhouse_mural: {
+    floor: 'carpet', wall: 'plaster', light: 0.5, music: 'bellhouse', grain: 0.05,
+    tint: ['#c05ad0', 0.09],
+    map: [
+      '#########################',
+      'D.......................D',
+      '#.......................#',
+      '#.......................#',
+      '#########################',
+    ],
+    decor: [
+      { x: 3, y: 0, t: 'mural_wall' }, { x: 8, y: 0, t: 'mural_wall' },
+      { x: 13, y: 0, t: 'mural_wall' }, { x: 18, y: 0, t: 'mural_wall' },
+      { x: 6, y: 4, t: 'mural_wall' }, { x: 16, y: 4, t: 'mural_wall' },
+    ],
+    objects: [
+      { x: 11, y: 2, t: 'note', note: 'mural_key' },
+      { x: 20, y: 2, t: 'painting', label: 'frame' },
+    ],
+    exits: [
+      { x: 0, y: 1, to: 'bellhouse_1', at: [4, 1], sfx: 'door' },
+      { x: 24, y: 1, to: 'bellhouse_laundry', at: [2, 4], sfx: 'door' },
+    ],
+    start: [2, 2],
+  },
+
+  bellhouse_laundry: {
+    floor: 'plank', wall: 'plaster', light: 0.36, music: 'bellhouse', grain: 0.05,
+    map: [
+      '#################',
+      '#...............#',
+      '#..===...===....#',
+      '#...............#',
+      'D...............#',
+      '#...............#',
+      '#..===...===....#',
+      '#...............#',
+      '#################',
+    ],
+    decor: [
+      { x: 13, y: 1, t: 'sink' }, { x: 13, y: 6, t: 'barrel' },
+      { x: 2, y: 7, t: 'crates' },
+    ],
+    objects: [
+      { x: 4, y: 3, t: 'machine', label: 'washer' },
+      { x: 9, y: 3, t: 'machine', label: 'washer' },
+      { x: 6, y: 5, t: 'note', note: 'still_in_the_drum' },
+      { x: 13, y: 3, t: 'warp', label: 'something on the lid' },
+    ],
+    npcs: [{ art: 'tenant_five', x: 9, y: 5, key: 'tenant_laundry' }],
+    exits: [{ x: 0, y: 4, to: 'bellhouse_mural', at: [22, 1], sfx: 'door' }],
+    start: [2, 4],
+  },
+
   bellhouse_top: {
     floor: 'carpet', wall: 'plaster', light: 0.85, music: 'bellhouse', grain: 0.08, dark: true,
     map: [

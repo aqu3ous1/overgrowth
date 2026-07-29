@@ -620,9 +620,14 @@ check(
 for q in quests:
     check(q["area"] in area_names, f"Sidequest {q['name']!r} is in an unknown area")
 
+# Act 3 grew in 0.5.0 - the market row, the overpass, the service level under
+# the rail, the mural corridor, 4C and the laundry all carry one - so the
+# allocation grew with it rather than the new rooms being left blank.
+NOTE_TOTAL = 36
 check(
-    sum(world["lore_notes_per_area"].values()) == 30,
-    "There must be 30 lore notes in total",
+    sum(world["lore_notes_per_area"].values()) == NOTE_TOTAL,
+    f"There must be {NOTE_TOTAL} lore notes in total, "
+    f"not {sum(world['lore_notes_per_area'].values())}",
 )
 for a in world["lore_notes_per_area"]:
     check(a in area_names, f"Lore notes assigned to unknown area {a!r}")
@@ -934,6 +939,39 @@ if build.exists():
 # doors into the same flat. It is invisible in the source and obvious in play,
 # so it gets a check rather than a promise to be careful.
 CUTSCENE_EXITS = {"fall"}      # exits handled by a story beat, not a room load
+_ui_src = (ROOT / "game" / "src" / "60_ui.js").read_text()
+
+# Every row of a room's map must be the same width. A row one character short
+# leaves the last column of that row undefined, which is invisible in the source
+# and only shows up as a wall you can walk through - three Bellhouse rooms had
+# shipped that way since Act 3.
+_room_blocks = {}
+for _m in re.finditer(r"^  ([a-z_0-9]+): \{", (ROOT / "game" / "src" / "30_world.js").read_text(), re.M):
+    _src = (ROOT / "game" / "src" / "30_world.js").read_text()
+    _body = _src[_m.end():]
+    _body = _body[:_body.find("\n  },")]
+    _room_blocks[_m.group(1)] = _body
+for _name, _body in _room_blocks.items():
+    _mm = re.search(r"map: \[(.*?)\]", _body, re.S)
+    if not _mm:
+        continue
+    _rows = re.findall(r"'([^']*)'", _mm.group(1))
+    _widths = sorted({len(r) for r in _rows})
+    check(len(_widths) == 1,
+          f"{_name}'s map rows are not all the same width: {_widths}")
+
+# And every room has to appear on exactly one leg of the map's route, or the
+# player can stand somewhere the map has no idea about - and, since 0.5.0, warp
+# away from somewhere it cannot name.
+_route = _ui_src[_ui_src.index("const ROUTE = ["):_ui_src.index("function routeIndexOf")]
+# Only the `rooms:` arrays count. Matching every quoted word in the block also
+# picked up each leg's `warpTo`, which named a room that was already listed.
+_listed = []
+for _m in re.finditer(r"rooms: \[(.*?)\]", _route, re.S):
+    _listed += re.findall(r"'([a-z_0-9]+)'", _m.group(1))
+for _name in _room_blocks:
+    check(_listed.count(_name) == 1,
+          f"{_name} appears on {_listed.count(_name)} legs of ROUTE, not exactly one")
 _world = (ROOT / "game" / "src" / "30_world.js").read_text()
 _game_src = (ROOT / "game" / "src" / "70_game.js").read_text()
 _rooms = {}

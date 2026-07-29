@@ -354,27 +354,29 @@ const ROUTE = [
   { label: 'HOME',            rooms: ['bedroom'] },
   { label: 'THE GALLERY',     rooms: ['void', 'gallery_ext', 'gallery_hall', 'gallery_room',
                                       'gallery_corridor'] },
-  { label: 'OKOBO',           rooms: ['arrival', 'okobo', 'shop', 'inn', 'house'],
+  { warpTo: 'okobo', label: 'OKOBO',           rooms: ['arrival', 'okobo', 'shop', 'inn', 'house'],
     at: [56, 82], kind: 'town', short: 'OKOBO' },
   { label: 'THE NORTH ROAD',  rooms: ['north_road'], at: [74, 70], kind: 'road' },
-  { label: 'SUNKEN ORCHARD',  rooms: ['orchard1', 'orchard2', 'orchard3', 'clearing'],
+  { warpTo: 'orchard1', label: 'SUNKEN ORCHARD',  rooms: ['orchard1', 'orchard2', 'orchard3', 'clearing'],
     at: [100, 60], kind: 'orchard', short: 'ORCHARD' },
   { label: 'THE ROAD TO ONDO', rooms: ['road_ondo'], at: [124, 50], kind: 'road' },
-  { label: 'ONDO',            rooms: ['ondo', 'ondo_shop', 'ondo_inn', 'ondo_grocer',
+  { warpTo: 'ondo', label: 'ONDO',            rooms: ['ondo', 'ondo_shop', 'ondo_inn', 'ondo_grocer',
                                       'boarding_house', 'records_room'],
     at: [148, 40], kind: 'city', short: 'ONDO' },
   { label: 'THE WINTER ROAD', rooms: ['winter_road'], at: [162, 24], kind: 'road' },
-  { label: 'KESTREL WORKS',   rooms: ['kestrel_yard', 'kestrel_f1', 'kestrel_f2', 'kestrel_f3',
+  { warpTo: 'kestrel_yard', label: 'KESTREL WORKS',   rooms: ['kestrel_yard', 'kestrel_f1', 'kestrel_f2', 'kestrel_f3',
                                       'kestrel_boiler', 'kestrel_office', 'kestrel_locker'],
     at: [190, 13], kind: 'works', short: 'KESTREL' },
   // Yettallia: across the water, on the landmass he could only see before.
   { label: 'THE BORDER',      rooms: ['border'], at: [222, 26], kind: 'road' },
-  { label: 'SABLE CITY',      rooms: ['sable', 'sable_road', 'sable_shop', 'sable_inn',
-                                      'sable_transit', 'sable_flat', 'sable_works',
+  { warpTo: 'sable', label: 'SABLE CITY',      rooms: ['sable', 'sable_road', 'sable_shop', 'sable_inn',
+                                      'sable_transit', 'sable_flat', 'sable_arcade', 'sable_works',
+                                      'sable_market', 'sable_overpass', 'sable_under',
                                       'sable_floor'],
     at: [252, 44], kind: 'city', short: 'SABLE' },
-  { label: 'BELLHOUSE COMMONS', rooms: ['bellhouse_ext', 'bellhouse_1', 'bellhouse_2',
-                                        'bellhouse_3', 'bellhouse_7b', 'bellhouse_top'],
+  { warpTo: 'bellhouse_ext', label: 'BELLHOUSE COMMONS', rooms: ['bellhouse_ext', 'bellhouse_1', 'bellhouse_2',
+                                        'bellhouse_3', 'bellhouse_7b', 'bellhouse_top',
+                                        'bellhouse_4c', 'bellhouse_mural', 'bellhouse_laundry'],
     at: [268, 74], kind: 'works', short: 'BELLHOUSE' },
 ];
 function routeIndexOf(roomId) {
@@ -600,6 +602,7 @@ const Menu = {
       this.open = false; Options.enter('menu'); Game.mode = 'options'; Audio_.sfx('ok'); return;
     }
     if (this.tab === TAB_SAVE && ok) { this.saveHere(); return; }
+    if (this.tab === TAB_MAP) { this.mapInput(ok); return; }
     const list = this.list();
     if (list.length) {
       if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + list.length) % list.length; Audio_.sfx('blip'); }
@@ -613,6 +616,39 @@ const Menu = {
       if (ok && this.tab === TAB_BAG) this.useFromBag(list[this.cursor]);
       if (ok && this.tab === TAB_GEAR) this.wearFromList(list[this.cursor]);
     }
+  },
+
+  // --- fast travel -----------------------------------------------------
+  // The map is a picture until the first warp device turns up in Bellhouse
+  // Commons, at which point the whole explored world opens at once (docs/06).
+  // That is deliberately a single beat rather than a drip: it should read as a
+  // reward, and it is the moment the game stops being a corridor.
+  warpTargets() {
+    if (!Player.flags.warp) return [];
+    return ROUTE.map((a, i) => i)
+      .filter(i => ROUTE[i].at && Player.seen.includes(i) && ROUTE[i].warpTo);
+  },
+
+  mapInput(ok) {
+    const list = this.warpTargets();
+    if (!list.length) return;
+    if (Input.repeat('up', this.rep)) { this.cursor = (this.cursor - 1 + list.length) % list.length; Audio_.sfx('blip'); }
+    if (Input.repeat('down', this.rep)) { this.cursor = (this.cursor + 1) % list.length; Audio_.sfx('blip'); }
+    if (!ok) return;
+    const to = ROUTE[list[this.cursor % list.length]];
+    if (to.rooms.includes(World.id)) {
+      this.message = 'HE IS ALREADY HERE.';
+      this.messageT = 1.5;
+      Audio_.sfx('wrong');
+      return;
+    }
+    Audio_.sfx('found');
+    this.open = false;
+    Game.mode = 'field';
+    Fade.out(() => {
+      World.load(to.warpTo);
+      Audio_.play(World.room.music || 'none');
+    }, 1.8);
   },
 
   wearFromList(name) {
@@ -948,12 +984,28 @@ const Menu = {
       }
     }
 
+    // With a warp device, the picked destination gets its own ring, so the
+    // cursor is on the map rather than in a list beside it.
+    const targets = this.warpTargets();
+    if (targets.length) {
+      const t = ROUTE[targets[this.cursor % targets.length]];
+      const px = ox + t.at[0], py = oy + t.at[1];
+      const r = 7 + Math.round(Math.sin(Time.t * 4) * 1.5);
+      cx.strokeStyle = '#8ad0e8'; cx.lineWidth = 1;
+      cx.strokeRect(px - r + 0.5, py - r + 0.5, r * 2, r * 2);
+    }
+
     // The one place on his walk that this map has no square for.
     const label = here >= 0 && ROUTE[here].at ? ROUTE[here].label
                 : here >= 0 ? 'NOT ON ANY MAP' : '';
     if (label) text(label, 16, H - 12, here >= 0 && ROUTE[here].at ? '#e8d24a' : '#8a7a4a');
     const count = `${reached.length} / ${ROUTE.filter(a => a.at).length}`;
     text(count, W - textWidth(count) - 16, H - 12, '#5a5a66');
+    if (targets.length) {
+      const to = ROUTE[targets[this.cursor % targets.length]].label;
+      const hint = `Z  GO TO ${to}`;
+      text(hint, W - textWidth(hint) - 16, H - 22, '#8ad0e8');
+    }
   },
 };
 

@@ -128,7 +128,7 @@ by people who had no idea anyone would read them later: layoff notices, a tenant
 memos, a shift schedule with one name crossed out.
 
 **Rule:** a note is never *about* the plot. It's about a person's Tuesday. The plot is what the
-player assembles from thirty of those.
+player assembles from three dozen of those.
 
 > **KESTREL WORKS — NOTICE**
 > Effective the 14th, second shift is suspended. Affected staff should collect final pay from

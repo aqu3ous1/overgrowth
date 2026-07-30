@@ -134,6 +134,18 @@ check(
     f"costs {cheapest} — the player will be able to act only every other turn",
 )
 
+# Drained is the only thing in the game that touches the trickle, and it must
+# not switch it off. A player at 0 PP, Drained, in a fight they cannot flee has
+# no move at all - which is precisely the lose-state the trickle exists to
+# prevent. It shipped that way for exactly one playtest.
+drained = next(s for s in moves["statuses"] if s["name"] == "Drained")
+check("regen_multiplier" in drained["player_effect"],
+      "Drained must state how much of the trickle it leaves, not merely suppress it")
+check(drained["player_effect"].get("regen_multiplier", 0) > 0,
+      "Drained must not stop the trickle entirely - see docs/05")
+check("halved" in drained["effect"] or "reduced" in drained["effect"],
+      f"Drained's prose still says {drained['effect']!r} — it no longer suppresses")
+
 check(
     progression["flee"]["enemy_level_at_or_below_player"] == 0.5,
     "Flee chance at or below player level must be a flat 50%",
@@ -623,7 +635,7 @@ for q in quests:
 # Act 3 grew in 0.5.0 - the market row, the overpass, the service level under
 # the rail, the mural corridor, 4C and the laundry all carry one - so the
 # allocation grew with it rather than the new rooms being left blank.
-NOTE_TOTAL = 36
+NOTE_TOTAL = 38
 check(
     sum(world["lore_notes_per_area"].values()) == NOTE_TOTAL,
     f"There must be {NOTE_TOTAL} lore notes in total, "

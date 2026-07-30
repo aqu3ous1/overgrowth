@@ -147,6 +147,59 @@ const NOTES = {
     pages: ['Sorry - back for these Tuesday.',
             'The load inside is dry. It has been dry a long time.'],
   },
+  // --- Act 4. The campus is where the picture finishes assembling ------
+  campus_welcome: {
+    title: 'AT THE GATE',
+    pages: ['VIXTRY REGIONAL CAMPUS. Visitors are welcome and are not signed in.',
+            'Signing in was discontinued as a barrier to participation.'],
+  },
+  campus_directory: {
+    title: 'FLOOR DIRECTORY',
+    pages: ['Ground: reception, refreshment, demonstration.',
+            'One: retention. Two: acquisition. Three: retention.',
+            'There is no three.'],
+  },
+  campus_memo_retention: {
+    title: 'INTERNAL - RETENTION',
+    pages: ['Dependency is not a side effect of the product. Dependency is the product.',
+            'A user who can leave is a user who has not finished onboarding.',
+            'Please do not circulate this phrasing outside the floor.'],
+  },
+  campus_memo_subject: {
+    title: 'INTERNAL - SUBJECT NINE',
+    pages: ['Subject nine remains the only trial to hold shape past the second week.',
+            'Subject nine is eleven years old and is not aware of the trial.',
+            'Recommend no contact. Recommend observation only.',
+            'Recommend we do not wake him while the numbers are this good.'],
+  },
+  campus_pod_terms: {
+    title: 'DEMONSTRATION TERMS',
+    pages: ['A demonstration lasts as long as the participant wishes.',
+            'Wishing is measured by session length.'],
+  },
+  campus_retention_log: {
+    title: 'RETENTION LOG',
+    pages: ['Household 4114: four registered, four resident, four sessions open.',
+            'Household 4114: three sessions open.',
+            'Household 4114: one session open, duration nine years.',
+            'Flag: do not close.'],
+  },
+  campus_apology_draft: {
+    title: 'A DRAFT, TWICE',
+    pages: ['I am sorry about this. I want to say that first.',
+            'Beneath it, the same sentence, written out again, more slowly.'],
+  },
+  long_hall_inventory: {
+    title: 'INVENTORY, HALLWAY',
+    pages: ['Frames: 41. Works: 41.',
+            'Frames: 41. Works: 0.',
+            'No discrepancy noted.'],
+  },
+  long_hall_last: {
+    title: 'ON THE FLOOR, FACE DOWN',
+    pages: ['The grass is a maintenance issue and has been raised as one.',
+            'It is not a maintenance issue.'],
+  },
 };
 
 // Every counter sells the list data/shops.json gives its act, gear included.
@@ -162,9 +215,13 @@ const STOCKS = {
   ondo: actStock(2),
   grocer: GROCER_STOCK,
   sable: actStock(3),
+  // A vending machine, which is the only shop on the campus and takes Rell
+  // without commenting on it.
+  campus: actStock(4),
 };
 const SHOP_STOCK = STOCKS.okobo;
-const SHOP_TITLES = { okobo: 'OKOBO', ondo: 'ONDO', grocer: 'GROCER', sable: 'SABLE CITY' };
+const SHOP_TITLES = { okobo: 'OKOBO', ondo: 'ONDO', grocer: 'GROCER',
+                      sable: 'SABLE CITY', campus: 'VENDING' };
 
 // --- NPC lines ---------------------------------------------------------
 // Limpo villagers attach a redundant location to statements about time.
@@ -403,6 +460,53 @@ const NPCS = {
             'You do not take somebody else\'s things out. That is not done.',
             'They will come back for it. Tuesday, probably.'];
   },
+  // --- Act 4. Vixtry staff talk like the menu: no contractions, complete
+  // sentences, and every one of them is pleased to see him.
+  campus_greeter: () => ([
+    'You are welcome to walk wherever you like. There is nowhere you should not go.',
+    'People find that difficult at first.',
+  ]),
+  campus_desk: () => {
+    if (Player.flags.deskAsked) {
+      return ['You are still expected. That does not expire.'];
+    }
+    Player.flags.deskAsked = true;
+    return ['Good morning. You are on the list.',
+            'I did not ask for your name. It was already on the list.',
+            'Is there anything you would like to know?',
+            'That was not a question. I am sorry. It is on the card.'];
+  },
+  campus_intern: () => ([
+    'First month. I am told the first month is the hardest and then it is not hard.',
+    'I do not know what we make. I know what my part of it does.',
+    'My part of it counts how long people stay.',
+  ]),
+  campus_engineer: () => {
+    if (Player.flags.engineerSaid) {
+      return ['I did say I would deny it. This is me denying it.'];
+    }
+    Player.flags.engineerSaid = true;
+    return ['You are the trial. You know that.',
+            'You are not the first. You are the first that held.',
+            'The others came apart inside a fortnight. They went home.',
+            'I am going to say something and then deny that I said it.',
+            'Nobody is coming to get you. There is no one left at that address.'];
+  },
+  campus_byname: () => {
+    // The greeting, again, from someone who has no reason to know it.
+    const n = Player.name;
+    return [`Morning, ${n}.`,
+            'How is your mother?'];
+  },
+  campus_janitor: () => ([
+    'I do the floors. Not the halls - the halls are not mine.',
+    'There is grass in the halls. I have raised it.',
+    'They keep telling me it is not a maintenance issue.',
+  ]),
+  campus_pod_host: () => ([
+    'Any of them. They are all the same session.',
+    'The open one is open because somebody finished. That does happen.',
+  ]),
   sable_shopkeeper: () => ([
     'Everything is in. Everything is always in. That is Sable.',
   ]),
@@ -574,7 +678,17 @@ function interact() {
                     { text: 'Not most of them. All of them.', speaker: 'system' }],
                    () => Story.memorialFight());
       return;
+    // A vending machine is the only shop on the campus, and it is the only one
+    // in the game that does not have a person behind it.
     case 'machine':
+      if (o.shop) {
+        Dialogue.say([{ text: 'A vending machine. Everything in it is stocked to the front.',
+                        speaker: 'system' }], () => {
+          Shop.start(STOCKS[o.shop] || SHOP_STOCK, SHOP_TITLES[o.shop] || 'VENDING');
+          Game.mode = 'shop';
+        });
+        return;
+      }
       Dialogue.say(World.id === 'kestrel_boiler'
         ? [{ text: 'A boiler. It is the only warm thing left in the works.', speaker: 'system' },
             { text: 'Nobody has been down here to light it.', speaker: 'system' }]
@@ -615,6 +729,27 @@ function interact() {
       return;
     case 'foreman':
       Story.supervisorFight();
+      return;
+    case 'bench':
+      if (Save.write()) {
+        Audio_.sfx('found');
+        Dialogue.say([{ text: 'A bench, in a corridor, facing a wall.', speaker: 'system' },
+                      { text: 'He sits down for a moment and writes down where he is.',
+                        speaker: 'system' },
+                      { text: 'SAVED.', speaker: 'system' }]);
+      } else {
+        Dialogue.say([{ text: 'A bench. He sits down. Nothing is written down.',
+                        speaker: 'system' }]);
+      }
+      return;
+    // The pod somebody finished with. It is the way into the Co-Living space.
+    case 'pod_open':
+      Dialogue.say([
+        { text: 'This one is open. The headrest still has the shape of a head in it.',
+          speaker: 'system' },
+        { text: 'A demonstration lasts as long as the participant wishes.',
+          speaker: 'vixtry' },
+      ]);
       return;
     case 'desk':
       Dialogue.say([{ text: 'A desk, squared away. Pen lined up with the edge.', speaker: 'system' },
@@ -946,6 +1081,97 @@ const Story = {
             { text: 'It comes apart into smaller squares, and then into none.', speaker: 'system' },
             { text: 'The room is the size of the floor it is on again.', speaker: 'system' },
             { text: '(Got Second Wind and Loose Laces x2.)', speaker: 'system' },
+            { text: 'There is a way out of the Commons that was not there before.',
+              speaker: 'system' },
+          ], () => { Game.mode = 'field'; });
+        } else { Game.mode = 'field'; Game.onDefeat(); }
+      });
+    });
+  },
+
+  // --- Act 4 --------------------------------------------------------
+  // The greeting. He never gave anyone his name, and the game does not remark
+  // on it - the greeter does, once, and then never again.
+  campusGreeting() {
+    if (Player.flags.campusNamed) return;
+    if (World.id !== 'campus_approach') return;
+    Player.flags.campusNamed = true;
+    Dialogue.say([
+      { text: `Good morning, ${Player.name}. You are expected.`, speaker: 'vixtry' },
+      { text: 'Reception is straight through. Mind the step.', speaker: 'vixtry' },
+    ]);
+  },
+
+  managerFight() {
+    if (Player.flags.beatManager || Player.flags.managerStarting) return;
+    if (World.id !== 'campus_office') return;
+    Player.flags.managerStarting = true;
+    Dialogue.say([
+      { text: 'The office is the only room on this floor with a door that closes.',
+        speaker: 'system' },
+      { text: 'I am sorry about this. I want to say that first, and I want you to '
+            + 'know I mean it.', speaker: 'vixtry' },
+      { text: 'You are eleven. You are also the only one of these that took.',
+        speaker: 'vixtry' },
+      { text: 'I have a number for how much that is worth and I am not allowed to '
+            + 'tell you what it is.', speaker: 'vixtry' },
+    ], () => {
+      const bd = DATA.bosses['Account Manager'];
+      const enc = DATA.bossEncounters['Account Manager'];
+      const e = Battle.makeEnemy('Account Manager', {
+        name: 'ACCOUNT MANAGER', level: enc.internal_level, boss: true,
+        hpMul: bd.hp_multiplier, atkMul: bd.atk_multiplier,
+        phases: bd.phases, exp: enc.exp, scale: 2, inflicts: bd.inflicts,
+      });
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.managerStarting = false;
+        if (result === 'won') {
+          Player.flags.beatManager = true;
+          Game.mode = 'field';
+          Audio_.play('campus');
+          Dialogue.say([
+            { text: 'He sits back down. He does not look beaten, only finished.',
+              speaker: 'system' },
+            { text: 'The door behind the desk was always a door.', speaker: 'system' },
+          ]);
+        } else { Game.mode = 'field'; Game.onDefeat(); }
+      });
+    });
+  },
+
+  // Main Boss 3. He has said one thing, three times, and he says it again.
+  custodianFight() {
+    if (Player.flags.beatCustodian || Player.flags.custodianStarting) return;
+    if (World.id !== 'long_hall_end') return;
+    Player.flags.custodianStarting = true;
+    Dialogue.say([
+      { text: 'The hall stops. There is no door at this end and there never was.',
+        speaker: 'system' },
+      { text: 'Never leave.', speaker: 'custodian' },
+      { text: 'Never leave.', speaker: 'custodian' },
+      { text: 'Never leave.', speaker: 'custodian' },
+    ], () => {
+      const bd = DATA.bosses['The Custodian'];
+      const enc = DATA.bossEncounters['The Custodian'];
+      const e = Battle.makeEnemy('The Custodian', {
+        name: 'THE CUSTODIAN', level: enc.internal_level, boss: true,
+        hpMul: bd.hp_multiplier, atkMul: bd.atk_multiplier,
+        phases: bd.phases, exp: enc.exp, scale: 4,
+        restoresOnce: bd.restores_once_to, inflicts: bd.inflicts,
+      });
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.custodianStarting = false;
+        if (result === 'won') {
+          Player.flags.beatCustodian = true;
+          Player.addItem('Full Spray', 2);
+          Game.mode = 'field';
+          Dialogue.say([
+            { text: 'It goes in on itself, the way a held breath does.', speaker: 'system' },
+            { text: 'The grass at the end of the hall is taller than the grass at the start.',
+              speaker: 'system' },
+            { text: '(Got Full Spray x2.)', speaker: 'system' },
           ], () => { Game.mode = 'cutscene'; Cutscene.play('slice_end'); });
         } else { Game.mode = 'field'; Game.onDefeat(); }
       });
@@ -1057,8 +1283,8 @@ const Cutscene = {
         const a = Math.min(1, this.t / 1.2);
         cx.globalAlpha = a;
         textCentered('OVERGROWTH', W / 2, 52, '#e8e4da', 3);
-        textCentered('END OF ACT THREE', W / 2, 72, '#6a6a76');
-        textCentered('The Vixtry campus, and the Custodian, in a later build.',
+        textCentered('END OF ACT FOUR', W / 2, 72, '#6a6a76');
+        textCentered('The Root, and what is left of him, in a later build.',
                      W / 2, 92, '#4a4a56');
         cx.globalAlpha = Math.max(0, Math.min(1, (this.t - 2.4) / 1.2));
         textCentered(`${Player.name}  -  Lv ${Player.level}  -  ${Player.collectibles}/10 found`,
@@ -1148,6 +1374,9 @@ const Game = {
     Story.bossRoom();
     Story.maybeCustodian3();
     Story.tenantFight();
+    Story.campusGreeting();
+    Story.managerFight();
+    Story.custodianFight();
 
     if (Input.hit('ok')) interact();
 

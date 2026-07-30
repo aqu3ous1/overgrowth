@@ -1,7 +1,7 @@
 # 19 — The Playable Build
 
-**0.5.0 — Acts 0 through 3, playable, on a desktop or a phone.** Title screen through
-**Main Boss 2**, in a browser, in one self-contained HTML file with no assets and no dependencies.
+**0.6.0 — Acts 0 through 4, playable, on a desktop or a phone.** Title screen through
+**Main Boss 3**, in a browser, in one self-contained HTML file with no assets and no dependencies.
 
 ```
 python3 tools/gen_sprites.py       # shape primitives -> game/src/15_sprites.js
@@ -9,6 +9,68 @@ python3 tools/build_game.py        # game/src/*.js + data/*.json -> game/overgro
 python3 tools/playtest.py          # drives it with a keyboard, fails on any error
 python3 tools/playtest_mobile.py   # drives it with a thumb, on an emulated phone
 ```
+
+## 0.6.0 — Act 4
+
+Reported: *"still got the end of act screen when defeating the tenant boss."* The card was
+accurate — the Tenant was the last boss in the build — so the fix was the act behind it.
+
+### Vixtry Regional Campus
+
+Six rooms. The one liminal space in the game that is **not abandoned**: fully staffed, brightly lit,
+and nobody stops him. It is the brightest place in the game, which is what makes it the worst one.
+
+- A **greeter at the gate** who uses his name. He never gave anyone his name, and the game does not
+  remark on it. Neither does the greeter, after the first time.
+- A **vending machine** instead of a shopkeeper — the only shop in the game with nobody behind it,
+  stocking Act 4's list, gear included.
+- **Benches as save points.** They write down where he got to. They do not heal: that is what an inn
+  is for, and attrition is the shape of this game's difficulty.
+- An **engineer** who says the thing the whole game has been circling, and then says he will deny
+  saying it.
+- Seven internal memos, which is the densest lore concentration in the build. `SUBJECT NINE` is the
+  one that matters.
+- **Mini-Boss 3, the Account Manager**, who apologises before the fight and means it.
+
+### The Long Hall
+
+Four rooms of the Gallery's hallway, reskinned and much longer. Same brick, same grass. The paintings
+are gone; the frames are not, and the inventory sheet on the floor records no discrepancy. The
+vignette tightens with each room, so the hall gets narrower without ever changing width.
+
+At the end, **Main Boss 3 — the Custodian**, first form. A sphere: no corners, no edges, no exit. He
+restores to half once, with no warning, and re-inflicts **Homesick** whenever it is cleared, which is
+what makes `Quiet Room` the fight's answer.
+
+### A soft-lock, found by a boss doing its job
+
+The Account Manager inflicts **Drained**, and Drained suppressed the PP/SP trickle completely — as
+the docs said it should. Its first outing produced this:
+
+```
+fight stalled: state 'message', pp 0, enemy 1221, log ['Not enough PP.']
+```
+
+A player at 0 PP, Drained, in a fight they cannot flee, has **no move at all**. That is precisely the
+lose-state [05](05-progression.md) says the trickle exists to prevent, and the interaction had never
+been reachable before because Drained had never worked.
+
+Drained now **halves** the trickle, and the trickle never falls below the cheapest attack, so `Punch`
+is always payable. The status carries the number and the reason, and `validate.py` fails if anything
+ever sets it back to zero.
+
+### Fourteen new pieces of art, and one inverted number
+
+Six campus staff (Vixtry dresses identically and stands perfectly straight — nobody on the campus is
+stooped, in a coat, or carrying anything), five new enemy shapes, and the two bosses. Three of the
+campus species reuse the staff sprites, because the joke is that the receptionist fighting you is the
+receptionist.
+
+Every campus room was authored with `light` values near 1.0 on the reasoning that the campus is
+bright. `light` is **vignette strength** — Sable sits at 0.02 — so the brightest place in the game
+rendered as the darkest. Caught by looking at it.
+
+**1292 checks, 57 matchups in target, both playtests clean.**
 
 ## 0.5.0 — everything the docs described and the game did not do
 

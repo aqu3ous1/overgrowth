@@ -131,6 +131,13 @@ def fight(page, max_presses=400, max_heals=4):
             # every later Z re-opening the bag.
             if heals and st["hp"] < 0.45 and _use_a_spray(page):
                 heals -= 1
+            elif not page.evaluate(
+                    "() => Battle.subList.call({...Battle, sub: 'physical'})"
+                    "  .some(m => m.cost <= Player.pp)") and _use_a_tablet(page):
+                # Out of PP entirely, which the Account Manager can arrange with
+                # Drained. A player reaches for a tablet; so does this, rather
+                # than looping on "Not enough PP" until the budget runs out.
+                pass
             else:
                 _command(page, 0)             # PHYSICAL
             continue
@@ -185,6 +192,26 @@ def _command(page, want):
         page.wait_for_timeout(60)
     page.keyboard.press("z")
     page.wait_for_timeout(90)
+    return True
+
+
+def _use_a_tablet(page):
+    """Open BAG and use the first PP restorative, through the real menu."""
+    idx = page.evaluate(
+        "() => Object.keys(Player.bag).filter(n => DATA.items[n] && DATA.items[n].battle)"
+        "  .findIndex(n => DATA.items[n].pp > 0)")
+    if idx is None or idx < 0:
+        return False
+    _command(page, 2)                         # BAG
+    if page.evaluate("() => Battle.sub") != "bag":
+        page.keyboard.press("x")
+        page.wait_for_timeout(60)
+        return False
+    for _ in range(idx):
+        page.keyboard.press("ArrowDown")
+        page.wait_for_timeout(60)
+    page.keyboard.press("z")
+    page.wait_for_timeout(120)
     return True
 
 
@@ -991,9 +1018,134 @@ def main():
         if not page.evaluate("() => !!Player.flags.beatTenant"):
             errors.append("the Tenant was never beaten")
         page.wait_for_timeout(900)
-        if page.evaluate("() => Game.mode") not in ("cutscene", "end"):
-            errors.append("beating the Tenant does not end the build")
+        if page.evaluate("() => Game.mode") == "end":
+            errors.append("beating the Tenant still rolls the end card")
+        if not page.evaluate("""() => (ROOMS.bellhouse_ext.exits || [])
+              .some(e => e.to === 'campus_approach')"""):
+            errors.append("beating the Tenant opens no way to the campus")
         shot("49-after-tenant")
+
+        # --- ACT 4: the campus, and the hall at the end of it
+        page.evaluate("() => { Player.flags.beatTenant = true; Player.level = 31;"
+                      " Player.exp = Player.expToReach(31); Player.restore();"
+                      " Player.addItem('Spray III', 8); Player.addItem('Full Spray', 3); Player.addItem('Chalk Tablet', 6); Player.addItem('Clean Rag', 4); }")
+        idle(page)
+        if not enter(page, "bellhouse_ext", "campus_approach"):
+            errors.append("the campus cannot be reached from Bellhouse Commons")
+        shot("52-campus")
+        # He is greeted by name, which he never gave anyone.
+        if not until(page, "Dialogue.active", 3000):
+            errors.append("the campus never greets him")
+        else:
+            said = page.evaluate("() => Dialogue.page && Dialogue.page.text")
+            who = page.evaluate("() => Player.name")
+            if who not in (said or ""):
+                errors.append(f"the greeting does not use his name: {said!r}")
+        advance(page)
+
+        for room in ("campus_atrium", "campus_floor", "campus_pods", "campus_racks"):
+            idle(page)
+            src = {"campus_atrium": "campus_approach", "campus_floor": "campus_atrium",
+                   "campus_pods": "campus_atrium", "campus_racks": "campus_floor"}[room]
+            if not enter(page, src, room):
+                errors.append(f"{room} cannot be reached from {src}")
+        shot("53-campus-floor")
+
+        # Everyone on the campus speaks, and the engineer says the thing.
+        for key in ("campus_greeter", "campus_desk", "campus_intern", "campus_janitor"):
+            room = "campus_approach" if key == "campus_greeter" else "campus_atrium"
+            if not talk_to(page, room, key):
+                errors.append(f"{key} said nothing")
+            advance(page)
+        for key in ("campus_engineer", "campus_byname"):
+            if not talk_to(page, "campus_floor", key):
+                errors.append(f"{key} said nothing")
+            advance(page)
+        if not page.evaluate("() => !!Player.flags.engineerSaid"):
+            errors.append("the engineer never says what the boy is for")
+
+        # The vending machine is the campus's only shop, and it sells act 4 gear.
+        idle(page); face_entity(page, "campus_atrium", "object", "machine")
+        press(page, "z"); advance(page)
+        if not until(page, "Game.mode === 'shop'", 2500):
+            errors.append("the vending machine does not open a shop")
+        else:
+            if not page.evaluate("() => Shop.stock.some(n => !!DATA.equipment[n])"):
+                errors.append("the campus vending machine stocks no gear")
+            press(page, "x"); page.wait_for_timeout(300)
+
+        # A bench writes the game down. It must not heal.
+        page.evaluate("() => { Save.clear(); Player.hp = 12; }")
+        idle(page); face_entity(page, "campus_floor", "object", "bench")
+        press(page, "z"); advance(page)
+        saved = page.evaluate("() => Save.read()")
+        if not saved:
+            errors.append("a campus bench saved nothing")
+        elif saved.get("hp") != 12:
+            errors.append("the bench healed him; a bench is not an inn")
+        page.evaluate("() => Player.restore()")
+
+        # Mini-Boss 3, before the note sweep - the sweep loads his office, and
+        # loading his office is what starts his fight.
+        idle(page); put(page, "campus_office", 10, 9, "up")
+        page.wait_for_timeout(600); advance(page)
+        if not until(page, "Battle.active && Battle.enemy.boss", 6000):
+            errors.append("the office does not start the Account Manager fight")
+        else:
+            shot("54-manager")
+            if page.evaluate("() => Battle.canFlee()"):
+                errors.append("the Account Manager can be fled from")
+            if not fight(page):
+                errors.append("the Account Manager fight never ended")
+        page.wait_for_timeout(500); advance(page)
+        if not page.evaluate("() => !!Player.flags.beatManager"):
+            errors.append("the Account Manager was never beaten")
+
+        # Every Act 4 note is placed and has text.
+        for room, note in (("campus_approach", "campus_welcome"),
+                           ("campus_atrium", "campus_directory"),
+                           ("campus_floor", "campus_memo_retention"),
+                           ("campus_floor", "campus_memo_subject"),
+                           ("campus_pods", "campus_pod_terms"),
+                           ("campus_racks", "campus_retention_log"),
+                           ("campus_office", "campus_apology_draft"),
+                           ("long_hall_1", "long_hall_inventory"),
+                           ("long_hall_3", "long_hall_last")):
+            idle(page)
+            if not face_entity(page, room, "object", note):
+                errors.append(f"lore note {note} is not placed in {room}")
+                continue
+            press(page, "z"); page.wait_for_timeout(250)
+            if not page.evaluate("() => Dialogue.active"):
+                errors.append(f"lore note {note} is unreachable")
+            advance(page)
+
+        # The Long Hall, three rooms of it, and the Custodian at the end.
+        page.evaluate("() => { Player.level = 35; Player.exp = Player.expToReach(35);"
+                      " Player.restore(); }")
+        idle(page)
+        for src, dst in (("campus_office", "long_hall_1"), ("long_hall_1", "long_hall_2"),
+                         ("long_hall_2", "long_hall_3"), ("long_hall_3", "long_hall_end")):
+            idle(page)
+            if not enter(page, src, dst):
+                errors.append(f"{dst} cannot be reached from {src}")
+        shot("55-long-hall")
+        page.wait_for_timeout(600); advance(page)
+        if not until(page, "Battle.active && Battle.enemy.boss", 8000):
+            errors.append("the end of the Long Hall does not start the Custodian fight")
+        else:
+            shot("56-custodian")
+            if page.evaluate("() => Battle.canFlee()"):
+                errors.append("the Custodian can be fled from")
+            if not fight(page, max_heals=8):
+                errors.append("the Custodian fight never ended")
+        page.wait_for_timeout(600); advance(page)
+        if not page.evaluate("() => !!Player.flags.beatCustodian"):
+            errors.append("the Custodian was never beaten")
+        page.wait_for_timeout(900)
+        if page.evaluate("() => Game.mode") not in ("cutscene", "end"):
+            errors.append("beating the Custodian does not end the build")
+        shot("57-after-custodian")
 
         # --- every transition must be survivable in both directions
         # (the 0.1.0 bug: landing on the return path bounced you straight back)
@@ -1100,6 +1252,7 @@ def main():
             errors.append(f"could not reach the {name} tab")
             return False
 
+        take_milestone(page, 6)
         to_tab("BAG"); shot("18-menu-bag")
 
         # Every restorative must be usable out here, and nothing else.
@@ -1151,19 +1304,23 @@ def main():
             errors.append("a levelled save resumed owing passives and never asked")
         else:
             shot("34-milestone")
-            first = page.evaluate("() => Milestone.level")
-            press(page, "z")
-            page.wait_for_timeout(300)
-            if not page.evaluate("() => Object.keys(Player.passives).length"):
-                errors.append("picking a passive recorded nothing")
-            if page.evaluate("() => Game.mode") != "milestone":
-                errors.append("two milestones were owed and only one was offered")
-            elif page.evaluate("() => Milestone.level") == first:
-                errors.append("the milestone screen offered the same level twice")
-            press(page, "z")
-            page.wait_for_timeout(300)
+            owed = page.evaluate("() => Player.owed.slice()")
+            if len(owed) < 2:
+                errors.append(f"a level {page.evaluate('() => Player.level')} save owed "
+                              f"only {owed}")
+            seen_levels = []
+            for _ in range(len(owed) + 2):
+                if page.evaluate("() => Game.mode") != "milestone":
+                    break
+                seen_levels.append(page.evaluate("() => Milestone.level"))
+                press(page, "z")
+                page.wait_for_timeout(320)
+            if len(set(seen_levels)) != len(owed):
+                errors.append(f"owed {owed} but was offered {seen_levels}")
             if page.evaluate("() => Player.owed.length"):
                 errors.append("the milestone queue never emptied")
+            if len(page.evaluate("() => Object.keys(Player.passives)")) != len(owed):
+                errors.append("picking a passive did not record one per milestone")
             got = page.evaluate("() => Battle.critChance(Player.spd) > DATA.damage.critChance"
                                 " || Player.passive('hp_regen') > 0")
             if not got:

@@ -36,12 +36,12 @@ one long walk out.
 | [16 — Combat Math](docs/16-combat-math.md) | Enemy stat derivation, damage formula, measured difficulty |
 | [17 — Economy](docs/17-economy.md) | Shops, prices, and the per-act ledger |
 | [18 — Vertical Slice](docs/18-vertical-slice.md) | What to build first, and how to know it worked |
-| [19 — The Playable Build](docs/19-build.md) | What 0.5.0 contains, and where it deviates |
+| [19 — The Playable Build](docs/19-build.md) | What 0.6.0 contains, and where it deviates |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
 
 ## Play it
 
-**0.5.0 is playable — Acts 0 through 3, on a desktop or a phone.** `game/overgrowth.html` runs from
+**0.6.0 is playable — Acts 0 through 4, on a desktop or a phone.** `game/overgrowth.html` runs from
 the bedroom to **Tenant** at the top of Bellhouse Commons: the Gallery, Okobo, the Sunken Orchard,
 Ondo, Kestrel Works, the border, Sable City and the Commons — four bosses, forty-six rooms, an
 illustrated world map, save anywhere, and touch controls, in one self-contained file with no assets
@@ -160,9 +160,10 @@ Sunken Orchard *sad* rather than *scary*.
 
 ## Status
 
-The design bible is complete through the endgame. **The build runs Acts 0 through 3** — roughly the
-first seven hours, ending on Main Boss 2 — and everything past Bellhouse Commons is documented but
-not yet built. The next thing to add is equipment, which is the oldest system still missing.
+The design bible is complete through the endgame. **The build runs Acts 0 through 4** — roughly the
+first nine hours, ending on Main Boss 3 — and only The Root is documented but not yet built. Every
+system the docs describe is now implemented: equipment, stat stages, statuses, drops, milestone
+passives, and fast travel.
 
 Numbers in the systems docs (damage values, PP/SP costs, level curve, prices, enemy levels) are
 **first-pass and meant to be tuned**, not final. They're written down so balance discussions have

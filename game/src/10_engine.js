@@ -596,6 +596,36 @@ const TRACKS = {
              { freq: 174, gain: 0.012, type: 'triangle' }],
     drums: '---------------s', snareGain: 0.03,
   },
+  // Vixtry Regional Campus. The only track in the game in a clean major key
+  // with nothing wrong in it, which is the point: it is corporate hold music
+  // and it is genuinely pleasant. Cmaj9 - Am9 - Fmaj7 - G13, brushed.
+  campus: {
+    bpm: 96, swing: 0.20, chordEvery: 16,
+    chords: [[3, 'maj9'], [0, 'min9'], [-4, 'maj7'], [-2, 'dom7']],
+    comp: '--x--x-x--x--x-x', padType: 'triangle', padGain: 0.019, compLen: 1.2,
+    bassLine: 'r--5--3-r--7--5-', bassGain: 0.052,
+    drums: 'k--h-s-h--Kh-s-h', kickGain: 0.11, snareGain: 0.045, hatGain: 0.016,
+    lead: {
+      type: 'sine', gain: 0.062, detune: 3, legato: 2.0, vibrato: 6, decay: 0.72,
+      steps: [
+        7, null, 10, 12, 14, null, 12, 10, 12, null, 14, 17, 15, null, 14, 12,
+        3, null, 7, 10, 12, null, 10, 7, 10, null, 12, 15, 14, null, 12, 10,
+        -1, null, 3, 7, 8, null, 7, 3, 5, null, 8, 12, 10, null, 8, 7,
+        2, null, 5, 9, 11, null, 9, 5, 3, null, null, null, null, null, null, null,
+      ],
+    },
+  },
+
+  // The Long Hall. The Gallery's drone, a fifth lower and slowing down, with a
+  // fluorescent tick in it that is not quite on the beat.
+  longhall: {
+    bpm: 38, chordEvery: 8,
+    drones: [{ freq: 36.7, gain: 0.052, type: 'sine' },
+             { freq: 55.0, gain: 0.024, type: 'sine' },
+             { freq: 110.0, gain: 0.009, type: 'triangle' }],
+    drums: '-------h-------------h----------', hatGain: 0.010,
+  },
+
   gallery:  { drones: [{ freq: 55, gain: 0.05, type: 'sine' }, { freq: 110.3, gain: 0.022, type: 'sine' }] },
   orchard:  { drones: [{ freq: 73.4, gain: 0.045, type: 'sine' }, { freq: 147.6, gain: 0.014, type: 'triangle' }] },
   bedroom:  { drones: [{ freq: 48, gain: 0.055, type: 'sine' }] },

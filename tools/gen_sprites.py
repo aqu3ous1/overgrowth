@@ -333,6 +333,15 @@ PEOPLE = {
     "vix_rep":      dict(hair="short", coat=True),          # the clean one
     "bell_super":   dict(hair="thin", beard=True, stout=True, apron=True),
     "bell_7b":      dict(hair="long", stoop=True),
+    # Act 4. Vixtry dresses identically and stands perfectly straight. Nobody in
+    # the campus is stooped, in a coat, or carrying anything - they are indoors
+    # and they have always been indoors.
+    "vix_greeter":  dict(hair="short"),
+    "vix_intern":   dict(hair="wild", glasses=True),
+    "vix_desk":     dict(hair="bun", glasses=True),
+    "vix_eng":      dict(hair="thin", glasses=True),
+    "vix_manager":  dict(hair="short", coat=True),
+    "vix_janitor":  dict(hair="thin", apron=True, stoop=True),
 }
 
 
@@ -856,6 +865,117 @@ def make_tenant():
     s.outline("6")
     return s.rows()
 
+
+def make_pod():
+    """Demo Pod. A chair with a lid, and someone in it."""
+    s = Spr(20, 24)
+    s.rect(2, 4, 16, 18, "1")
+    s.rect(2, 4, 16, 4, "2")            # the lit top of the shell
+    s.rect(4, 8, 12, 11, "3")           # the glass
+    s.rect(5, 9, 10, 9, "4")
+    s.ellipse(10.0, 13.5, 2.6, 3.0, "5")   # a head, facing away
+    s.rect(3, 21, 3, 3, "6")
+    s.rect(14, 21, 3, 3, "6")
+    s.rect(9, 2, 2, 3, "6")             # the cable, going up out of frame
+    s.outline("7")
+    return s.rows()
+
+
+def make_rack():
+    """Server Rack. Rows of lights, none of them for you."""
+    s = Spr(18, 26)
+    s.rect(1, 1, 16, 24, "1")
+    s.rect(1, 1, 16, 3, "2")
+    for row in range(6):
+        y = 5 + row * 3
+        s.rect(3, y, 12, 2, "3")
+        for col in range(4):
+            s.rect(4 + col * 3, y, 1, 1, "4" if (row + col) % 3 else "5")
+    s.rect(1, 24, 16, 2, "6")
+    s.outline("7")
+    return s.rows()
+
+
+def make_ceiling_tile():
+    """Ceiling Tile. It was up there a moment ago."""
+    s = Spr(22, 14)
+    s.rect(1, 2, 20, 10, "1")
+    s.rect(1, 2, 20, 3, "2")
+    s.rect(3, 6, 16, 5, "3")
+    for i in range(5):
+        s.rect(4 + i * 3, 7, 2, 3, "4")
+    s.rect(1, 11, 20, 1, "5")
+    s.outline("6")
+    return s.rows()
+
+
+def make_frame():
+    """Empty Frame. The painting is gone; the frame is not."""
+    s = Spr(20, 24)
+    s.rect(1, 1, 18, 22, "1")
+    s.rect(2, 2, 16, 20, "2")
+    s.rect(4, 4, 12, 16, "3")           # the wall behind it, showing through
+    s.rect(5, 5, 10, 14, "4")
+    s.rect(7, 9, 6, 2, "5")             # a nail, and a lighter rectangle
+    s.outline("6")
+    return s.rows()
+
+
+def make_cart():
+    """Custodial Cart. Everything on it is white."""
+    s = Spr(22, 22)
+    s.rect(2, 8, 18, 10, "1")
+    s.rect(2, 8, 18, 3, "2")
+    s.rect(4, 2, 5, 7, "3")             # a bin bag, tied
+    s.rect(11, 3, 7, 6, "4")            # bottles, all the same
+    s.rect(12, 1, 2, 3, "5")
+    s.rect(15, 1, 2, 3, "5")
+    s.rect(3, 18, 4, 4, "6")
+    s.rect(15, 18, 4, 4, "6")
+    s.outline("7")
+    return s.rows()
+
+
+def make_manager():
+    """Mini-Boss 3. He apologises first, and he means it."""
+    s = Spr(16, 24)
+    head(s, 8.0, 5.4, 4.6, 4.3, "1", "2", "3")
+    for ex in (5, 9):
+        s.rect(ex, 4, 3, 2, "4")
+        s.rect(ex + 1, 5, 1, 1, "5")
+    s.rect(4, 1, 9, 3, "3")
+    s.rect(5, 9, 6, 1, "3")
+    s.rect(3, 11, 11, 10, "6")          # a suit that fits
+    s.rect(3, 11, 4, 10, "7")
+    s.rect(7, 11, 2, 5, "8")            # the shirt in the V
+    s.rect(7, 12, 2, 4, "9")            # and a tie
+    s.rect(2, 12, 1, 6, "6")
+    s.rect(13, 12, 1, 6, "6")
+    s.rect(1, 17, 2, 3, "1")
+    s.rect(13, 17, 2, 3, "1")
+    s.rect(4, 21, 3, 3, "a")
+    s.rect(9, 21, 3, 3, "a")
+    s.outline("7", targets={"6"})
+    s.outline("3", targets={"1", "2"})
+    return s.rows()
+
+
+def make_sphere():
+    """Main Boss 3. A shape with no corners, no edges, and no exit.
+
+    Flat white with one soft highlight, so it never looks lit by the room it is
+    standing in - the same trick the overworld Custodian uses.
+    """
+    s = Spr(28, 28)
+    s.ellipse(13.5, 13.5, 13.0, 13.0, "1")
+    s.ellipse(10.5, 10.0, 6.5, 6.0, "2")      # the highlight, off-centre
+    for ex in (8, 17):                         # two pits, at the same height
+        s.rect(ex, 11, 3, 5, "3")
+    s.rect(10, 19, 8, 2, "3")                  # and the grin
+    s.rect(12, 21, 4, 1, "3")
+    s.outline("4")
+    return s.rows()
+
 for _face in ("down", "up", "side"):
     for _step in (0, 1, 2):
         SPRITES[f"player_{_face}" + ("" if _step == 0 else f"_{_step}")] = \
@@ -957,6 +1077,12 @@ PALETTES.update({
     # Vixtry is the cleanest thing in the frame, everywhere it appears.
     "vix_rep":      person_pal("#c2a086", "#eef1f5", "#3c3630", "#3a3a44", "#4a8ad0"),
     "bell_super":   person_pal("#c98b6a", "#4a5f4a", "#8e8478", "#3a3a44", "#c9c4bc"),
+    "vix_greeter":  person_pal("#c98b6a", "#dfe4ea", "#3a3730", "#3a3a44", "#4a8ad0", "#2f3442"),
+    "vix_intern":   person_pal("#9fbe74", "#e8eaf0", "#3f4a2a", "#3a3a44", "#4a8ad0", "#2f3442"),
+    "vix_desk":     person_pal("#b9a58e", "#dfe4ea", "#8e8478", "#3a3a44", "#4a8ad0", "#2f3442"),
+    "vix_eng":      person_pal("#7fb6c6", "#e8eaf0", "#c8c0b0", "#3a3a44", "#4a8ad0", "#2f3442"),
+    "vix_manager":  person_pal("#c2a086", "#2f3442", "#4a3524", "#3a3a44", "#f0f2f7", "#22242c"),
+    "vix_janitor":  person_pal("#a8a094", "#c9c4bc", "#8e8478", "#3a3a44", "#e4e0d8", "#43413a"),
     "bell_7b":      person_pal("#b9a58e", "#5a5a6e", "#8a8478"),
 })
 
@@ -976,6 +1102,13 @@ SPRITES["mural"] = make_mural()
 SPRITES["super"] = make_super()
 SPRITES["supervisor"] = make_supervisor()
 SPRITES["tenant"] = make_tenant()
+SPRITES["pod_enemy"] = make_pod()
+SPRITES["rack"] = make_rack()
+SPRITES["ceiling"] = make_ceiling_tile()
+SPRITES["frame"] = make_frame()
+SPRITES["cart"] = make_cart()
+SPRITES["manager"] = make_manager()
+SPRITES["sphere"] = make_sphere()
 
 SPRITES["milepost"] = make_milepost()
 SPRITES["ration_tin"] = make_ration_tin()
@@ -1076,4 +1209,20 @@ PALETTES.update({
                    9: "#c9c4bc", "a": "#2a2e36"},
     "tenant":     {1: "#5a5f70", 2: "#767d92", 3: "#3f4352", 4: "#c8d0e0",
                    5: "#2a2d38", 6: "#14161d"},
+    # Act 4. Vixtry's palette is the cleanest in the game on purpose: everything
+    # here is brighter and better maintained than anywhere the player has been.
+    "pod_enemy":  {1: "#d8dae2", 2: "#f0f2f7", 3: "#3a4a5e", 4: "#5f7d9c",
+                   5: "#2b2f38", 6: "#9aa0ac", 7: "#1a1d24"},
+    "rack":       {1: "#4a4f58", 2: "#5f656f", 3: "#2a2e35", 4: "#4ad07a",
+                   5: "#d84a4a", 6: "#33373e", 7: "#15171c"},
+    "ceiling":    {1: "#dcdad2", 2: "#f0eee6", 3: "#b8b6ae", 4: "#8e8c84",
+                   5: "#a09e96", 6: "#54524c"},
+    "frame":      {1: "#8a7a52", 2: "#b39a62", 3: "#c9c4bc", 4: "#dedad2",
+                   5: "#a8a49c", 6: "#2a2418"},
+    "cart":       {1: "#c9c4bc", 2: "#e4e0d8", 3: "#2a2a30", 4: "#dfe4ea",
+                   5: "#8d99a8", 6: "#43413a", 7: "#1a1a1f"},
+    "manager":    {1: "#c2a086", 2: "#dcbb9f", 3: "#4a3524", 4: "#f2f4f8",
+                   5: "#12121a", 6: "#2f3442", 7: "#1f2430", 8: "#f0f2f7",
+                   9: "#8a3a4a", "a": "#22242c"},
+    "sphere":     {1: "#f4f4f0", 2: "#ffffff", 3: "#08080c", 4: "#c8c8c2"},
 })

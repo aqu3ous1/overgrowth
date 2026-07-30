@@ -126,7 +126,7 @@
 </footer>
 
 <div class="meta">
-  <span>0.5.0</span><span>&middot;</span><span>Acts 0&ndash;3</span><span>&middot;</span>
+  <span>0.6.0</span><span>&middot;</span><span>Acts 0&ndash;4</span><span>&middot;</span>
   <span id="audio-note">Click the screen for sound</span>
 </div>
 
@@ -379,12 +379,14 @@ const DATA = {
   },
   {
    "name": "Drained",
-   "effect": "PP/SP regen suppressed, SP costs +50%",
+   "effect": "PP/SP regen halved, SP costs +50%",
    "duration": 4,
    "item_curable": true,
    "player_effect": {
     "kind": "drain",
-    "sp_cost_multiplier": 1.5
+    "sp_cost_multiplier": 1.5,
+    "regen_multiplier": 0.5,
+    "why": "Halved, not stopped. Stopping it entirely recreates the exact lose-state the trickle exists to prevent - docs/05 says the player is never out of options, and a Drained player at 0 PP facing a boss they cannot flee has none. The trickle also never falls below the cheapest attack, so Punch is always payable."
    },
    "enemy_effect": {
     "kind": "weaken",
@@ -1969,6 +1971,36 @@ const TRACKS = {
              { freq: 174, gain: 0.012, type: 'triangle' }],
     drums: '---------------s', snareGain: 0.03,
   },
+  // Vixtry Regional Campus. The only track in the game in a clean major key
+  // with nothing wrong in it, which is the point: it is corporate hold music
+  // and it is genuinely pleasant. Cmaj9 - Am9 - Fmaj7 - G13, brushed.
+  campus: {
+    bpm: 96, swing: 0.20, chordEvery: 16,
+    chords: [[3, 'maj9'], [0, 'min9'], [-4, 'maj7'], [-2, 'dom7']],
+    comp: '--x--x-x--x--x-x', padType: 'triangle', padGain: 0.019, compLen: 1.2,
+    bassLine: 'r--5--3-r--7--5-', bassGain: 0.052,
+    drums: 'k--h-s-h--Kh-s-h', kickGain: 0.11, snareGain: 0.045, hatGain: 0.016,
+    lead: {
+      type: 'sine', gain: 0.062, detune: 3, legato: 2.0, vibrato: 6, decay: 0.72,
+      steps: [
+        7, null, 10, 12, 14, null, 12, 10, 12, null, 14, 17, 15, null, 14, 12,
+        3, null, 7, 10, 12, null, 10, 7, 10, null, 12, 15, 14, null, 12, 10,
+        -1, null, 3, 7, 8, null, 7, 3, 5, null, 8, 12, 10, null, 8, 7,
+        2, null, 5, 9, 11, null, 9, 5, 3, null, null, null, null, null, null, null,
+      ],
+    },
+  },
+
+  // The Long Hall. The Gallery's drone, a fifth lower and slowing down, with a
+  // fluorescent tick in it that is not quite on the beat.
+  longhall: {
+    bpm: 38, chordEvery: 8,
+    drones: [{ freq: 36.7, gain: 0.052, type: 'sine' },
+             { freq: 55.0, gain: 0.024, type: 'sine' },
+             { freq: 110.0, gain: 0.009, type: 'triangle' }],
+    drums: '-------h-------------h----------', hatGain: 0.010,
+  },
+
   gallery:  { drones: [{ freq: 55, gain: 0.05, type: 'sine' }, { freq: 110.3, gain: 0.022, type: 'sine' }] },
   orchard:  { drones: [{ freq: 73.4, gain: 0.045, type: 'sine' }, { freq: 147.6, gain: 0.014, type: 'triangle' }] },
   bedroom:  { drones: [{ freq: 48, gain: 0.055, type: 'sine' }] },
@@ -2722,6 +2754,120 @@ const SPR = {
     '.31cc..cc13.',
     '..3dd..dd3..',
   ],
+  vix_greeter: [
+    '............',
+    '..99999999..',
+    '.9999999999.',
+    '.9244244119.',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  vix_intern: [
+    '.9..9..9..9.',
+    '.9999999999.',
+    '..99999999..',
+    '..54454415..',
+    '..55455415..',
+    '..555255513.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  vix_desk: [
+    '....9999....',
+    '..99999999..',
+    '..99999999..',
+    '..54454415..',
+    '..55455415..',
+    '..555255513.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  vix_eng: [
+    '....3333....',
+    '...322113...',
+    '..55555555..',
+    '.9544544159.',
+    '.9554554159.',
+    '.9555255519.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  vix_manager: [
+    '............',
+    '..99999999..',
+    '.9999999999.',
+    '.9244244119.',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...8.88.8...',
+    '..87866868..',
+    '.8678668668.',
+    '.8678668668.',
+    '.3178668613.',
+    '.3177666613.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  vix_janitor: [
+    '............',
+    '....3333....',
+    '...322113...',
+    '..32222113..',
+    '.9244244119.',
+    '.9254254119.',
+    '.9122211119.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.867bbbb668.',
+    '.867bbbb668.',
+    '.31cc..cc13.',
+    '.31cc..cc13.',
+    '..3dd..dd3..',
+  ],
   custodian: [
     '.....2222.....',
     '...22111122...',
@@ -3187,6 +3333,182 @@ const SPR = {
     '..6666666666666666666666..',
     '..........................',
   ],
+  pod_enemy: [
+    '....................',
+    '.........77.........',
+    '........7667........',
+    '..7777777667777777..',
+    '.722222226622222227.',
+    '.722222222222222227.',
+    '.722222222222222227.',
+    '.722222222222222227.',
+    '.711333333333333117.',
+    '.711344444444443117.',
+    '.711344444444443117.',
+    '.711344445554443117.',
+    '.711344455555443117.',
+    '.711344455555443117.',
+    '.711344455555443117.',
+    '.711344455555443117.',
+    '.711344445554443117.',
+    '.711344444444443117.',
+    '.711333333333333117.',
+    '.711111111111111117.',
+    '.711111111111111117.',
+    '.716661111111166617.',
+    '..7666777777776667..',
+    '..76667......76667..',
+  ],
+  rack: [
+    '.7777777777777777.',
+    '722222222222222227',
+    '722222222222222227',
+    '722222222222222227',
+    '711111111111111117',
+    '711353343343353117',
+    '711333333333333117',
+    '711111111111111117',
+    '711343343353343117',
+    '711333333333333117',
+    '711111111111111117',
+    '711343353343343117',
+    '711333333333333117',
+    '711111111111111117',
+    '711353343343353117',
+    '711333333333333117',
+    '711111111111111117',
+    '711343343353343117',
+    '711333333333333117',
+    '711111111111111117',
+    '711343353343343117',
+    '711333333333333117',
+    '711111111111111117',
+    '711111111111111117',
+    '766666666666666667',
+    '766666666666666667',
+  ],
+  ceiling: [
+    '......................',
+    '.66666666666666666666.',
+    '6222222222222222222226',
+    '6222222222222222222226',
+    '6222222222222222222226',
+    '6111111111111111111116',
+    '6113333333333333333116',
+    '6113443443443443443116',
+    '6113443443443443443116',
+    '6113443443443443443116',
+    '6113333333333333333116',
+    '6555555555555555555556',
+    '.66666666666666666666.',
+    '......................',
+  ],
+  frame: [
+    '.666666666666666666.',
+    '61111111111111111116',
+    '61222222222222222216',
+    '61222222222222222216',
+    '61223333333333332216',
+    '61223444444444432216',
+    '61223444444444432216',
+    '61223444444444432216',
+    '61223444444444432216',
+    '61223445555554432216',
+    '61223445555554432216',
+    '61223444444444432216',
+    '61223444444444432216',
+    '61223444444444432216',
+    '61223444444444432216',
+    '61223444444444432216',
+    '61223444444444432216',
+    '61223444444444432216',
+    '61223444444444432216',
+    '61223333333333332216',
+    '61222222222222222216',
+    '61222222222222222216',
+    '61111111111111111116',
+    '.666666666666666666.',
+  ],
+  cart: [
+    '............77.77.....',
+    '....77777..7557557....',
+    '...7333337.7557557....',
+    '...7333337745545547...',
+    '...7333337744444447...',
+    '...7333337744444447...',
+    '...7333337744444447...',
+    '..773333377444444477..',
+    '.72233333224444444227.',
+    '.72222222222222222227.',
+    '.72222222222222222227.',
+    '.71111111111111111117.',
+    '.71111111111111111117.',
+    '.71111111111111111117.',
+    '.71111111111111111117.',
+    '.71111111111111111117.',
+    '.71111111111111111117.',
+    '.71111111111111111117.',
+    '..766667777777766667..',
+    '..766667......766667..',
+    '..766667......766667..',
+    '..766667......766667..',
+  ],
+  manager: [
+    '................',
+    '....333333333...',
+    '....333333333...',
+    '....333333333...',
+    '...32444244413..',
+    '...31454245413..',
+    '...31122111113..',
+    '...31111111113..',
+    '....313333313...',
+    '.....3333333....',
+    '.........77777..',
+    '..7777788666667.',
+    '.76777799666667.',
+    '.76777799666667.',
+    '.76777799666667.',
+    '.76777799666667.',
+    '.76777766666667.',
+    '3117777666666113',
+    '3117777666666113',
+    '3117777666666113',
+    '.33777766666667.',
+    '....aaa77aaa77..',
+    '....aaa..aaa....',
+    '....aaa..aaa....',
+  ],
+  sphere: [
+    '..........44444444..........',
+    '........441111111144........',
+    '......4411111111111144......',
+    '.....411111111111111114.....',
+    '....41111111111111111114....',
+    '...4111222222221111111114...',
+    '..411122222222221111111114..',
+    '..411222222222222111111114..',
+    '.41112222222222221111111114.',
+    '.41112222222222221111111114.',
+    '4111222222222222221111111114',
+    '4111122233322222233311111114',
+    '4111122233322222233311111114',
+    '4111122233322222233311111114',
+    '4111112233322222133311111114',
+    '4111111233322221133311111114',
+    '4111111111111111111111111114',
+    '4111111111111111111111111114',
+    '.41111111111111111111111114.',
+    '.41111111133333333111111114.',
+    '..411111113333333311111114..',
+    '..411111111133331111111114..',
+    '...4111111111111111111114...',
+    '....41111111111111111114....',
+    '.....411111111111111114.....',
+    '......4411111111111144......',
+    '........441111111144........',
+    '..........44444444..........',
+  ],
   milepost: [
     '....444...',
     '...42214..',
@@ -3433,6 +3755,12 @@ const PAL = {
   sab_flat: { 1: '#9fbe74', 2: '#bce089', 3: '#637648', 4: '#f2f4f8', 5: '#12121a', 6: '#7a3f4a', 7: '#924c59', 8: '#3f2126', 9: '#3f4a2a', a: '#3a3a44', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
   vix_rep: { 1: '#c2a086', 2: '#e5bd9e', 3: '#786353', 4: '#f2f4f8', 5: '#12121a', 6: '#eef1f5', 7: '#ffffff', 8: '#7c7d7f', 9: '#3c3630', a: '#3a3a44', b: '#4a8ad0', c: '#3e3a46', d: '#222026' },
   bell_super: { 1: '#c98b6a', 2: '#eda47d', 3: '#7d5642', 4: '#f2f4f8', 5: '#12121a', 6: '#4a5f4a', 7: '#597259', 8: '#263126', 9: '#8e8478', a: '#3a3a44', b: '#c9c4bc', c: '#3e3a46', d: '#222026' },
+  vix_greeter: { 1: '#c98b6a', 2: '#eda47d', 3: '#7d5642', 4: '#f2f4f8', 5: '#12121a', 6: '#dfe4ea', 7: '#ffffff', 8: '#74777a', 9: '#3a3730', a: '#3a3a44', b: '#4a8ad0', c: '#2f3442', d: '#1a1d24' },
+  vix_intern: { 1: '#9fbe74', 2: '#bce089', 3: '#637648', 4: '#f2f4f8', 5: '#12121a', 6: '#e8eaf0', 7: '#ffffff', 8: '#797a7d', 9: '#3f4a2a', a: '#3a3a44', b: '#4a8ad0', c: '#2f3442', d: '#1a1d24' },
+  vix_desk: { 1: '#b9a58e', 2: '#dac3a8', 3: '#736658', 4: '#f2f4f8', 5: '#12121a', 6: '#dfe4ea', 7: '#ffffff', 8: '#74777a', 9: '#8e8478', a: '#3a3a44', b: '#4a8ad0', c: '#2f3442', d: '#1a1d24' },
+  vix_eng: { 1: '#7fb6c6', 2: '#96d7ea', 3: '#4f717b', 4: '#f2f4f8', 5: '#12121a', 6: '#e8eaf0', 7: '#ffffff', 8: '#797a7d', 9: '#c8c0b0', a: '#3a3a44', b: '#4a8ad0', c: '#2f3442', d: '#1a1d24' },
+  vix_manager: { 1: '#c2a086', 2: '#e5bd9e', 3: '#786353', 4: '#f2f4f8', 5: '#12121a', 6: '#2f3442', 7: '#383e4f', 8: '#181b22', 9: '#4a3524', a: '#3a3a44', b: '#f0f2f7', c: '#22242c', d: '#131418' },
+  vix_janitor: { 1: '#a8a094', 2: '#c6bdaf', 3: '#68635c', 4: '#f2f4f8', 5: '#12121a', 6: '#c9c4bc', 7: '#f1ebe2', 8: '#696662', 9: '#8e8478', a: '#3a3a44', b: '#e4e0d8', c: '#43413a', d: '#252420' },
   bell_7b: { 1: '#b9a58e', 2: '#dac3a8', 3: '#736658', 4: '#f2f4f8', 5: '#12121a', 6: '#5a5a6e', 7: '#6c6c84', 8: '#2f2f39', 9: '#8a8478', a: '#3a3a44', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
   milepost: { 1: '#8d8d84', 2: '#adada2', 3: '#4c4c46', 4: '#2a2a26' },
   ration_tin: { 1: '#9aa2a8', 2: '#bcc4ca', 3: '#8a5a3a', 4: '#d8cba0', 5: '#3a3f44' },
@@ -5353,7 +5681,7 @@ const ROOMS = {
       '#..########DD######...#',
       '#..........PP.........#',
       '#..........PP.........#',
-      '#.....................#',
+      '#....................D#',
       'PP....................#',
       '#######################',
     ],
@@ -5362,6 +5690,8 @@ const ROOMS = {
     exits: [
       { x: 0, y: 9, w: 2, h: 1, to: 'sable', at: [29, 18] },
       { x: 11, y: 5, w: 2, h: 1, to: 'bellhouse_1', at: [10, 8], sfx: 'door' },
+      { x: 21, y: 8, to: 'campus_approach', at: [2, 8],
+        requires: 'beatTenant', sfx: 'door' },
     ],
     start: [11, 8],
   },
@@ -5581,6 +5911,327 @@ const ROOMS = {
     npcs: [{ art: 'tenant_five', x: 9, y: 5, key: 'tenant_laundry' }],
     exits: [{ x: 0, y: 4, to: 'bellhouse_mural', at: [22, 1], sfx: 'door' }],
     start: [2, 4],
+  },
+
+  // ===================================================================
+  // ACT 4 - Vixtry Regional Campus, and the Long Hall.
+  //
+  // The campus is the one liminal space in the game that is not abandoned. It
+  // is fully staffed, brightly lit, and nobody stops him. Every room here is
+  // brighter than anywhere he has been, which is what makes it worse.
+  // ===================================================================
+  campus_approach: {
+    floor: 'concrete', wall: 'concrete', light: 0.08, music: 'campus', grain: 0.04,
+    bright: true, tall: true,
+    map: [
+      '#########################',
+      '#.......................#',
+      '#..######.......######..#',
+      '#..######.......######..#',
+      '#..######.......######..#',
+      '#..######.......######..#',
+      '#..######.......######..#',
+      'P.......................#',
+      'P.......................#',
+      '#..........DD...........#',
+      '#########################',
+    ],
+    decor: [
+      { x: 5, y: 7, t: 'lamp' }, { x: 19, y: 7, t: 'lamp' },
+      { x: 12, y: 1, t: 'plant' }, { x: 3, y: 8, t: 'plant' },
+      { x: 21, y: 8, t: 'plant' },
+    ],
+    objects: [
+      { x: 12, y: 7, t: 'billboard', label: 'sign' },
+      { x: 7, y: 8, t: 'note', note: 'campus_welcome' },
+    ],
+    npcs: [{ art: 'vix_greeter', x: 16, y: 8, key: 'campus_greeter' }],
+    exits: [
+      { x: 0, y: 7, w: 1, h: 2, to: 'bellhouse_ext', at: [19, 8] },
+      { x: 11, y: 9, w: 2, h: 1, to: 'campus_atrium', at: [12, 10], sfx: 'door' },
+    ],
+    start: [2, 8],
+  },
+
+  campus_atrium: {
+    floor: 'plank', wall: 'plaster', light: 0.03, music: 'campus', grain: 0.02,
+    bright: true,
+    map: [
+      '#########################',
+      '#.......................#',
+      '#....===.......===......#',
+      '#.......................#',
+      '#.......................#',
+      '#..===...........===....#',
+      '#.......................#',
+      '#.......................#',
+      '#....===.......===......#',
+      '#.......................#',
+      '#.......................#',
+      '#.......D.......D.......#',
+      '#...........DD..........#',
+      '#########################',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'plant' }, { x: 22, y: 1, t: 'plant' },
+      { x: 2, y: 10, t: 'plant' }, { x: 22, y: 10, t: 'plant' },
+      { x: 12, y: 3, t: 'rug' }, { x: 12, y: 7, t: 'lamp' },
+    ],
+    objects: [
+      { x: 12, y: 1, t: 'counter', label: 'reception' },
+      { x: 5, y: 6, t: 'bench', label: 'bench' },
+      { x: 19, y: 6, t: 'machine', label: 'vending machine', shop: 'campus' },
+      { x: 8, y: 9, t: 'note', note: 'campus_directory' },
+    ],
+    npcs: [
+      { art: 'vix_desk', x: 12, y: 2, key: 'campus_desk' },
+      { art: 'vix_intern', x: 6, y: 4, key: 'campus_intern' },
+      { art: 'vix_janitor', x: 20, y: 9, key: 'campus_janitor' },
+    ],
+    exits: [
+      { x: 12, y: 12, w: 2, h: 1, to: 'campus_approach', at: [12, 7], sfx: 'door' },
+      { x: 8, y: 11, to: 'campus_floor', at: [2, 6], sfx: 'door' },
+      { x: 16, y: 11, to: 'campus_pods', at: [12, 8], sfx: 'door' },
+    ],
+    start: [12, 11],
+  },
+
+  campus_floor: {
+    floor: 'pavement', wall: 'plaster', light: 0.05, music: 'campus', grain: 0.025,
+    bright: true,
+    map: [
+      '#############################',
+      'D...........................#',
+      '#..===..===..===..===..===..#',
+      '#...........................#',
+      '#...........................#',
+      '#...........................#',
+      '#...........................D',
+      '#...........................#',
+      '#..===..===..===..===..===..#',
+      '#...........................#',
+      '#.............D.............#',
+      '#############################',
+    ],
+    decor: [
+      { x: 3, y: 4, t: 'lamp' }, { x: 14, y: 4, t: 'lamp' },
+      { x: 25, y: 4, t: 'lamp' }, { x: 8, y: 9, t: 'plant' },
+      { x: 20, y: 9, t: 'plant' },
+    ],
+    objects: [
+      { x: 5, y: 3, t: 'desk', label: 'desk' },
+      { x: 12, y: 3, t: 'desk', label: 'desk' },
+      { x: 19, y: 3, t: 'desk', label: 'desk' },
+      { x: 26, y: 3, t: 'desk', label: 'desk' },
+      { x: 10, y: 7, t: 'bench', label: 'bench' },
+      { x: 17, y: 6, t: 'note', note: 'campus_memo_retention' },
+      { x: 24, y: 9, t: 'note', note: 'campus_memo_subject' },
+    ],
+    npcs: [
+      { art: 'vix_eng', x: 12, y: 4, key: 'campus_engineer' },
+      { art: 'vix_greeter', x: 22, y: 7, key: 'campus_byname' },
+    ],
+    spawn: [{ name: 'Intern', n: 2 }, { name: 'Receptionist', n: 1 },
+            { name: 'Server Rack', n: 1 }],
+    exits: [
+      { x: 14, y: 10, to: 'campus_atrium', at: [8, 10], sfx: 'door' },
+      { x: 0, y: 1, to: 'campus_racks', at: [2, 5], sfx: 'door' },
+      { x: 28, y: 6, to: 'campus_office', at: [10, 10], sfx: 'door' },
+    ],
+    start: [2, 6],
+  },
+
+  campus_pods: {
+    floor: 'plank', wall: 'plaster', light: 0.14, music: 'campus', grain: 0.03,
+    tint: ['#7aa8ff', 0.05],
+    map: [
+      '#########################',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#...........DD..........#',
+      '#########################',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'cabinet' }, { x: 22, y: 1, t: 'shelf' },
+      { x: 2, y: 8, t: 'plant' }, { x: 22, y: 8, t: 'lamp' },
+      { x: 12, y: 5, t: 'rug' },
+    ],
+    objects: [
+      { x: 4, y: 2, t: 'pod', label: 'demo pod' },
+      { x: 8, y: 2, t: 'pod', label: 'demo pod' },
+      { x: 16, y: 2, t: 'pod', label: 'demo pod' },
+      { x: 20, y: 2, t: 'pod', label: 'demo pod' },
+      { x: 4, y: 7, t: 'pod', label: 'demo pod' },
+      { x: 20, y: 7, t: 'pod', label: 'demo pod' },
+      { x: 12, y: 2, t: 'pod_open', label: 'an open pod' },
+      { x: 12, y: 7, t: 'note', note: 'campus_pod_terms' },
+    ],
+    npcs: [{ art: 'vix_greeter', x: 8, y: 6, key: 'campus_pod_host' }],
+    spawn: [{ name: 'Demo Pod', n: 2 }],
+    exits: [{ x: 12, y: 9, w: 2, h: 1, to: 'campus_atrium', at: [16, 10], sfx: 'door' }],
+    start: [12, 8],
+  },
+
+  campus_racks: {
+    floor: 'concrete', wall: 'plaster', light: 0.34, music: 'campus', grain: 0.05,
+    map: [
+      '#####################',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#...................#',
+      '#...................D',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#####################',
+    ],
+    decor: [
+      { x: 2, y: 5, t: 'pipe' }, { x: 18, y: 1, t: 'pipe' },
+      { x: 10, y: 5, t: 'panel' },
+    ],
+    objects: [
+      { x: 5, y: 4, t: 'machine', label: 'rack' },
+      { x: 12, y: 4, t: 'machine', label: 'rack' },
+      { x: 9, y: 8, t: 'note', note: 'campus_retention_log' },
+      { x: 17, y: 8, t: 'collectible', which: 'session_tape' },
+    ],
+    spawn: [{ name: 'Server Rack', n: 2 }, { name: 'Ceiling Tile', n: 1 }],
+    exits: [{ x: 20, y: 5, to: 'campus_floor', at: [2, 1], sfx: 'door' }],
+    start: [2, 5],
+  },
+
+  campus_office: {
+    floor: 'plank', wall: 'plaster', light: 0.07, music: 'campus', grain: 0.03,
+    bright: true,
+    map: [
+      '##########D##########',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#........DD.........#',
+      '#####################',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'cabinet' }, { x: 18, y: 1, t: 'shelf' },
+      { x: 2, y: 9, t: 'plant' }, { x: 18, y: 9, t: 'plant' },
+      { x: 10, y: 6, t: 'rug' },
+    ],
+    objects: [
+      { x: 10, y: 3, t: 'desk', label: 'desk' },
+      { x: 15, y: 8, t: 'note', note: 'campus_apology_draft' },
+    ],
+    exits: [
+      { x: 9, y: 11, w: 2, h: 1, to: 'campus_floor', at: [26, 6], sfx: 'door' },
+      { x: 10, y: 0, to: 'long_hall_1', at: [2, 3],
+        requires: 'beatManager', sfx: 'door' },
+    ],
+    start: [10, 9],
+  },
+
+  // The Gallery's hallway, reskinned and much longer. Same brick, same ceiling,
+  // same grass. The paintings are gone; the frames are not.
+  long_hall_1: {
+    floor: 'grass', wall: 'brick', light: 0.5, music: 'longhall', grain: 0.06, dark: true,
+    map: [
+      '###################################',
+      '#.................................#',
+      '#.................................#',
+      'D.................................D',
+      '#.................................#',
+      '#.................................#',
+      '###################################',
+    ],
+    objects: [
+      { x: 6, y: 1, t: 'painting', label: 'frame' },
+      { x: 14, y: 1, t: 'painting', label: 'frame' },
+      { x: 22, y: 1, t: 'painting', label: 'frame' },
+      { x: 30, y: 1, t: 'painting', label: 'frame' },
+      { x: 18, y: 4, t: 'note', note: 'long_hall_inventory' },
+    ],
+    spawn: [{ name: 'Empty Frame', n: 2 }, { name: 'Fluorescent', n: 1 }],
+    exits: [
+      { x: 0, y: 3, to: 'campus_office', at: [10, 2], sfx: 'door' },
+      { x: 34, y: 3, to: 'long_hall_2', at: [1, 3], sfx: 'door' },
+    ],
+    start: [2, 3],
+  },
+
+  long_hall_2: {
+    floor: 'grass', wall: 'brick', light: 0.72, music: 'longhall', grain: 0.07, dark: true,
+    map: [
+      '###################################',
+      '#.................................#',
+      '#.................................#',
+      'D.................................D',
+      '#.................................#',
+      '#.................................#',
+      '###################################',
+    ],
+    objects: [
+      { x: 9, y: 1, t: 'painting', label: 'frame' },
+      { x: 25, y: 1, t: 'painting', label: 'frame' },
+      { x: 17, y: 4, t: 'collectible', which: 'hall_nail' },
+    ],
+    spawn: [{ name: 'Empty Frame', n: 2 }, { name: 'Ceiling Tile', n: 2 },
+            { name: 'Custodial Cart', n: 1 }],
+    exits: [
+      { x: 0, y: 3, to: 'long_hall_1', at: [33, 3], sfx: 'door' },
+      { x: 34, y: 3, to: 'long_hall_3', at: [1, 3], sfx: 'door' },
+    ],
+    start: [2, 3],
+  },
+
+  long_hall_3: {
+    floor: 'grass', wall: 'brick', light: 0.95, music: 'longhall', grain: 0.08, dark: true,
+    map: [
+      '###################################',
+      '#.................................#',
+      '#.................................#',
+      'D.................................D',
+      '#.................................#',
+      '#.................................#',
+      '###################################',
+    ],
+    objects: [{ x: 20, y: 4, t: 'note', note: 'long_hall_last' }],
+    spawn: [{ name: 'Custodial Cart', n: 2 }, { name: 'Fluorescent', n: 2 }],
+    exits: [
+      { x: 0, y: 3, to: 'long_hall_2', at: [33, 3], sfx: 'door' },
+      { x: 34, y: 3, to: 'long_hall_end', at: [2, 7], sfx: 'door' },
+    ],
+    start: [2, 3],
+  },
+
+  long_hall_end: {
+    floor: 'grass', wall: 'brick', light: 1.15, music: 'longhall', grain: 0.09, dark: true,
+    map: [
+      '#################',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      'D...............#',
+      '#...............#',
+      '#################',
+    ],
+    decor: [{ x: 8, y: 1, t: 'mural_wall' }],
+    exits: [{ x: 0, y: 7, to: 'long_hall_3', at: [33, 3], sfx: 'door' }],
+    start: [2, 7],
   },
 
   bellhouse_top: {
@@ -6102,6 +6753,26 @@ const World = {
         rect(px + 5, py - 4, 4, 2, '#4a8ad0');
         break;
       }
+      // The pod somebody finished with. Same shell, dark glass, lid up.
+      case 'pod_open': {
+        rect(px - 10, py - 24, 21, 26, '#dfe4ea');
+        rect(px - 9, py - 23, 19, 24, '#f2f5f9');
+        rect(px - 7, py - 20, 15, 15, '#1a2430');
+        rect(px - 6, py - 19, 13, 13, '#2b3440');
+        rect(px - 5, py - 12, 11, 4, '#3d4854');   // the shape of a head, kept
+        rect(px - 12, py - 27, 25, 3, '#c9ccd4');  // the lid, standing open
+        rect(px + 5, py - 4, 4, 2, '#8d99a8');
+        break;
+      }
+      // A bench in a corridor, facing a wall. It is a save point.
+      case 'bench':
+        rect(px - 10, py - 9, 21, 4, '#8a7a58');
+        rect(px - 10, py - 9, 21, 1, '#a89572');
+        rect(px - 10, py - 14, 21, 4, '#8a7a58');
+        rect(px - 10, py - 14, 21, 1, '#a89572');
+        rect(px - 9, py - 5, 3, 6, '#4a4550');
+        rect(px + 7, py - 5, 3, 6, '#4a4550');
+        break;
       // An apartment door. The unit number is on it, and it stays shut.
       case 'apartment':
         rect(px - 8, py - 24, 17, 26, '#3f2d1e');
@@ -6206,6 +6877,20 @@ const ENEMY_ART = {
   'Building Super':    { spr: 'super',      pal: 'super' },
   'Line Supervisor':   { spr: 'supervisor', pal: 'supervisor' },
   'Tenant':            { spr: 'tenant',     pal: 'tenant' },
+  // Act 4. Three of the campus species are staff, so they reuse the people
+  // sprites the campus is populated with - the joke is that the receptionist
+  // fighting you is the receptionist.
+  'Intern':               { spr: 'vix_intern',  pal: 'vix_intern' },
+  'Receptionist':         { spr: 'vix_desk',    pal: 'vix_desk' },
+  'Demo Pod':             { spr: 'pod_enemy',   pal: 'pod_enemy' },
+  'Server Rack':          { spr: 'rack',        pal: 'rack' },
+  'Retention Specialist': { spr: 'vix_manager', pal: 'vix_manager' },
+  'Ceiling Tile':         { spr: 'ceiling',     pal: 'ceiling' },
+  'Empty Frame':          { spr: 'frame',       pal: 'frame' },
+  'Fluorescent':          { spr: 'yard_light',  pal: 'yard_light' },
+  'Custodial Cart':       { spr: 'cart',        pal: 'cart' },
+  'Account Manager':      { spr: 'manager',     pal: 'manager' },
+  'The Custodian':        { spr: 'sphere',      pal: 'sphere' },
 };
 
 
@@ -7077,11 +7762,17 @@ const Battle = {
     // The trickle. With Punch at 2 PP this is what guarantees there is never a
     // state where the player has no move at all — see docs/05. Drained turns it
     // off, which is the whole reason Drained is frightening.
-    if (!this.fx('drain', 'player')) {
-      const extra = Player.regenBonus;
-      Player.pp = Math.min(Player.maxPp, Player.pp + DATA.regen.PP + extra);
-      Player.sp = Math.min(Player.maxSp, Player.sp + DATA.regen.SP + extra);
-    }
+    const drain = this.fx('drain', 'player');
+    const slow = drain ? drain.regen_multiplier : 1;
+    // Never below the cheapest attack. Drained halves the trickle rather than
+    // stopping it, and this floor is what guarantees Punch stays payable: a
+    // player at 0 PP, Drained, in a fight they cannot flee has no move at all,
+    // which is the lose-state the trickle exists to prevent (docs/05).
+    const floor = DATA.moves.physical[0].cost;
+    Player.pp = Math.min(Player.maxPp,
+      Player.pp + Math.max(floor, Math.round((DATA.regen.PP + Player.regenBonus) * slow)));
+    Player.sp = Math.min(Player.maxSp,
+      Player.sp + Math.round((DATA.regen.SP + Player.regenBonus) * slow));
     // Steady Breathing. Entirely silent - the HP bar moving is the whole
     // message, and a box every single turn for five HP is a box you learn to
     // mash through, which slows down the turns that do have something to say.
@@ -7852,6 +8543,14 @@ const ROUTE = [
                                         'bellhouse_3', 'bellhouse_7b', 'bellhouse_top',
                                         'bellhouse_4c', 'bellhouse_mural', 'bellhouse_laundry'],
     at: [268, 74], kind: 'works', short: 'BELLHOUSE' },
+  // Act 4. The campus is the last thing on the map that has a location; the
+  // Long Hall is not anywhere, which is why it has no square.
+  { warpTo: 'campus_approach', label: 'VIXTRY CAMPUS',
+    rooms: ['campus_approach', 'campus_atrium', 'campus_floor', 'campus_pods',
+            'campus_racks', 'campus_office'],
+    at: [276, 98], kind: 'city', short: 'VIXTRY' },
+  { label: 'THE LONG HALL',
+    rooms: ['long_hall_1', 'long_hall_2', 'long_hall_3', 'long_hall_end'] },
 ];
 function routeIndexOf(roomId) {
   return ROUTE.findIndex(a => a.rooms.includes(roomId));
@@ -8718,6 +9417,59 @@ const NOTES = {
     pages: ['Sorry - back for these Tuesday.',
             'The load inside is dry. It has been dry a long time.'],
   },
+  // --- Act 4. The campus is where the picture finishes assembling ------
+  campus_welcome: {
+    title: 'AT THE GATE',
+    pages: ['VIXTRY REGIONAL CAMPUS. Visitors are welcome and are not signed in.',
+            'Signing in was discontinued as a barrier to participation.'],
+  },
+  campus_directory: {
+    title: 'FLOOR DIRECTORY',
+    pages: ['Ground: reception, refreshment, demonstration.',
+            'One: retention. Two: acquisition. Three: retention.',
+            'There is no three.'],
+  },
+  campus_memo_retention: {
+    title: 'INTERNAL - RETENTION',
+    pages: ['Dependency is not a side effect of the product. Dependency is the product.',
+            'A user who can leave is a user who has not finished onboarding.',
+            'Please do not circulate this phrasing outside the floor.'],
+  },
+  campus_memo_subject: {
+    title: 'INTERNAL - SUBJECT NINE',
+    pages: ['Subject nine remains the only trial to hold shape past the second week.',
+            'Subject nine is eleven years old and is not aware of the trial.',
+            'Recommend no contact. Recommend observation only.',
+            'Recommend we do not wake him while the numbers are this good.'],
+  },
+  campus_pod_terms: {
+    title: 'DEMONSTRATION TERMS',
+    pages: ['A demonstration lasts as long as the participant wishes.',
+            'Wishing is measured by session length.'],
+  },
+  campus_retention_log: {
+    title: 'RETENTION LOG',
+    pages: ['Household 4114: four registered, four resident, four sessions open.',
+            'Household 4114: three sessions open.',
+            'Household 4114: one session open, duration nine years.',
+            'Flag: do not close.'],
+  },
+  campus_apology_draft: {
+    title: 'A DRAFT, TWICE',
+    pages: ['I am sorry about this. I want to say that first.',
+            'Beneath it, the same sentence, written out again, more slowly.'],
+  },
+  long_hall_inventory: {
+    title: 'INVENTORY, HALLWAY',
+    pages: ['Frames: 41. Works: 41.',
+            'Frames: 41. Works: 0.',
+            'No discrepancy noted.'],
+  },
+  long_hall_last: {
+    title: 'ON THE FLOOR, FACE DOWN',
+    pages: ['The grass is a maintenance issue and has been raised as one.',
+            'It is not a maintenance issue.'],
+  },
 };
 
 // Every counter sells the list data/shops.json gives its act, gear included.
@@ -8733,9 +9485,13 @@ const STOCKS = {
   ondo: actStock(2),
   grocer: GROCER_STOCK,
   sable: actStock(3),
+  // A vending machine, which is the only shop on the campus and takes Rell
+  // without commenting on it.
+  campus: actStock(4),
 };
 const SHOP_STOCK = STOCKS.okobo;
-const SHOP_TITLES = { okobo: 'OKOBO', ondo: 'ONDO', grocer: 'GROCER', sable: 'SABLE CITY' };
+const SHOP_TITLES = { okobo: 'OKOBO', ondo: 'ONDO', grocer: 'GROCER',
+                      sable: 'SABLE CITY', campus: 'VENDING' };
 
 // --- NPC lines ---------------------------------------------------------
 // Limpo villagers attach a redundant location to statements about time.
@@ -8974,6 +9730,53 @@ const NPCS = {
             'You do not take somebody else\'s things out. That is not done.',
             'They will come back for it. Tuesday, probably.'];
   },
+  // --- Act 4. Vixtry staff talk like the menu: no contractions, complete
+  // sentences, and every one of them is pleased to see him.
+  campus_greeter: () => ([
+    'You are welcome to walk wherever you like. There is nowhere you should not go.',
+    'People find that difficult at first.',
+  ]),
+  campus_desk: () => {
+    if (Player.flags.deskAsked) {
+      return ['You are still expected. That does not expire.'];
+    }
+    Player.flags.deskAsked = true;
+    return ['Good morning. You are on the list.',
+            'I did not ask for your name. It was already on the list.',
+            'Is there anything you would like to know?',
+            'That was not a question. I am sorry. It is on the card.'];
+  },
+  campus_intern: () => ([
+    'First month. I am told the first month is the hardest and then it is not hard.',
+    'I do not know what we make. I know what my part of it does.',
+    'My part of it counts how long people stay.',
+  ]),
+  campus_engineer: () => {
+    if (Player.flags.engineerSaid) {
+      return ['I did say I would deny it. This is me denying it.'];
+    }
+    Player.flags.engineerSaid = true;
+    return ['You are the trial. You know that.',
+            'You are not the first. You are the first that held.',
+            'The others came apart inside a fortnight. They went home.',
+            'I am going to say something and then deny that I said it.',
+            'Nobody is coming to get you. There is no one left at that address.'];
+  },
+  campus_byname: () => {
+    // The greeting, again, from someone who has no reason to know it.
+    const n = Player.name;
+    return [`Morning, ${n}.`,
+            'How is your mother?'];
+  },
+  campus_janitor: () => ([
+    'I do the floors. Not the halls - the halls are not mine.',
+    'There is grass in the halls. I have raised it.',
+    'They keep telling me it is not a maintenance issue.',
+  ]),
+  campus_pod_host: () => ([
+    'Any of them. They are all the same session.',
+    'The open one is open because somebody finished. That does happen.',
+  ]),
   sable_shopkeeper: () => ([
     'Everything is in. Everything is always in. That is Sable.',
   ]),
@@ -9145,7 +9948,17 @@ function interact() {
                     { text: 'Not most of them. All of them.', speaker: 'system' }],
                    () => Story.memorialFight());
       return;
+    // A vending machine is the only shop on the campus, and it is the only one
+    // in the game that does not have a person behind it.
     case 'machine':
+      if (o.shop) {
+        Dialogue.say([{ text: 'A vending machine. Everything in it is stocked to the front.',
+                        speaker: 'system' }], () => {
+          Shop.start(STOCKS[o.shop] || SHOP_STOCK, SHOP_TITLES[o.shop] || 'VENDING');
+          Game.mode = 'shop';
+        });
+        return;
+      }
       Dialogue.say(World.id === 'kestrel_boiler'
         ? [{ text: 'A boiler. It is the only warm thing left in the works.', speaker: 'system' },
             { text: 'Nobody has been down here to light it.', speaker: 'system' }]
@@ -9186,6 +9999,27 @@ function interact() {
       return;
     case 'foreman':
       Story.supervisorFight();
+      return;
+    case 'bench':
+      if (Save.write()) {
+        Audio_.sfx('found');
+        Dialogue.say([{ text: 'A bench, in a corridor, facing a wall.', speaker: 'system' },
+                      { text: 'He sits down for a moment and writes down where he is.',
+                        speaker: 'system' },
+                      { text: 'SAVED.', speaker: 'system' }]);
+      } else {
+        Dialogue.say([{ text: 'A bench. He sits down. Nothing is written down.',
+                        speaker: 'system' }]);
+      }
+      return;
+    // The pod somebody finished with. It is the way into the Co-Living space.
+    case 'pod_open':
+      Dialogue.say([
+        { text: 'This one is open. The headrest still has the shape of a head in it.',
+          speaker: 'system' },
+        { text: 'A demonstration lasts as long as the participant wishes.',
+          speaker: 'vixtry' },
+      ]);
       return;
     case 'desk':
       Dialogue.say([{ text: 'A desk, squared away. Pen lined up with the edge.', speaker: 'system' },
@@ -9517,6 +10351,97 @@ const Story = {
             { text: 'It comes apart into smaller squares, and then into none.', speaker: 'system' },
             { text: 'The room is the size of the floor it is on again.', speaker: 'system' },
             { text: '(Got Second Wind and Loose Laces x2.)', speaker: 'system' },
+            { text: 'There is a way out of the Commons that was not there before.',
+              speaker: 'system' },
+          ], () => { Game.mode = 'field'; });
+        } else { Game.mode = 'field'; Game.onDefeat(); }
+      });
+    });
+  },
+
+  // --- Act 4 --------------------------------------------------------
+  // The greeting. He never gave anyone his name, and the game does not remark
+  // on it - the greeter does, once, and then never again.
+  campusGreeting() {
+    if (Player.flags.campusNamed) return;
+    if (World.id !== 'campus_approach') return;
+    Player.flags.campusNamed = true;
+    Dialogue.say([
+      { text: `Good morning, ${Player.name}. You are expected.`, speaker: 'vixtry' },
+      { text: 'Reception is straight through. Mind the step.', speaker: 'vixtry' },
+    ]);
+  },
+
+  managerFight() {
+    if (Player.flags.beatManager || Player.flags.managerStarting) return;
+    if (World.id !== 'campus_office') return;
+    Player.flags.managerStarting = true;
+    Dialogue.say([
+      { text: 'The office is the only room on this floor with a door that closes.',
+        speaker: 'system' },
+      { text: 'I am sorry about this. I want to say that first, and I want you to '
+            + 'know I mean it.', speaker: 'vixtry' },
+      { text: 'You are eleven. You are also the only one of these that took.',
+        speaker: 'vixtry' },
+      { text: 'I have a number for how much that is worth and I am not allowed to '
+            + 'tell you what it is.', speaker: 'vixtry' },
+    ], () => {
+      const bd = DATA.bosses['Account Manager'];
+      const enc = DATA.bossEncounters['Account Manager'];
+      const e = Battle.makeEnemy('Account Manager', {
+        name: 'ACCOUNT MANAGER', level: enc.internal_level, boss: true,
+        hpMul: bd.hp_multiplier, atkMul: bd.atk_multiplier,
+        phases: bd.phases, exp: enc.exp, scale: 2, inflicts: bd.inflicts,
+      });
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.managerStarting = false;
+        if (result === 'won') {
+          Player.flags.beatManager = true;
+          Game.mode = 'field';
+          Audio_.play('campus');
+          Dialogue.say([
+            { text: 'He sits back down. He does not look beaten, only finished.',
+              speaker: 'system' },
+            { text: 'The door behind the desk was always a door.', speaker: 'system' },
+          ]);
+        } else { Game.mode = 'field'; Game.onDefeat(); }
+      });
+    });
+  },
+
+  // Main Boss 3. He has said one thing, three times, and he says it again.
+  custodianFight() {
+    if (Player.flags.beatCustodian || Player.flags.custodianStarting) return;
+    if (World.id !== 'long_hall_end') return;
+    Player.flags.custodianStarting = true;
+    Dialogue.say([
+      { text: 'The hall stops. There is no door at this end and there never was.',
+        speaker: 'system' },
+      { text: 'Never leave.', speaker: 'custodian' },
+      { text: 'Never leave.', speaker: 'custodian' },
+      { text: 'Never leave.', speaker: 'custodian' },
+    ], () => {
+      const bd = DATA.bosses['The Custodian'];
+      const enc = DATA.bossEncounters['The Custodian'];
+      const e = Battle.makeEnemy('The Custodian', {
+        name: 'THE CUSTODIAN', level: enc.internal_level, boss: true,
+        hpMul: bd.hp_multiplier, atkMul: bd.atk_multiplier,
+        phases: bd.phases, exp: enc.exp, scale: 4,
+        restoresOnce: bd.restores_once_to, inflicts: bd.inflicts,
+      });
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.custodianStarting = false;
+        if (result === 'won') {
+          Player.flags.beatCustodian = true;
+          Player.addItem('Full Spray', 2);
+          Game.mode = 'field';
+          Dialogue.say([
+            { text: 'It goes in on itself, the way a held breath does.', speaker: 'system' },
+            { text: 'The grass at the end of the hall is taller than the grass at the start.',
+              speaker: 'system' },
+            { text: '(Got Full Spray x2.)', speaker: 'system' },
           ], () => { Game.mode = 'cutscene'; Cutscene.play('slice_end'); });
         } else { Game.mode = 'field'; Game.onDefeat(); }
       });
@@ -9628,8 +10553,8 @@ const Cutscene = {
         const a = Math.min(1, this.t / 1.2);
         cx.globalAlpha = a;
         textCentered('OVERGROWTH', W / 2, 52, '#e8e4da', 3);
-        textCentered('END OF ACT THREE', W / 2, 72, '#6a6a76');
-        textCentered('The Vixtry campus, and the Custodian, in a later build.',
+        textCentered('END OF ACT FOUR', W / 2, 72, '#6a6a76');
+        textCentered('The Root, and what is left of him, in a later build.',
                      W / 2, 92, '#4a4a56');
         cx.globalAlpha = Math.max(0, Math.min(1, (this.t - 2.4) / 1.2));
         textCentered(`${Player.name}  -  Lv ${Player.level}  -  ${Player.collectibles}/10 found`,
@@ -9719,6 +10644,9 @@ const Game = {
     Story.bossRoom();
     Story.maybeCustodian3();
     Story.tenantFight();
+    Story.campusGreeting();
+    Story.managerFight();
+    Story.custodianFight();
 
     if (Input.hit('ok')) interact();
 

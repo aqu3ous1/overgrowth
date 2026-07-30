@@ -1676,7 +1676,7 @@ const ROOMS = {
       '#..########DD######...#',
       '#..........PP.........#',
       '#..........PP.........#',
-      '#.....................#',
+      '#....................D#',
       'PP....................#',
       '#######################',
     ],
@@ -1685,6 +1685,8 @@ const ROOMS = {
     exits: [
       { x: 0, y: 9, w: 2, h: 1, to: 'sable', at: [29, 18] },
       { x: 11, y: 5, w: 2, h: 1, to: 'bellhouse_1', at: [10, 8], sfx: 'door' },
+      { x: 21, y: 8, to: 'campus_approach', at: [2, 8],
+        requires: 'beatTenant', sfx: 'door' },
     ],
     start: [11, 8],
   },
@@ -1904,6 +1906,327 @@ const ROOMS = {
     npcs: [{ art: 'tenant_five', x: 9, y: 5, key: 'tenant_laundry' }],
     exits: [{ x: 0, y: 4, to: 'bellhouse_mural', at: [22, 1], sfx: 'door' }],
     start: [2, 4],
+  },
+
+  // ===================================================================
+  // ACT 4 - Vixtry Regional Campus, and the Long Hall.
+  //
+  // The campus is the one liminal space in the game that is not abandoned. It
+  // is fully staffed, brightly lit, and nobody stops him. Every room here is
+  // brighter than anywhere he has been, which is what makes it worse.
+  // ===================================================================
+  campus_approach: {
+    floor: 'concrete', wall: 'concrete', light: 0.08, music: 'campus', grain: 0.04,
+    bright: true, tall: true,
+    map: [
+      '#########################',
+      '#.......................#',
+      '#..######.......######..#',
+      '#..######.......######..#',
+      '#..######.......######..#',
+      '#..######.......######..#',
+      '#..######.......######..#',
+      'P.......................#',
+      'P.......................#',
+      '#..........DD...........#',
+      '#########################',
+    ],
+    decor: [
+      { x: 5, y: 7, t: 'lamp' }, { x: 19, y: 7, t: 'lamp' },
+      { x: 12, y: 1, t: 'plant' }, { x: 3, y: 8, t: 'plant' },
+      { x: 21, y: 8, t: 'plant' },
+    ],
+    objects: [
+      { x: 12, y: 7, t: 'billboard', label: 'sign' },
+      { x: 7, y: 8, t: 'note', note: 'campus_welcome' },
+    ],
+    npcs: [{ art: 'vix_greeter', x: 16, y: 8, key: 'campus_greeter' }],
+    exits: [
+      { x: 0, y: 7, w: 1, h: 2, to: 'bellhouse_ext', at: [19, 8] },
+      { x: 11, y: 9, w: 2, h: 1, to: 'campus_atrium', at: [12, 10], sfx: 'door' },
+    ],
+    start: [2, 8],
+  },
+
+  campus_atrium: {
+    floor: 'plank', wall: 'plaster', light: 0.03, music: 'campus', grain: 0.02,
+    bright: true,
+    map: [
+      '#########################',
+      '#.......................#',
+      '#....===.......===......#',
+      '#.......................#',
+      '#.......................#',
+      '#..===...........===....#',
+      '#.......................#',
+      '#.......................#',
+      '#....===.......===......#',
+      '#.......................#',
+      '#.......................#',
+      '#.......D.......D.......#',
+      '#...........DD..........#',
+      '#########################',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'plant' }, { x: 22, y: 1, t: 'plant' },
+      { x: 2, y: 10, t: 'plant' }, { x: 22, y: 10, t: 'plant' },
+      { x: 12, y: 3, t: 'rug' }, { x: 12, y: 7, t: 'lamp' },
+    ],
+    objects: [
+      { x: 12, y: 1, t: 'counter', label: 'reception' },
+      { x: 5, y: 6, t: 'bench', label: 'bench' },
+      { x: 19, y: 6, t: 'machine', label: 'vending machine', shop: 'campus' },
+      { x: 8, y: 9, t: 'note', note: 'campus_directory' },
+    ],
+    npcs: [
+      { art: 'vix_desk', x: 12, y: 2, key: 'campus_desk' },
+      { art: 'vix_intern', x: 6, y: 4, key: 'campus_intern' },
+      { art: 'vix_janitor', x: 20, y: 9, key: 'campus_janitor' },
+    ],
+    exits: [
+      { x: 12, y: 12, w: 2, h: 1, to: 'campus_approach', at: [12, 7], sfx: 'door' },
+      { x: 8, y: 11, to: 'campus_floor', at: [2, 6], sfx: 'door' },
+      { x: 16, y: 11, to: 'campus_pods', at: [12, 8], sfx: 'door' },
+    ],
+    start: [12, 11],
+  },
+
+  campus_floor: {
+    floor: 'pavement', wall: 'plaster', light: 0.05, music: 'campus', grain: 0.025,
+    bright: true,
+    map: [
+      '#############################',
+      'D...........................#',
+      '#..===..===..===..===..===..#',
+      '#...........................#',
+      '#...........................#',
+      '#...........................#',
+      '#...........................D',
+      '#...........................#',
+      '#..===..===..===..===..===..#',
+      '#...........................#',
+      '#.............D.............#',
+      '#############################',
+    ],
+    decor: [
+      { x: 3, y: 4, t: 'lamp' }, { x: 14, y: 4, t: 'lamp' },
+      { x: 25, y: 4, t: 'lamp' }, { x: 8, y: 9, t: 'plant' },
+      { x: 20, y: 9, t: 'plant' },
+    ],
+    objects: [
+      { x: 5, y: 3, t: 'desk', label: 'desk' },
+      { x: 12, y: 3, t: 'desk', label: 'desk' },
+      { x: 19, y: 3, t: 'desk', label: 'desk' },
+      { x: 26, y: 3, t: 'desk', label: 'desk' },
+      { x: 10, y: 7, t: 'bench', label: 'bench' },
+      { x: 17, y: 6, t: 'note', note: 'campus_memo_retention' },
+      { x: 24, y: 9, t: 'note', note: 'campus_memo_subject' },
+    ],
+    npcs: [
+      { art: 'vix_eng', x: 12, y: 4, key: 'campus_engineer' },
+      { art: 'vix_greeter', x: 22, y: 7, key: 'campus_byname' },
+    ],
+    spawn: [{ name: 'Intern', n: 2 }, { name: 'Receptionist', n: 1 },
+            { name: 'Server Rack', n: 1 }],
+    exits: [
+      { x: 14, y: 10, to: 'campus_atrium', at: [8, 10], sfx: 'door' },
+      { x: 0, y: 1, to: 'campus_racks', at: [2, 5], sfx: 'door' },
+      { x: 28, y: 6, to: 'campus_office', at: [10, 10], sfx: 'door' },
+    ],
+    start: [2, 6],
+  },
+
+  campus_pods: {
+    floor: 'plank', wall: 'plaster', light: 0.14, music: 'campus', grain: 0.03,
+    tint: ['#7aa8ff', 0.05],
+    map: [
+      '#########################',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#...........DD..........#',
+      '#########################',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'cabinet' }, { x: 22, y: 1, t: 'shelf' },
+      { x: 2, y: 8, t: 'plant' }, { x: 22, y: 8, t: 'lamp' },
+      { x: 12, y: 5, t: 'rug' },
+    ],
+    objects: [
+      { x: 4, y: 2, t: 'pod', label: 'demo pod' },
+      { x: 8, y: 2, t: 'pod', label: 'demo pod' },
+      { x: 16, y: 2, t: 'pod', label: 'demo pod' },
+      { x: 20, y: 2, t: 'pod', label: 'demo pod' },
+      { x: 4, y: 7, t: 'pod', label: 'demo pod' },
+      { x: 20, y: 7, t: 'pod', label: 'demo pod' },
+      { x: 12, y: 2, t: 'pod_open', label: 'an open pod' },
+      { x: 12, y: 7, t: 'note', note: 'campus_pod_terms' },
+    ],
+    npcs: [{ art: 'vix_greeter', x: 8, y: 6, key: 'campus_pod_host' }],
+    spawn: [{ name: 'Demo Pod', n: 2 }],
+    exits: [{ x: 12, y: 9, w: 2, h: 1, to: 'campus_atrium', at: [16, 10], sfx: 'door' }],
+    start: [12, 8],
+  },
+
+  campus_racks: {
+    floor: 'concrete', wall: 'plaster', light: 0.34, music: 'campus', grain: 0.05,
+    map: [
+      '#####################',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#...................#',
+      '#...................D',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#####################',
+    ],
+    decor: [
+      { x: 2, y: 5, t: 'pipe' }, { x: 18, y: 1, t: 'pipe' },
+      { x: 10, y: 5, t: 'panel' },
+    ],
+    objects: [
+      { x: 5, y: 4, t: 'machine', label: 'rack' },
+      { x: 12, y: 4, t: 'machine', label: 'rack' },
+      { x: 9, y: 8, t: 'note', note: 'campus_retention_log' },
+      { x: 17, y: 8, t: 'collectible', which: 'session_tape' },
+    ],
+    spawn: [{ name: 'Server Rack', n: 2 }, { name: 'Ceiling Tile', n: 1 }],
+    exits: [{ x: 20, y: 5, to: 'campus_floor', at: [2, 1], sfx: 'door' }],
+    start: [2, 5],
+  },
+
+  campus_office: {
+    floor: 'plank', wall: 'plaster', light: 0.07, music: 'campus', grain: 0.03,
+    bright: true,
+    map: [
+      '##########D##########',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#........DD.........#',
+      '#####################',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'cabinet' }, { x: 18, y: 1, t: 'shelf' },
+      { x: 2, y: 9, t: 'plant' }, { x: 18, y: 9, t: 'plant' },
+      { x: 10, y: 6, t: 'rug' },
+    ],
+    objects: [
+      { x: 10, y: 3, t: 'desk', label: 'desk' },
+      { x: 15, y: 8, t: 'note', note: 'campus_apology_draft' },
+    ],
+    exits: [
+      { x: 9, y: 11, w: 2, h: 1, to: 'campus_floor', at: [26, 6], sfx: 'door' },
+      { x: 10, y: 0, to: 'long_hall_1', at: [2, 3],
+        requires: 'beatManager', sfx: 'door' },
+    ],
+    start: [10, 9],
+  },
+
+  // The Gallery's hallway, reskinned and much longer. Same brick, same ceiling,
+  // same grass. The paintings are gone; the frames are not.
+  long_hall_1: {
+    floor: 'grass', wall: 'brick', light: 0.5, music: 'longhall', grain: 0.06, dark: true,
+    map: [
+      '###################################',
+      '#.................................#',
+      '#.................................#',
+      'D.................................D',
+      '#.................................#',
+      '#.................................#',
+      '###################################',
+    ],
+    objects: [
+      { x: 6, y: 1, t: 'painting', label: 'frame' },
+      { x: 14, y: 1, t: 'painting', label: 'frame' },
+      { x: 22, y: 1, t: 'painting', label: 'frame' },
+      { x: 30, y: 1, t: 'painting', label: 'frame' },
+      { x: 18, y: 4, t: 'note', note: 'long_hall_inventory' },
+    ],
+    spawn: [{ name: 'Empty Frame', n: 2 }, { name: 'Fluorescent', n: 1 }],
+    exits: [
+      { x: 0, y: 3, to: 'campus_office', at: [10, 2], sfx: 'door' },
+      { x: 34, y: 3, to: 'long_hall_2', at: [1, 3], sfx: 'door' },
+    ],
+    start: [2, 3],
+  },
+
+  long_hall_2: {
+    floor: 'grass', wall: 'brick', light: 0.72, music: 'longhall', grain: 0.07, dark: true,
+    map: [
+      '###################################',
+      '#.................................#',
+      '#.................................#',
+      'D.................................D',
+      '#.................................#',
+      '#.................................#',
+      '###################################',
+    ],
+    objects: [
+      { x: 9, y: 1, t: 'painting', label: 'frame' },
+      { x: 25, y: 1, t: 'painting', label: 'frame' },
+      { x: 17, y: 4, t: 'collectible', which: 'hall_nail' },
+    ],
+    spawn: [{ name: 'Empty Frame', n: 2 }, { name: 'Ceiling Tile', n: 2 },
+            { name: 'Custodial Cart', n: 1 }],
+    exits: [
+      { x: 0, y: 3, to: 'long_hall_1', at: [33, 3], sfx: 'door' },
+      { x: 34, y: 3, to: 'long_hall_3', at: [1, 3], sfx: 'door' },
+    ],
+    start: [2, 3],
+  },
+
+  long_hall_3: {
+    floor: 'grass', wall: 'brick', light: 0.95, music: 'longhall', grain: 0.08, dark: true,
+    map: [
+      '###################################',
+      '#.................................#',
+      '#.................................#',
+      'D.................................D',
+      '#.................................#',
+      '#.................................#',
+      '###################################',
+    ],
+    objects: [{ x: 20, y: 4, t: 'note', note: 'long_hall_last' }],
+    spawn: [{ name: 'Custodial Cart', n: 2 }, { name: 'Fluorescent', n: 2 }],
+    exits: [
+      { x: 0, y: 3, to: 'long_hall_2', at: [33, 3], sfx: 'door' },
+      { x: 34, y: 3, to: 'long_hall_end', at: [2, 7], sfx: 'door' },
+    ],
+    start: [2, 3],
+  },
+
+  long_hall_end: {
+    floor: 'grass', wall: 'brick', light: 1.15, music: 'longhall', grain: 0.09, dark: true,
+    map: [
+      '#################',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      'D...............#',
+      '#...............#',
+      '#################',
+    ],
+    decor: [{ x: 8, y: 1, t: 'mural_wall' }],
+    exits: [{ x: 0, y: 7, to: 'long_hall_3', at: [33, 3], sfx: 'door' }],
+    start: [2, 7],
   },
 
   bellhouse_top: {
@@ -2425,6 +2748,26 @@ const World = {
         rect(px + 5, py - 4, 4, 2, '#4a8ad0');
         break;
       }
+      // The pod somebody finished with. Same shell, dark glass, lid up.
+      case 'pod_open': {
+        rect(px - 10, py - 24, 21, 26, '#dfe4ea');
+        rect(px - 9, py - 23, 19, 24, '#f2f5f9');
+        rect(px - 7, py - 20, 15, 15, '#1a2430');
+        rect(px - 6, py - 19, 13, 13, '#2b3440');
+        rect(px - 5, py - 12, 11, 4, '#3d4854');   // the shape of a head, kept
+        rect(px - 12, py - 27, 25, 3, '#c9ccd4');  // the lid, standing open
+        rect(px + 5, py - 4, 4, 2, '#8d99a8');
+        break;
+      }
+      // A bench in a corridor, facing a wall. It is a save point.
+      case 'bench':
+        rect(px - 10, py - 9, 21, 4, '#8a7a58');
+        rect(px - 10, py - 9, 21, 1, '#a89572');
+        rect(px - 10, py - 14, 21, 4, '#8a7a58');
+        rect(px - 10, py - 14, 21, 1, '#a89572');
+        rect(px - 9, py - 5, 3, 6, '#4a4550');
+        rect(px + 7, py - 5, 3, 6, '#4a4550');
+        break;
       // An apartment door. The unit number is on it, and it stays shut.
       case 'apartment':
         rect(px - 8, py - 24, 17, 26, '#3f2d1e');
@@ -2529,4 +2872,18 @@ const ENEMY_ART = {
   'Building Super':    { spr: 'super',      pal: 'super' },
   'Line Supervisor':   { spr: 'supervisor', pal: 'supervisor' },
   'Tenant':            { spr: 'tenant',     pal: 'tenant' },
+  // Act 4. Three of the campus species are staff, so they reuse the people
+  // sprites the campus is populated with - the joke is that the receptionist
+  // fighting you is the receptionist.
+  'Intern':               { spr: 'vix_intern',  pal: 'vix_intern' },
+  'Receptionist':         { spr: 'vix_desk',    pal: 'vix_desk' },
+  'Demo Pod':             { spr: 'pod_enemy',   pal: 'pod_enemy' },
+  'Server Rack':          { spr: 'rack',        pal: 'rack' },
+  'Retention Specialist': { spr: 'vix_manager', pal: 'vix_manager' },
+  'Ceiling Tile':         { spr: 'ceiling',     pal: 'ceiling' },
+  'Empty Frame':          { spr: 'frame',       pal: 'frame' },
+  'Fluorescent':          { spr: 'yard_light',  pal: 'yard_light' },
+  'Custodial Cart':       { spr: 'cart',        pal: 'cart' },
+  'Account Manager':      { spr: 'manager',     pal: 'manager' },
+  'The Custodian':        { spr: 'sphere',      pal: 'sphere' },
 };

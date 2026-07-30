@@ -596,11 +596,17 @@ const Battle = {
     // The trickle. With Punch at 2 PP this is what guarantees there is never a
     // state where the player has no move at all — see docs/05. Drained turns it
     // off, which is the whole reason Drained is frightening.
-    if (!this.fx('drain', 'player')) {
-      const extra = Player.regenBonus;
-      Player.pp = Math.min(Player.maxPp, Player.pp + DATA.regen.PP + extra);
-      Player.sp = Math.min(Player.maxSp, Player.sp + DATA.regen.SP + extra);
-    }
+    const drain = this.fx('drain', 'player');
+    const slow = drain ? drain.regen_multiplier : 1;
+    // Never below the cheapest attack. Drained halves the trickle rather than
+    // stopping it, and this floor is what guarantees Punch stays payable: a
+    // player at 0 PP, Drained, in a fight they cannot flee has no move at all,
+    // which is the lose-state the trickle exists to prevent (docs/05).
+    const floor = DATA.moves.physical[0].cost;
+    Player.pp = Math.min(Player.maxPp,
+      Player.pp + Math.max(floor, Math.round((DATA.regen.PP + Player.regenBonus) * slow)));
+    Player.sp = Math.min(Player.maxSp,
+      Player.sp + Math.round((DATA.regen.SP + Player.regenBonus) * slow));
     // Steady Breathing. Entirely silent - the HP bar moving is the whole
     // message, and a box every single turn for five HP is a box you learn to
     // mash through, which slows down the turns that do have something to say.

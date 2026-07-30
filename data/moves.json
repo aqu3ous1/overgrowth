@@ -189,12 +189,14 @@
     },
     {
       "name": "Drained",
-      "effect": "PP/SP regen suppressed, SP costs +50%",
+      "effect": "PP/SP regen halved, SP costs +50%",
       "duration": 4,
       "item_curable": true,
       "player_effect": {
         "kind": "drain",
-        "sp_cost_multiplier": 1.5
+        "sp_cost_multiplier": 1.5,
+        "regen_multiplier": 0.5,
+        "why": "Halved, not stopped. Stopping it entirely recreates the exact lose-state the trickle exists to prevent - docs/05 says the player is never out of options, and a Drained player at 0 PP facing a boss they cannot flee has none. The trickle also never falls below the cheapest attack, so Punch is always payable."
       },
       "enemy_effect": {
         "kind": "weaken",

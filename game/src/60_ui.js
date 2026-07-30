@@ -378,6 +378,14 @@ const ROUTE = [
                                         'bellhouse_3', 'bellhouse_7b', 'bellhouse_top',
                                         'bellhouse_4c', 'bellhouse_mural', 'bellhouse_laundry'],
     at: [268, 74], kind: 'works', short: 'BELLHOUSE' },
+  // Act 4. The campus is the last thing on the map that has a location; the
+  // Long Hall is not anywhere, which is why it has no square.
+  { warpTo: 'campus_approach', label: 'VIXTRY CAMPUS',
+    rooms: ['campus_approach', 'campus_atrium', 'campus_floor', 'campus_pods',
+            'campus_racks', 'campus_office'],
+    at: [276, 98], kind: 'city', short: 'VIXTRY' },
+  { label: 'THE LONG HALL',
+    rooms: ['long_hall_1', 'long_hall_2', 'long_hall_3', 'long_hall_end'] },
 ];
 function routeIndexOf(roomId) {
   return ROUTE.findIndex(a => a.rooms.includes(roomId));

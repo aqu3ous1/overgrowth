@@ -616,6 +616,25 @@ const TRACKS = {
     },
   },
 
+  // Evergreen. The sweetest thing in the game, and the only track with no
+  // seventh anywhere in it - plain major triads and a plain major bass, which is
+  // exactly why it is unsettling next to Okobo. It is a jingle, not a theme.
+  evergreen: {
+    bpm: 118, swing: 0.10, chordEvery: 8,
+    chords: [[3, 'maj'], [-2, 'maj'], [-4, 'maj'], [3, 'six']],
+    comp: '-x-x-x-x', padType: 'triangle', padGain: 0.022, compLen: 0.7,
+    bassLine: 'r-5-r-3-', bassGain: 0.050,
+    drums: 'k-h-s-h-k-h-s-hh', kickGain: 0.12, snareGain: 0.05, hatGain: 0.020,
+    lead: {
+      type: 'triangle', gain: 0.070, detune: 4, legato: 1.5, vibrato: 4, decay: 0.6,
+      steps: [
+        7, 7, 10, 12, 14, null, 12, 10, 10, 10, 12, 14, 12, null, 10, 7,
+        5, 5, 8, 10, 12, null, 10, 8, 3, 3, 7, 10, 12, null, 10, 7,
+        7, 7, 10, 12, 14, null, 15, 14, 12, null, 10, null, 7, null, null, null,
+      ],
+    },
+  },
+
   // The Long Hall. The Gallery's drone, a fifth lower and slowing down, with a
   // fluorescent tick in it that is not quite on the beat.
   longhall: {

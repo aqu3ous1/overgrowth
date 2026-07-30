@@ -126,7 +126,7 @@
 </footer>
 
 <div class="meta">
-  <span>0.6.0</span><span>&middot;</span><span>Acts 0&ndash;4</span><span>&middot;</span>
+  <span>0.7.0</span><span>&middot;</span><span>Acts 0&ndash;4</span><span>&middot;</span>
   <span id="audio-note">Click the screen for sound</span>
 </div>
 
@@ -1991,6 +1991,25 @@ const TRACKS = {
     },
   },
 
+  // Evergreen. The sweetest thing in the game, and the only track with no
+  // seventh anywhere in it - plain major triads and a plain major bass, which is
+  // exactly why it is unsettling next to Okobo. It is a jingle, not a theme.
+  evergreen: {
+    bpm: 118, swing: 0.10, chordEvery: 8,
+    chords: [[3, 'maj'], [-2, 'maj'], [-4, 'maj'], [3, 'six']],
+    comp: '-x-x-x-x', padType: 'triangle', padGain: 0.022, compLen: 0.7,
+    bassLine: 'r-5-r-3-', bassGain: 0.050,
+    drums: 'k-h-s-h-k-h-s-hh', kickGain: 0.12, snareGain: 0.05, hatGain: 0.020,
+    lead: {
+      type: 'triangle', gain: 0.070, detune: 4, legato: 1.5, vibrato: 4, decay: 0.6,
+      steps: [
+        7, 7, 10, 12, 14, null, 12, 10, 10, 10, 12, 14, 12, null, 10, 7,
+        5, 5, 8, 10, 12, null, 10, 8, 3, 3, 7, 10, 12, null, 10, 7,
+        7, 7, 10, 12, 14, null, 15, 14, 12, null, 10, null, 7, null, null, null,
+      ],
+    },
+  },
+
   // The Long Hall. The Gallery's drone, a fifth lower and slowing down, with a
   // fluorescent tick in it that is not quite on the beat.
   longhall: {
@@ -2867,6 +2886,137 @@ const SPR = {
     '.31cc..cc13.',
     '.31cc..cc13.',
     '..3dd..dd3..',
+  ],
+  ever_host: [
+    '............',
+    '..99999999..',
+    '.9999999999.',
+    '.9244244119.',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  ever_woman: [
+    '............',
+    '..99999999..',
+    '.9999999999.',
+    '.9244244119.',
+    '.9254254119.',
+    '.9122211119.',
+    '.9111111119.',
+    '.9333333339.',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  ever_man: [
+    '...aaaaaa...',
+    '..9aaaaaa9..',
+    'aaaaaaaaaaaa',
+    '.9244244119.',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  ever_child: [
+    '.9..9..9..9.',
+    '.9999999999.',
+    '..99999999..',
+    '.3244244113.',
+    '.3154254113.',
+    '.3112111113.',
+    '..31333113..',
+    '...333333...',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..3dd..dd3..',
+  ],
+  ever_teacher: [
+    '....9999....',
+    '..99999999..',
+    '..99999999..',
+    '..54454415..',
+    '..55455415..',
+    '..555255513.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  ever_edge: [
+    '....3333....',
+    '...322113...',
+    '..32222113..',
+    '.9244244119.',
+    '.9254254119.',
+    '.9122211119.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.8677666668.',
+    '.8677666668.',
+    '.3177666613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
+  ],
+  ever_clerk: [
+    '....9999....',
+    '..99999999..',
+    '..99999999..',
+    '.3244244113.',
+    '.3254254113.',
+    '.3122211113.',
+    '.3111111113.',
+    '..33333333..',
+    '....3333....',
+    '...888888...',
+    '..87766668..',
+    '.867bbbb668.',
+    '.867bbbb668.',
+    '.317bbbb613.',
+    '.31cc..cc13.',
+    '..dcc..ccd..',
+    '...dd..dd...',
   ],
   custodian: [
     '.....2222.....',
@@ -3760,6 +3910,13 @@ const PAL = {
   vix_desk: { 1: '#b9a58e', 2: '#dac3a8', 3: '#736658', 4: '#f2f4f8', 5: '#12121a', 6: '#dfe4ea', 7: '#ffffff', 8: '#74777a', 9: '#8e8478', a: '#3a3a44', b: '#4a8ad0', c: '#2f3442', d: '#1a1d24' },
   vix_eng: { 1: '#7fb6c6', 2: '#96d7ea', 3: '#4f717b', 4: '#f2f4f8', 5: '#12121a', 6: '#e8eaf0', 7: '#ffffff', 8: '#797a7d', 9: '#c8c0b0', a: '#3a3a44', b: '#4a8ad0', c: '#2f3442', d: '#1a1d24' },
   vix_manager: { 1: '#c2a086', 2: '#e5bd9e', 3: '#786353', 4: '#f2f4f8', 5: '#12121a', 6: '#2f3442', 7: '#383e4f', 8: '#181b22', 9: '#4a3524', a: '#3a3a44', b: '#f0f2f7', c: '#22242c', d: '#131418' },
+  ever_host: { 1: '#e0a878', 2: '#ffc68e', 3: '#8b684a', 4: '#f2f4f8', 5: '#12121a', 6: '#4ac06a', 7: '#59e67f', 8: '#266437', 9: '#3a2a1c', a: '#3a3a44', b: '#fff2b0', c: '#3a8a4a', d: '#204c29' },
+  ever_woman: { 1: '#e8b48a', 2: '#ffd4a3', 3: '#907056', 4: '#f2f4f8', 5: '#12121a', 6: '#f0708a', 7: '#ff86a6', 8: '#7d3a48', 9: '#5a3a24', a: '#3a3a44', b: '#fff2b0', c: '#c04a6a', d: '#6a293a' },
+  ever_man: { 1: '#d8a878', 2: '#ffc68e', 3: '#86684a', 4: '#f2f4f8', 5: '#12121a', 6: '#4a9ae0', 7: '#59b9ff', 8: '#265074', 9: '#3f2a1a', a: '#e8d060', b: '#fff2b0', c: '#3a6ac0', d: '#203a6a' },
+  ever_child: { 1: '#f0c49a', 2: '#ffe7b6', 3: '#957a5f', 4: '#f2f4f8', 5: '#12121a', 6: '#f0c040', 7: '#ffe64d', 8: '#7d6421', 9: '#7a4a24', a: '#4ac06a', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
+  ever_teacher: { 1: '#e0a878', 2: '#ffc68e', 3: '#8b684a', 4: '#f2f4f8', 5: '#12121a', 6: '#a06ad0', 7: '#c07ffa', 8: '#53376c', 9: '#4a3324', a: '#3a3a44', b: '#fff2b0', c: '#7a4ac0', d: '#43296a' },
+  ever_edge: { 1: '#e8b48a', 2: '#ffd4a3', 3: '#907056', 4: '#f2f4f8', 5: '#12121a', 6: '#e8e4d8', 7: '#ffffff', 8: '#797770', 9: '#8e8478', a: '#3a3a44', b: '#fff2b0', c: '#c8c4b8', d: '#6e6c65' },
+  ever_clerk: { 1: '#d8a878', 2: '#ffc68e', 3: '#86684a', 4: '#f2f4f8', 5: '#12121a', 6: '#4ac0b0', 7: '#59e6d3', 8: '#26645c', 9: '#3a2a1c', a: '#3a3a44', b: '#ffffff', c: '#3a8a8a', d: '#204c4c' },
   vix_janitor: { 1: '#a8a094', 2: '#c6bdaf', 3: '#68635c', 4: '#f2f4f8', 5: '#12121a', 6: '#c9c4bc', 7: '#f1ebe2', 8: '#696662', 9: '#8e8478', a: '#3a3a44', b: '#e4e0d8', c: '#43413a', d: '#252420' },
   bell_7b: { 1: '#b9a58e', 2: '#dac3a8', 3: '#736658', 4: '#f2f4f8', 5: '#12121a', 6: '#5a5a6e', 7: '#6c6c84', 8: '#2f2f39', 9: '#8a8478', a: '#3a3a44', b: '#e6e2d4', c: '#3e3a46', d: '#222026' },
   milepost: { 1: '#8d8d84', 2: '#adada2', 3: '#4c4c46', 4: '#2a2a26' },
@@ -5911,6 +6068,276 @@ const ROOMS = {
     npcs: [{ art: 'tenant_five', x: 9, y: 5, key: 'tenant_laundry' }],
     exits: [{ x: 0, y: 4, to: 'bellhouse_mural', at: [22, 1], sfx: 'door' }],
     start: [2, 4],
+  },
+
+  // ===================================================================
+  // EVERGREEN - a Vixtry Co-Living space, entered through the open demo pod on
+  // the campus. Optional, and the longest thread in the game.
+  //
+  // The rule for every room in here: it is the prettiest place the player has
+  // been since Okobo, and nothing in it is threatening. The horror is entirely
+  // in what the residents say and what the ledger counts. Nobody is ever cruel
+  // to him and nobody ever stops him leaving - they only ask him to reconsider.
+  // ===================================================================
+  ever_arrival: {
+    floor: 'grass', wall: 'brick', light: 0.02, music: 'evergreen', grain: 0.015,
+    bright: true, tint: ['#7ae86a', 0.10],
+    map: [
+      '#####################',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#..................DD',
+      '#...................#',
+      '#####################',
+    ],
+    decor: [
+      { x: 3, y: 1, t: 'bunting' }, { x: 11, y: 1, t: 'bunting' },
+      { x: 17, y: 1, t: 'bunting' },
+      { x: 2, y: 6, t: 'plant' }, { x: 6, y: 6, t: 'plant' },
+      { x: 14, y: 6, t: 'plant' },
+    ],
+    objects: [
+      { x: 10, y: 3, t: 'billboard', label: 'sign' },
+      { x: 5, y: 4, t: 'note', note: 'ever_welcome' },
+      { x: 16, y: 2, t: 'helpdesk', label: 'help point' },
+    ],
+    npcs: [{ art: 'ever_host', x: 10, y: 5, key: 'ever_host' }],
+    exits: [{ x: 19, y: 6, w: 2, h: 1, to: 'ever_green', at: [2, 8] }],
+    start: [10, 6],
+  },
+
+  ever_green: {
+    floor: 'grass', wall: 'brick', light: 0.02, music: 'evergreen', grain: 0.015,
+    bright: true, tint: ['#7ae86a', 0.09],
+    map: [
+      '#################################',
+      '#...............................#',
+      '#..#####...#####...#####...######',
+      '#..#####...#####...#####...######',
+      '#..###D#...###D#...###D#...###D##',
+      '#...............................#',
+      '#...............................#',
+      '#...............................#',
+      'D...............................#',
+      '#...............................#',
+      '#....#####...........#####......#',
+      '#....#####...........#####......#',
+      '#....###D#...........###D#......#',
+      '#...............................#',
+      '#..............................DD',
+      '#################################',
+    ],
+    decor: [
+      { x: 5, y: 5, t: 'plant' }, { x: 13, y: 5, t: 'plant' },
+      { x: 21, y: 5, t: 'plant' }, { x: 29, y: 5, t: 'plant' },
+      { x: 7, y: 13, t: 'bunting' }, { x: 22, y: 13, t: 'bunting' },
+      { x: 16, y: 7, t: 'fountain' },
+    ],
+    objects: [
+      { x: 16, y: 6, t: 'fountain', label: 'fountain' },
+      { x: 10, y: 9, t: 'note', note: 'ever_noticeboard' },
+      { x: 26, y: 13, t: 'note', note: 'ever_ticket' },
+    ],
+    npcs: [
+      { art: 'ever_woman', x: 8, y: 6, key: 'ever_neighbour' },
+      { art: 'ever_man', x: 24, y: 8, key: 'ever_gardener' },
+      { art: 'ever_child', x: 18, y: 12, key: 'ever_kid' },
+    ],
+    exits: [
+      { x: 0, y: 8, to: 'ever_arrival', at: [17, 6] },
+      { x: 6, y: 4, to: 'ever_house', at: [8, 7], sfx: 'door' },
+      { x: 14, y: 4, to: 'ever_school', at: [10, 8], sfx: 'door' },
+      { x: 8, y: 12, to: 'ever_desk', at: [8, 7], sfx: 'door' },
+      { x: 31, y: 14, w: 2, h: 1, to: 'ever_orchard', at: [2, 6] },
+    ],
+    start: [2, 8],
+  },
+
+  // Household 4114. Four chairs. Three of them pushed in.
+  ever_house: {
+    floor: 'plank', wall: 'plaster', light: 0.04, music: 'evergreen', grain: 0.02,
+    bright: true,
+    map: [
+      '#################',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#.......D.......#',
+      '#################',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'stove' }, { x: 5, y: 1, t: 'picture' },
+      { x: 13, y: 1, t: 'cabinet' }, { x: 2, y: 6, t: 'plant' },
+      { x: 8, y: 5, t: 'rug' },
+    ],
+    objects: [
+      { x: 8, y: 3, t: 'table', label: 'table' },
+      { x: 12, y: 6, t: 'note', note: 'ever_four_chairs' },
+      { x: 3, y: 3, t: 'clock', label: 'clock' },
+    ],
+    npcs: [{ art: 'ever_woman', x: 8, y: 5, key: 'ever_resident' }],
+    exits: [{ x: 8, y: 8, to: 'ever_green', at: [6, 5], sfx: 'door' }],
+    start: [8, 7],
+  },
+
+  ever_school: {
+    floor: 'plank', wall: 'plaster', light: 0.05, music: 'evergreen', grain: 0.02,
+    bright: true,
+    map: [
+      '#####################',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#...................#',
+      '#.........D.........#',
+      '#####################',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'shelf' }, { x: 18, y: 1, t: 'cabinet' },
+      { x: 10, y: 8, t: 'rug' },
+    ],
+    objects: [
+      { x: 10, y: 1, t: 'mural_wall', label: 'the board' },
+      { x: 17, y: 7, t: 'note', note: 'ever_lesson' },
+    ],
+    npcs: [
+      { art: 'ever_child', x: 4, y: 3, key: 'ever_pupil' },
+      { art: 'ever_child', x: 12, y: 5, key: 'ever_pupil_two' },
+      { art: 'ever_teacher', x: 10, y: 2, key: 'ever_teacher' },
+    ],
+    exits: [{ x: 10, y: 9, to: 'ever_green', at: [14, 5], sfx: 'door' }],
+    start: [10, 8],
+  },
+
+  // The orchard, dry, with the good tree standing in it. Act 1's note said this
+  // is where it was if the water ever went down.
+  ever_orchard: {
+    floor: 'grass', wall: 'brick', light: 0.02, music: 'evergreen', grain: 0.02,
+    bright: true, tint: ['#8ae87a', 0.11],
+    map: [
+      '#############################',
+      '#...........................#',
+      '#..T....T....T....T....T....#',
+      '#...........................#',
+      '#...........................#',
+      'D...........................#',
+      '#...........................#',
+      '#..T....T....T....T....T....#',
+      '#...........................#',
+      '#.........................DD#',
+      '#############################',
+    ],
+    objects: [
+      { x: 14, y: 4, t: 'shrine', label: 'the good tree' },
+      { x: 6, y: 8, t: 'note', note: 'ever_orchard_note' },
+    ],
+    npcs: [{ art: 'ever_man', x: 20, y: 4, key: 'ever_orchardman' }],
+    exits: [
+      { x: 0, y: 5, to: 'ever_green', at: [30, 13] },
+      { x: 26, y: 9, w: 2, h: 1, to: 'ever_edge', at: [2, 5] },
+    ],
+    start: [2, 6],
+  },
+
+  // The edge. The residents stand at it, facing out, perfectly content.
+  ever_edge: {
+    floor: 'grass', wall: 'void', light: 0.35, music: 'evergreen', grain: 0.05,
+    tint: ['#8ae87a', 0.05],
+    map: [
+      '#########################',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      'D.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#.....................DD#',
+      '     ....................',
+      '        ...       ..     ',
+    ],
+    objects: [{ x: 12, y: 6, t: 'note', note: 'ever_boundary' }],
+    npcs: [
+      { art: 'ever_edge', x: 6, y: 8, key: 'ever_stander' },
+      { art: 'ever_edge', x: 14, y: 8, key: 'ever_stander_two' },
+      { art: 'ever_edge', x: 19, y: 8, key: 'ever_stander_three' },
+    ],
+    exits: [
+      { x: 0, y: 4, to: 'ever_orchard', at: [25, 9] },
+      { x: 22, y: 7, w: 2, h: 1, to: 'ever_ledger', at: [2, 5], sfx: 'door' },
+    ],
+    start: [2, 4],
+  },
+
+  // Behind the edge. Nobody stops him coming in here either.
+  ever_ledger: {
+    floor: 'concrete', wall: 'concrete', light: 0.5, music: 'longhall', grain: 0.06,
+    map: [
+      '#####################',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#...................#',
+      'D...................#',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#####################',
+    ],
+    decor: [
+      { x: 2, y: 5, t: 'pipe' }, { x: 17, y: 1, t: 'pipe' },
+      { x: 10, y: 5, t: 'panel' },
+    ],
+    objects: [
+      { x: 5, y: 4, t: 'machine', label: 'rack' },
+      { x: 12, y: 4, t: 'machine', label: 'rack' },
+      { x: 9, y: 6, t: 'note', note: 'ever_ledger_note' },
+      { x: 16, y: 6, t: 'note', note: 'ever_do_not_close' },
+    ],
+    spawn: [{ name: 'Server Rack', n: 2 }],
+    exits: [{ x: 0, y: 5, to: 'ever_edge', at: [21, 7], sfx: 'door' }],
+    start: [2, 5],
+  },
+
+  // The way out, and the whole point: it is a help desk, and leaving is a
+  // ticket. Nobody refuses. They ask him to reconsider, three times, kindly.
+  ever_desk: {
+    floor: 'plank', wall: 'plaster', light: 0.03, music: 'evergreen', grain: 0.02,
+    bright: true,
+    map: [
+      '#################',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#.......D.......#',
+      '#################',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'plant' }, { x: 13, y: 1, t: 'plant' },
+      { x: 8, y: 5, t: 'rug' }, { x: 2, y: 6, t: 'lamp' },
+    ],
+    objects: [
+      { x: 8, y: 2, t: 'counter', label: 'the desk' },
+      { x: 12, y: 6, t: 'note', note: 'ever_leaving' },
+      { x: 4, y: 3, t: 'helpdesk', label: 'the way out' },
+    ],
+    npcs: [{ art: 'ever_clerk', x: 8, y: 3, key: 'ever_deskclerk' }],
+    exits: [{ x: 8, y: 8, to: 'ever_green', at: [8, 13], sfx: 'door' }],
+    start: [8, 7],
   },
 
   // ===================================================================
@@ -8551,6 +8978,11 @@ const ROUTE = [
     at: [276, 98], kind: 'city', short: 'VIXTRY' },
   { label: 'THE LONG HALL',
     rooms: ['long_hall_1', 'long_hall_2', 'long_hall_3', 'long_hall_end'] },
+  // Evergreen is not a place. It has no square on the map and no warp target:
+  // the only way in is the pod, and the only way out is to ask.
+  { label: 'EVERGREEN',
+    rooms: ['ever_arrival', 'ever_green', 'ever_house', 'ever_school',
+            'ever_orchard', 'ever_edge', 'ever_ledger', 'ever_desk'] },
 ];
 function routeIndexOf(roomId) {
   return ROUTE.findIndex(a => a.rooms.includes(roomId));
@@ -9470,6 +9902,69 @@ const NOTES = {
     pages: ['The grass is a maintenance issue and has been raised as one.',
             'It is not a maintenance issue.'],
   },
+  // --- EVERGREEN. Optional, and the longest thread in the game.
+  // The rule for all eight of these: the copy is sincere. Nothing in Evergreen
+  // is written by someone who thinks Evergreen is bad.
+  ever_welcome: {
+    title: 'WELCOME TO EVERGREEN',
+    pages: ['A Vixtry Co-Living community. Twelve households and room for more.',
+            'Weather: fine. Weather forecast: fine.',
+            'Residents are reminded that they are not required to be anywhere.'],
+  },
+  ever_noticeboard: {
+    title: 'THE NOTICEBOARD',
+    pages: ['Tuesday: bring-and-share on the green. Everyone welcome.',
+            'Under it, the same notice. Under that, the same notice.',
+            'They are all for Tuesday.'],
+  },
+  ever_ticket: {
+    title: 'A RESOLVED TICKET',
+    pages: ['Resident reports feeling that something is missing.',
+            'Attended. Resident reports feeling fine.',
+            'Resolution: no fault found. Closed.'],
+  },
+  ever_four_chairs: {
+    title: 'A SHOPPING LIST',
+    pages: ['Bread, and the good soap, and something for four.',
+            'The list is complete. Everything on it is crossed off.',
+            'There is nothing in the kitchen.'],
+  },
+  ever_lesson: {
+    title: 'TODAY\'S LESSON',
+    pages: ['1. We are glad to be here.',
+            '2. Being glad is how we know it is working.',
+            '3. If you are not glad, tell an adult, and an adult will attend to it.'],
+  },
+  ever_orchard_note: {
+    title: 'TIED TO A BRANCH',
+    pages: ['The water went down. This is where the good tree was.',
+            'The handwriting is the same as the one in the orchard back home.',
+            'It has not weathered at all.'],
+  },
+  ever_boundary: {
+    title: 'AT THE BOUNDARY',
+    pages: ['Beyond this point the community is still being built.',
+            'Thank you for your patience. Construction is ongoing.',
+            'The date at the bottom is nine years old.'],
+  },
+  ever_ledger_note: {
+    title: 'SESSION LEDGER',
+    pages: ['Region four. Households registered: 812. Sessions open: 812.',
+            'Sessions closed at resident request: 0.',
+            'Requests received: 41.'],
+  },
+  ever_do_not_close: {
+    title: 'FLAGGED',
+    pages: ['Household 4114. One session open. Duration nine years, one month.',
+            'Longest open session in the region.',
+            'DO NOT CLOSE. Refer upward. Do not discuss with the household.'],
+  },
+  ever_leaving: {
+    title: 'BEFORE YOU GO',
+    pages: ['Leaving is always available and always has been.',
+            'We only ask that you are sure, because most people are not, and we '
+            + 'would rather ask twice than lose you over a bad afternoon.'],
+  },
 };
 
 // Every counter sells the list data/shops.json gives its act, gear included.
@@ -9777,6 +10272,110 @@ const NPCS = {
     'Any of them. They are all the same session.',
     'The open one is open because somebody finished. That does happen.',
   ]),
+  // --- EVERGREEN residents ---------------------------------------------
+  // Every one of them is warm, responsive, and never asks him anything. That is
+  // the family archetype from docs/03, worn by strangers, and it is the whole
+  // quest: none of it is cruel and none of it is about him.
+  ever_host: () => {
+    if (Player.flags.everHosted) {
+      return ['Take your time. There is no part of the day you are late for.'];
+    }
+    Player.flags.everHosted = true;
+    return ['Oh - hello! Are you visiting? People do visit.',
+            'This is Evergreen. Twelve households, and room for more.',
+            'You can go anywhere. There is nowhere you should not go.',
+            'If you need anything at all, there is a help point on every green.'];
+  },
+  ever_neighbour: () => ([
+    'Lovely day. It is a lovely day most days.',
+    'We had a bring-and-share on Tuesday. You should come to the next one.',
+    'It is on Tuesday.',
+  ]),
+  ever_gardener: () => {
+    if (Player.flags.everGarden) {
+      return ['I will get to the back bed. There is no hurry on it.'];
+    }
+    Player.flags.everGarden = true;
+    return ['I do the beds along the front. They come up every year.',
+            'Same flowers. Same order. I did wonder about that, once.',
+            'I put in a ticket and somebody came out and had a look.',
+            'They were very good about it. I do not wonder about it now.'];
+  },
+  ever_kid: () => ([
+    'Are you new? Everyone is new for a bit and then they are not.',
+    'I am going to be something when I grow up. I have not picked.',
+    'There is no rush. Mum says there is no rush.',
+  ]),
+  // Household 4114. She is warm, she is pleased to see him, and she does not
+  // ask him a single question. Whether this is his mother is never answered and
+  // must never be answered - see docs/02 and docs/03.
+  ever_resident: () => {
+    if (Player.flags.everResident) {
+      return ['He will be back at four. It is always about four.'];
+    }
+    Player.flags.everResident = true;
+    return ['Come in, come in. Sit anywhere.',
+            'You have caught me between things. I am always between things.',
+            'It is only me at the moment - the others are out.',
+            'My husband is at work and my daughter is at her friend\'s.',
+            'And my boy is at school. He is at school today.',
+            'It is a Tuesday, so he is at school.',
+            'Sit down, love. I will not ask you anything.'];
+  },
+  ever_teacher: () => ([
+    'We are on lesson one. We are often on lesson one.',
+    'They know it. It does no harm to know it well.',
+  ]),
+  ever_pupil: () => (['We are glad to be here.']),
+  ever_pupil_two: () => (['Being glad is how we know it is working.']),
+  ever_orchardman: () => {
+    if (Player.flags.everOrchard) {
+      return ['The water is down. It has been down since I got here.'];
+    }
+    Player.flags.everOrchard = true;
+    return ['Good orchard, this. Dry all the way to the roots.',
+            'You will have seen the one in the middle. That is the good tree.',
+            'Somebody tied a note to it before I came. I have left it where it is.',
+            'It is not mine to move.'];
+  },
+  ever_stander: () => ([
+    'I like it here at the edge. You can see the far side of it.',
+    'They are still building. It is going to be lovely.',
+  ]),
+  ever_stander_two: () => ([
+    'I come out most days and have a look at the progress.',
+  ]),
+  ever_stander_three: () => ([
+    'There has not been any progress. That is alright.',
+  ]),
+  // The desk. It never refuses. It asks three times, kindly, and opens the door.
+  ever_deskclerk: () => {
+    const asked = Player.flags.everAsked || 0;
+    if (Player.flags.everOut) {
+      return ['You came back! People do come back.',
+              'Your session is still open. It was never closed.'];
+    }
+    if (asked === 0) {
+      Player.flags.everAsked = 1;
+      return ['Hello. What can I do for you?',
+              'Ah. You would like to leave.',
+              'That is always available. I want to say that first.',
+              'Only - are you sure? Most people who ask are having a bad afternoon.',
+              'Come back and tell me again if you still want to.'];
+    }
+    if (asked === 1) {
+      Player.flags.everAsked = 2;
+      return ['You still want to leave.',
+              'I have to ask once more. It is on the card and I do agree with it.',
+              'Is there anything here that would keep you, if we fixed it?',
+              'No. Alright. That is a real answer and I will not argue with it.'];
+    }
+    Player.flags.everAsked = 3;
+    return ['Then it is done. There is nothing to sign.',
+            'The way out is behind me. It was behind me the whole time.',
+            'It was very nice to meet you.',
+            'I will not remember this tomorrow. That is not a sad thing here.'];
+  },
   sable_shopkeeper: () => ([
     'Everything is in. Everything is always in. That is Sable.',
   ]),
@@ -10012,14 +10611,43 @@ function interact() {
                         speaker: 'system' }]);
       }
       return;
-    // The pod somebody finished with. It is the way into the Co-Living space.
+    // The pod somebody finished with. It is the way into Evergreen, and the
+    // longest optional thread in the game hangs off it.
     case 'pod_open':
       Dialogue.say([
         { text: 'This one is open. The headrest still has the shape of a head in it.',
           speaker: 'system' },
         { text: 'A demonstration lasts as long as the participant wishes.',
           speaker: 'vixtry' },
-      ]);
+        { text: 'He sits down in it. Nobody stops him.', speaker: 'system' },
+      ], () => {
+        Player.flags.everEntered = true;
+        Audio_.sfx('psy');
+        Fade.out(() => {
+          World.load('ever_arrival');
+          Audio_.play('evergreen');
+          Game.mode = 'field';
+        }, 1.1);
+      });
+      return;
+    // The help desk. Leaving is a ticket, and the ticket is always granted -
+    // after it has asked him to reconsider twice, sincerely.
+    case 'helpdesk':
+      if (World.id !== 'ever_desk') {
+        Dialogue.say([{ text: 'A help point. A button, and a card with one line on it.',
+                        speaker: 'system' },
+                      { text: 'IS ANYTHING THE MATTER? SOMEBODY WILL ATTEND.',
+                        speaker: 'vixtry' }]);
+        return;
+      }
+      if ((Player.flags.everAsked || 0) < 3) {
+        Dialogue.say([{ text: 'The door behind the desk. It does not open yet.',
+                        speaker: 'system' },
+                      { text: 'The clerk would like a word first, and is not '
+                            + 'preventing anything.', speaker: 'system' }]);
+        return;
+      }
+      Story.leaveEvergreen();
       return;
     case 'desk':
       Dialogue.say([{ text: 'A desk, squared away. Pen lined up with the edge.', speaker: 'system' },
@@ -10357,6 +10985,32 @@ const Story = {
         } else { Game.mode = 'field'; Game.onDefeat(); }
       });
     });
+  },
+
+  // Out of Evergreen, back into the pod room. The reward is deliberately money
+  // and consumables rather than power: docs/13 rule 3 - a sidequest never pays a
+  // power spike, and this one's actual reward is the ten notes.
+  leaveEvergreen() {
+    const first = !Player.flags.everOut;
+    Player.flags.everOut = true;
+    if (first) {
+      Player.money += 2000;
+      Player.addItem('Second Wind', 1);
+      Player.addItem('Full Spray', 2);
+    }
+    Fade.out(() => {
+      World.load('campus_pods');
+      Audio_.play('campus');
+      Game.mode = 'field';
+      Dialogue.say(first ? [
+        { text: 'The lid comes up on its own. The room is the room he left.',
+          speaker: 'system' },
+        { text: 'Eleven minutes, by the clock on the wall.', speaker: 'system' },
+        { text: '(Got 2000 Rell, Second Wind and Full Spray x2.)', speaker: 'system' },
+      ] : [
+        { text: 'The lid comes up on its own.', speaker: 'system' },
+      ]);
+    }, 1.1);
   },
 
   // --- Act 4 --------------------------------------------------------

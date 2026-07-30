@@ -386,6 +386,11 @@ const ROUTE = [
     at: [276, 98], kind: 'city', short: 'VIXTRY' },
   { label: 'THE LONG HALL',
     rooms: ['long_hall_1', 'long_hall_2', 'long_hall_3', 'long_hall_end'] },
+  // Evergreen is not a place. It has no square on the map and no warp target:
+  // the only way in is the pod, and the only way out is to ask.
+  { label: 'EVERGREEN',
+    rooms: ['ever_arrival', 'ever_green', 'ever_house', 'ever_school',
+            'ever_orchard', 'ever_edge', 'ever_ledger', 'ever_desk'] },
 ];
 function routeIndexOf(roomId) {
   return ROUTE.findIndex(a => a.rooms.includes(roomId));

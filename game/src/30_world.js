@@ -1909,6 +1909,276 @@ const ROOMS = {
   },
 
   // ===================================================================
+  // EVERGREEN - a Vixtry Co-Living space, entered through the open demo pod on
+  // the campus. Optional, and the longest thread in the game.
+  //
+  // The rule for every room in here: it is the prettiest place the player has
+  // been since Okobo, and nothing in it is threatening. The horror is entirely
+  // in what the residents say and what the ledger counts. Nobody is ever cruel
+  // to him and nobody ever stops him leaving - they only ask him to reconsider.
+  // ===================================================================
+  ever_arrival: {
+    floor: 'grass', wall: 'brick', light: 0.02, music: 'evergreen', grain: 0.015,
+    bright: true, tint: ['#7ae86a', 0.10],
+    map: [
+      '#####################',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#..................DD',
+      '#...................#',
+      '#####################',
+    ],
+    decor: [
+      { x: 3, y: 1, t: 'bunting' }, { x: 11, y: 1, t: 'bunting' },
+      { x: 17, y: 1, t: 'bunting' },
+      { x: 2, y: 6, t: 'plant' }, { x: 6, y: 6, t: 'plant' },
+      { x: 14, y: 6, t: 'plant' },
+    ],
+    objects: [
+      { x: 10, y: 3, t: 'billboard', label: 'sign' },
+      { x: 5, y: 4, t: 'note', note: 'ever_welcome' },
+      { x: 16, y: 2, t: 'helpdesk', label: 'help point' },
+    ],
+    npcs: [{ art: 'ever_host', x: 10, y: 5, key: 'ever_host' }],
+    exits: [{ x: 19, y: 6, w: 2, h: 1, to: 'ever_green', at: [2, 8] }],
+    start: [10, 6],
+  },
+
+  ever_green: {
+    floor: 'grass', wall: 'brick', light: 0.02, music: 'evergreen', grain: 0.015,
+    bright: true, tint: ['#7ae86a', 0.09],
+    map: [
+      '#################################',
+      '#...............................#',
+      '#..#####...#####...#####...######',
+      '#..#####...#####...#####...######',
+      '#..###D#...###D#...###D#...###D##',
+      '#...............................#',
+      '#...............................#',
+      '#...............................#',
+      'D...............................#',
+      '#...............................#',
+      '#....#####...........#####......#',
+      '#....#####...........#####......#',
+      '#....###D#...........###D#......#',
+      '#...............................#',
+      '#..............................DD',
+      '#################################',
+    ],
+    decor: [
+      { x: 5, y: 5, t: 'plant' }, { x: 13, y: 5, t: 'plant' },
+      { x: 21, y: 5, t: 'plant' }, { x: 29, y: 5, t: 'plant' },
+      { x: 7, y: 13, t: 'bunting' }, { x: 22, y: 13, t: 'bunting' },
+      { x: 16, y: 7, t: 'fountain' },
+    ],
+    objects: [
+      { x: 16, y: 6, t: 'fountain', label: 'fountain' },
+      { x: 10, y: 9, t: 'note', note: 'ever_noticeboard' },
+      { x: 26, y: 13, t: 'note', note: 'ever_ticket' },
+    ],
+    npcs: [
+      { art: 'ever_woman', x: 8, y: 6, key: 'ever_neighbour' },
+      { art: 'ever_man', x: 24, y: 8, key: 'ever_gardener' },
+      { art: 'ever_child', x: 18, y: 12, key: 'ever_kid' },
+    ],
+    exits: [
+      { x: 0, y: 8, to: 'ever_arrival', at: [17, 6] },
+      { x: 6, y: 4, to: 'ever_house', at: [8, 7], sfx: 'door' },
+      { x: 14, y: 4, to: 'ever_school', at: [10, 8], sfx: 'door' },
+      { x: 8, y: 12, to: 'ever_desk', at: [8, 7], sfx: 'door' },
+      { x: 31, y: 14, w: 2, h: 1, to: 'ever_orchard', at: [2, 6] },
+    ],
+    start: [2, 8],
+  },
+
+  // Household 4114. Four chairs. Three of them pushed in.
+  ever_house: {
+    floor: 'plank', wall: 'plaster', light: 0.04, music: 'evergreen', grain: 0.02,
+    bright: true,
+    map: [
+      '#################',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#.......D.......#',
+      '#################',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'stove' }, { x: 5, y: 1, t: 'picture' },
+      { x: 13, y: 1, t: 'cabinet' }, { x: 2, y: 6, t: 'plant' },
+      { x: 8, y: 5, t: 'rug' },
+    ],
+    objects: [
+      { x: 8, y: 3, t: 'table', label: 'table' },
+      { x: 12, y: 6, t: 'note', note: 'ever_four_chairs' },
+      { x: 3, y: 3, t: 'clock', label: 'clock' },
+    ],
+    npcs: [{ art: 'ever_woman', x: 8, y: 5, key: 'ever_resident' }],
+    exits: [{ x: 8, y: 8, to: 'ever_green', at: [6, 5], sfx: 'door' }],
+    start: [8, 7],
+  },
+
+  ever_school: {
+    floor: 'plank', wall: 'plaster', light: 0.05, music: 'evergreen', grain: 0.02,
+    bright: true,
+    map: [
+      '#####################',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#...................#',
+      '#.........D.........#',
+      '#####################',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'shelf' }, { x: 18, y: 1, t: 'cabinet' },
+      { x: 10, y: 8, t: 'rug' },
+    ],
+    objects: [
+      { x: 10, y: 1, t: 'mural_wall', label: 'the board' },
+      { x: 17, y: 7, t: 'note', note: 'ever_lesson' },
+    ],
+    npcs: [
+      { art: 'ever_child', x: 4, y: 3, key: 'ever_pupil' },
+      { art: 'ever_child', x: 12, y: 5, key: 'ever_pupil_two' },
+      { art: 'ever_teacher', x: 10, y: 2, key: 'ever_teacher' },
+    ],
+    exits: [{ x: 10, y: 9, to: 'ever_green', at: [14, 5], sfx: 'door' }],
+    start: [10, 8],
+  },
+
+  // The orchard, dry, with the good tree standing in it. Act 1's note said this
+  // is where it was if the water ever went down.
+  ever_orchard: {
+    floor: 'grass', wall: 'brick', light: 0.02, music: 'evergreen', grain: 0.02,
+    bright: true, tint: ['#8ae87a', 0.11],
+    map: [
+      '#############################',
+      '#...........................#',
+      '#..T....T....T....T....T....#',
+      '#...........................#',
+      '#...........................#',
+      'D...........................#',
+      '#...........................#',
+      '#..T....T....T....T....T....#',
+      '#...........................#',
+      '#.........................DD#',
+      '#############################',
+    ],
+    objects: [
+      { x: 14, y: 4, t: 'shrine', label: 'the good tree' },
+      { x: 6, y: 8, t: 'note', note: 'ever_orchard_note' },
+    ],
+    npcs: [{ art: 'ever_man', x: 20, y: 4, key: 'ever_orchardman' }],
+    exits: [
+      { x: 0, y: 5, to: 'ever_green', at: [30, 13] },
+      { x: 26, y: 9, w: 2, h: 1, to: 'ever_edge', at: [2, 5] },
+    ],
+    start: [2, 6],
+  },
+
+  // The edge. The residents stand at it, facing out, perfectly content.
+  ever_edge: {
+    floor: 'grass', wall: 'void', light: 0.35, music: 'evergreen', grain: 0.05,
+    tint: ['#8ae87a', 0.05],
+    map: [
+      '#########################',
+      '#.......................#',
+      '#.......................#',
+      '#.......................#',
+      'D.......................#',
+      '#.......................#',
+      '#.......................#',
+      '#.....................DD#',
+      '     ....................',
+      '        ...       ..     ',
+    ],
+    objects: [{ x: 12, y: 6, t: 'note', note: 'ever_boundary' }],
+    npcs: [
+      { art: 'ever_edge', x: 6, y: 8, key: 'ever_stander' },
+      { art: 'ever_edge', x: 14, y: 8, key: 'ever_stander_two' },
+      { art: 'ever_edge', x: 19, y: 8, key: 'ever_stander_three' },
+    ],
+    exits: [
+      { x: 0, y: 4, to: 'ever_orchard', at: [25, 9] },
+      { x: 22, y: 7, w: 2, h: 1, to: 'ever_ledger', at: [2, 5], sfx: 'door' },
+    ],
+    start: [2, 4],
+  },
+
+  // Behind the edge. Nobody stops him coming in here either.
+  ever_ledger: {
+    floor: 'concrete', wall: 'concrete', light: 0.5, music: 'longhall', grain: 0.06,
+    map: [
+      '#####################',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#...................#',
+      'D...................#',
+      '#...................#',
+      '#..===..===..===....#',
+      '#...................#',
+      '#####################',
+    ],
+    decor: [
+      { x: 2, y: 5, t: 'pipe' }, { x: 17, y: 1, t: 'pipe' },
+      { x: 10, y: 5, t: 'panel' },
+    ],
+    objects: [
+      { x: 5, y: 4, t: 'machine', label: 'rack' },
+      { x: 12, y: 4, t: 'machine', label: 'rack' },
+      { x: 9, y: 6, t: 'note', note: 'ever_ledger_note' },
+      { x: 16, y: 6, t: 'note', note: 'ever_do_not_close' },
+    ],
+    spawn: [{ name: 'Server Rack', n: 2 }],
+    exits: [{ x: 0, y: 5, to: 'ever_edge', at: [21, 7], sfx: 'door' }],
+    start: [2, 5],
+  },
+
+  // The way out, and the whole point: it is a help desk, and leaving is a
+  // ticket. Nobody refuses. They ask him to reconsider, three times, kindly.
+  ever_desk: {
+    floor: 'plank', wall: 'plaster', light: 0.03, music: 'evergreen', grain: 0.02,
+    bright: true,
+    map: [
+      '#################',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#...............#',
+      '#.......D.......#',
+      '#################',
+    ],
+    decor: [
+      { x: 2, y: 1, t: 'plant' }, { x: 13, y: 1, t: 'plant' },
+      { x: 8, y: 5, t: 'rug' }, { x: 2, y: 6, t: 'lamp' },
+    ],
+    objects: [
+      { x: 8, y: 2, t: 'counter', label: 'the desk' },
+      { x: 12, y: 6, t: 'note', note: 'ever_leaving' },
+      { x: 4, y: 3, t: 'helpdesk', label: 'the way out' },
+    ],
+    npcs: [{ art: 'ever_clerk', x: 8, y: 3, key: 'ever_deskclerk' }],
+    exits: [{ x: 8, y: 8, to: 'ever_green', at: [8, 13], sfx: 'door' }],
+    start: [8, 7],
+  },
+
+  // ===================================================================
   // ACT 4 - Vixtry Regional Campus, and the Long Hall.
   //
   // The campus is the one liminal space in the game that is not abandoned. It

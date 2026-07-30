@@ -1120,6 +1120,98 @@ def main():
                 errors.append(f"lore note {note} is unreachable")
             advance(page)
 
+        # --- EVERGREEN. Optional, and the longest thread in the game, so it is
+        # walked in full: nothing here is on the way to anything, which means
+        # nothing else in this file would ever touch it.
+        idle(page); face_entity(page, "campus_pods", "object", "pod_open")
+        press(page, "z"); advance(page)
+        if not until(page, "World.id === 'ever_arrival'", 5000):
+            errors.append("the open pod does not lead into Evergreen")
+        shot("58-evergreen")
+        if page.evaluate("() => Audio_.current") != "evergreen":
+            errors.append("Evergreen does not play its own theme")
+
+        for src, dst in (("ever_arrival", "ever_green"), ("ever_green", "ever_house"),
+                         ("ever_green", "ever_school"), ("ever_green", "ever_orchard"),
+                         ("ever_orchard", "ever_edge"), ("ever_edge", "ever_ledger"),
+                         ("ever_green", "ever_desk")):
+            idle(page)
+            if not enter(page, src, dst):
+                errors.append(f"{dst} cannot be reached from {src}")
+        shot("59-evergreen-green")
+
+        # Every resident speaks, and none of them asks him anything - that is the
+        # whole quest, so it is checked rather than trusted.
+        residents = [("ever_arrival", "ever_host"),
+                     ("ever_green", "ever_neighbour"), ("ever_green", "ever_gardener"),
+                     ("ever_green", "ever_kid"), ("ever_house", "ever_resident"),
+                     ("ever_school", "ever_teacher"), ("ever_school", "ever_pupil"),
+                     ("ever_orchard", "ever_orchardman"), ("ever_edge", "ever_stander")]
+        for room, key in residents:
+            if not talk_to(page, room, key):
+                errors.append(f"{key} said nothing")
+            lines = page.evaluate(
+                "() => [Dialogue.page ? Dialogue.page.text : '']"
+                "  .concat((Dialogue.queue || []).map(p => p.text)).join(' ')")
+            advance(page)
+            # Nobody in Evergreen asks him anything. The two exceptions are
+            # rhetorical and answered by the speaker in the same breath, so they
+            # are listed here rather than exempting the whole character.
+            RHETORICAL = ('Are you visiting?', 'Are you new?')
+            asked = [q for q in lines.split('? ') if q]
+            if "?" in lines and not any(r[:-1] in lines for r in RHETORICAL):
+                errors.append(f"{key} asks him a question: {lines!r}")
+
+        # All ten notes.
+        for room, note in (("ever_arrival", "ever_welcome"),
+                           ("ever_green", "ever_noticeboard"),
+                           ("ever_green", "ever_ticket"),
+                           ("ever_house", "ever_four_chairs"),
+                           ("ever_school", "ever_lesson"),
+                           ("ever_orchard", "ever_orchard_note"),
+                           ("ever_edge", "ever_boundary"),
+                           ("ever_ledger", "ever_ledger_note"),
+                           ("ever_ledger", "ever_do_not_close"),
+                           ("ever_desk", "ever_leaving")):
+            idle(page)
+            if not face_entity(page, room, "object", note):
+                errors.append(f"Evergreen note {note} is not placed in {room}")
+                continue
+            press(page, "z"); page.wait_for_timeout(250)
+            if not page.evaluate("() => Dialogue.active"):
+                errors.append(f"Evergreen note {note} is unreachable")
+            advance(page)
+
+        # The way out. The clerk asks twice and then opens the door; the door
+        # must refuse until he has.
+        idle(page); face_entity(page, "ever_desk", "object", "helpdesk")
+        press(page, "z"); advance(page)
+        if page.evaluate("() => World.id") != "ever_desk":
+            errors.append("the door out opened before the clerk had been asked")
+        before = page.evaluate("() => Player.money")
+        for _ in range(3):
+            if not talk_to(page, "ever_desk", "ever_deskclerk"):
+                errors.append("the desk clerk said nothing")
+            advance(page)
+        if page.evaluate("() => Player.flags.everAsked") != 3:
+            errors.append("asking the clerk three times did not open the way out")
+        idle(page); face_entity(page, "ever_desk", "object", "helpdesk")
+        press(page, "z"); advance(page)
+        if not until(page, "World.id === 'campus_pods'", 5000):
+            errors.append("leaving Evergreen does not come back out of the pod")
+        advance(page)
+        if page.evaluate("() => Player.money") <= before:
+            errors.append("finishing Evergreen paid nothing")
+        if not page.evaluate("() => !!Player.bag['Second Wind']"):
+            errors.append("finishing Evergreen did not hand over its items")
+        shot("60-out-of-evergreen")
+        # And it is re-enterable, because nothing in this game is failable.
+        idle(page); face_entity(page, "campus_pods", "object", "pod_open")
+        press(page, "z"); advance(page)
+        if not until(page, "World.id === 'ever_arrival'", 5000):
+            errors.append("Evergreen cannot be re-entered after leaving")
+        page.evaluate("() => { World.load('campus_pods'); Game.mode = 'field'; }")
+
         # The Long Hall, three rooms of it, and the Custodian at the end.
         page.evaluate("() => { Player.level = 35; Player.exp = Player.expToReach(35);"
                       " Player.restore(); }")

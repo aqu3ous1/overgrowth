@@ -1,6 +1,6 @@
 # 13 — Sidequests
 
-Twenty total, eight of them in Ondo. The primary money source (~45% of player income) and the
+Twenty-one total, eight of them in Ondo. The primary money source (~45% of player income) and the
 game's main opportunity to be charming before it stops being charming.
 
 ## Rules
@@ -92,6 +92,55 @@ prompt, no confirmation, no consequence, and no NPC ever refers to it. The playe
 | 20 | **Badge** | Intern | He's lost his badge and can't get back to his desk. Finding it takes four minutes. He is extremely grateful and returns to work. | 1,500 Rell, Thin Static ×2 |
 
 **The last sidequest in the game is helping someone get back inside.** Nothing points at this.
+
+| # | Quest | Giver | Summary | Reward |
+|---|---|---|---|---|
+| 21 | **Evergreen** | *(no giver)* | The open demonstration pod on the campus. Sitting in it puts the boy inside a Vixtry Co-Living space. | 2,000 Rell, Second Wind, Full Spray ×2 |
+
+### #21 — Evergreen
+
+**The longest sidequest in the game, and entirely optional.** Eight rooms, ten notes, thirteen
+speaking parts. There is no giver, no quest marker, and no NPC anywhere who mentions it: the only
+thing pointing at it is an open pod with the shape of a head still in the headrest.
+
+Inside is the prettiest place the player has been since Okobo. Bright green, bunting, a fountain that
+runs, twelve households, a school, and an orchard. **Nothing in Evergreen is hostile and nothing in
+it stops him** — the residents are delighted to see him, the help points are sincere, and the way out
+is available from the first minute.
+
+The dystopia is entirely in what is said:
+
+- Every resident is **warm, responsive, and never asks him a single question.** That is the family
+  archetype from [03](03-characters.md), worn by strangers, and no line in the quest points at it.
+- Wanting to leave is a **support ticket**, and tickets get resolved. The gardener wondered about
+  something once, put in a ticket, somebody came out and had a look, and he does not wonder about it
+  now. He says this cheerfully, because he is cheerful.
+- It has been **Tuesday** for nine years. The noticeboard is a stack of identical notices, all for
+  Tuesday, and the school has been on lesson one for as long as anyone has been there.
+- The **orchard is the Sunken Orchard, dry, with the good tree standing in it** — and the note tied
+  to its branch is the same note the player read in Act 1, in the same handwriting, unweathered. This
+  is the one payoff in the game for a first-hour collectible read.
+- At the boundary, residents stand facing outward watching construction that has not moved since the
+  date at the bottom of the sign. They are content about it.
+- Behind the boundary, the **session ledger**: 812 households registered, 812 sessions open, 0 closed
+  at resident request, 41 requests received. And household 4114 — one session open, duration nine
+  years and one month, longest in the region, `DO NOT CLOSE`.
+
+**Household 4114's kitchen** is the room the quest exists for. A shopping list for four, entirely
+crossed off, and nothing in the kitchen. Four chairs; three pushed in. A woman who is very pleased he
+came, who says her husband is at work and her daughter is at her friend's and her boy is at school
+because it is a Tuesday, and who tells him to sit down and promises not to ask him anything.
+
+**Nothing confirms who she is.** She is not named, nobody names her, and the game never returns to
+it. The father's question stays open ([02](02-story.md)) and no line in Evergreen touches it. If the
+player wants this to be a coincidence, the game permits that reading and always will.
+
+**Leaving.** The way out is a help desk, and the clerk never refuses. He asks the boy to reconsider
+twice, sincerely, on the grounds that most people who ask are having a bad afternoon and he would
+rather ask twice than lose someone over one. Then he opens the door, tells the boy it was very nice
+to meet him, and says he will not remember this tomorrow — and that this is not a sad thing here.
+
+Eleven minutes have passed on the campus clock.
 
 ---
 

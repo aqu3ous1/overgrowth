@@ -83,7 +83,7 @@ grown" cutscene. Let the move list say it.
 | Mini-bosses | 4 |
 | Player moves | 8 Physical, 10 Special |
 | Enemy species | 45 ([12](12-bestiary.md)) |
-| Sidequests | 20 ([13](13-sidequests.md)) |
+| Sidequests | 21 ([13](13-sidequests.md)) |
 | Level cap | 45 |
 | Hidden collectibles | 10 |
 | Endings | 2 (standard, secret) |

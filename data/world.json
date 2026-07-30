@@ -222,6 +222,15 @@
       "area": "Vixtry Regional Campus",
       "act": 4,
       "reward_rell": 1500
+    },
+    {
+      "id": 21,
+      "name": "Evergreen",
+      "area": "Vixtry Regional Campus",
+      "act": 4,
+      "reward_rell": 2000,
+      "longest": true,
+      "why": "The longest thread in the game and entirely optional. Entered through the open demo pod on the campus, which teleports the player into a Vixtry Co-Living space: eight rooms of sunshine, twelve households, and a ledger. Nothing in it is hostile and nothing in it stops him. The reward is money and consumables per rule 3; the actual reward is the ten notes and one conversation in household 4114."
     }
   ],
   "lore_notes_per_area": {
@@ -233,7 +242,8 @@
     "Bellhouse Commons": 8,
     "Vixtry Regional Campus": 7,
     "The Long Hall": 2,
-    "The Root": 1
+    "The Root": 1,
+    "Evergreen (Co-Living)": 10
   },
   "pacing_hours": {
     "act0_and_threshold": [

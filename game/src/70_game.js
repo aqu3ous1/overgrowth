@@ -200,6 +200,69 @@ const NOTES = {
     pages: ['The grass is a maintenance issue and has been raised as one.',
             'It is not a maintenance issue.'],
   },
+  // --- EVERGREEN. Optional, and the longest thread in the game.
+  // The rule for all eight of these: the copy is sincere. Nothing in Evergreen
+  // is written by someone who thinks Evergreen is bad.
+  ever_welcome: {
+    title: 'WELCOME TO EVERGREEN',
+    pages: ['A Vixtry Co-Living community. Twelve households and room for more.',
+            'Weather: fine. Weather forecast: fine.',
+            'Residents are reminded that they are not required to be anywhere.'],
+  },
+  ever_noticeboard: {
+    title: 'THE NOTICEBOARD',
+    pages: ['Tuesday: bring-and-share on the green. Everyone welcome.',
+            'Under it, the same notice. Under that, the same notice.',
+            'They are all for Tuesday.'],
+  },
+  ever_ticket: {
+    title: 'A RESOLVED TICKET',
+    pages: ['Resident reports feeling that something is missing.',
+            'Attended. Resident reports feeling fine.',
+            'Resolution: no fault found. Closed.'],
+  },
+  ever_four_chairs: {
+    title: 'A SHOPPING LIST',
+    pages: ['Bread, and the good soap, and something for four.',
+            'The list is complete. Everything on it is crossed off.',
+            'There is nothing in the kitchen.'],
+  },
+  ever_lesson: {
+    title: 'TODAY\'S LESSON',
+    pages: ['1. We are glad to be here.',
+            '2. Being glad is how we know it is working.',
+            '3. If you are not glad, tell an adult, and an adult will attend to it.'],
+  },
+  ever_orchard_note: {
+    title: 'TIED TO A BRANCH',
+    pages: ['The water went down. This is where the good tree was.',
+            'The handwriting is the same as the one in the orchard back home.',
+            'It has not weathered at all.'],
+  },
+  ever_boundary: {
+    title: 'AT THE BOUNDARY',
+    pages: ['Beyond this point the community is still being built.',
+            'Thank you for your patience. Construction is ongoing.',
+            'The date at the bottom is nine years old.'],
+  },
+  ever_ledger_note: {
+    title: 'SESSION LEDGER',
+    pages: ['Region four. Households registered: 812. Sessions open: 812.',
+            'Sessions closed at resident request: 0.',
+            'Requests received: 41.'],
+  },
+  ever_do_not_close: {
+    title: 'FLAGGED',
+    pages: ['Household 4114. One session open. Duration nine years, one month.',
+            'Longest open session in the region.',
+            'DO NOT CLOSE. Refer upward. Do not discuss with the household.'],
+  },
+  ever_leaving: {
+    title: 'BEFORE YOU GO',
+    pages: ['Leaving is always available and always has been.',
+            'We only ask that you are sure, because most people are not, and we '
+            + 'would rather ask twice than lose you over a bad afternoon.'],
+  },
 };
 
 // Every counter sells the list data/shops.json gives its act, gear included.
@@ -507,6 +570,110 @@ const NPCS = {
     'Any of them. They are all the same session.',
     'The open one is open because somebody finished. That does happen.',
   ]),
+  // --- EVERGREEN residents ---------------------------------------------
+  // Every one of them is warm, responsive, and never asks him anything. That is
+  // the family archetype from docs/03, worn by strangers, and it is the whole
+  // quest: none of it is cruel and none of it is about him.
+  ever_host: () => {
+    if (Player.flags.everHosted) {
+      return ['Take your time. There is no part of the day you are late for.'];
+    }
+    Player.flags.everHosted = true;
+    return ['Oh - hello! Are you visiting? People do visit.',
+            'This is Evergreen. Twelve households, and room for more.',
+            'You can go anywhere. There is nowhere you should not go.',
+            'If you need anything at all, there is a help point on every green.'];
+  },
+  ever_neighbour: () => ([
+    'Lovely day. It is a lovely day most days.',
+    'We had a bring-and-share on Tuesday. You should come to the next one.',
+    'It is on Tuesday.',
+  ]),
+  ever_gardener: () => {
+    if (Player.flags.everGarden) {
+      return ['I will get to the back bed. There is no hurry on it.'];
+    }
+    Player.flags.everGarden = true;
+    return ['I do the beds along the front. They come up every year.',
+            'Same flowers. Same order. I did wonder about that, once.',
+            'I put in a ticket and somebody came out and had a look.',
+            'They were very good about it. I do not wonder about it now.'];
+  },
+  ever_kid: () => ([
+    'Are you new? Everyone is new for a bit and then they are not.',
+    'I am going to be something when I grow up. I have not picked.',
+    'There is no rush. Mum says there is no rush.',
+  ]),
+  // Household 4114. She is warm, she is pleased to see him, and she does not
+  // ask him a single question. Whether this is his mother is never answered and
+  // must never be answered - see docs/02 and docs/03.
+  ever_resident: () => {
+    if (Player.flags.everResident) {
+      return ['He will be back at four. It is always about four.'];
+    }
+    Player.flags.everResident = true;
+    return ['Come in, come in. Sit anywhere.',
+            'You have caught me between things. I am always between things.',
+            'It is only me at the moment - the others are out.',
+            'My husband is at work and my daughter is at her friend\'s.',
+            'And my boy is at school. He is at school today.',
+            'It is a Tuesday, so he is at school.',
+            'Sit down, love. I will not ask you anything.'];
+  },
+  ever_teacher: () => ([
+    'We are on lesson one. We are often on lesson one.',
+    'They know it. It does no harm to know it well.',
+  ]),
+  ever_pupil: () => (['We are glad to be here.']),
+  ever_pupil_two: () => (['Being glad is how we know it is working.']),
+  ever_orchardman: () => {
+    if (Player.flags.everOrchard) {
+      return ['The water is down. It has been down since I got here.'];
+    }
+    Player.flags.everOrchard = true;
+    return ['Good orchard, this. Dry all the way to the roots.',
+            'You will have seen the one in the middle. That is the good tree.',
+            'Somebody tied a note to it before I came. I have left it where it is.',
+            'It is not mine to move.'];
+  },
+  ever_stander: () => ([
+    'I like it here at the edge. You can see the far side of it.',
+    'They are still building. It is going to be lovely.',
+  ]),
+  ever_stander_two: () => ([
+    'I come out most days and have a look at the progress.',
+  ]),
+  ever_stander_three: () => ([
+    'There has not been any progress. That is alright.',
+  ]),
+  // The desk. It never refuses. It asks three times, kindly, and opens the door.
+  ever_deskclerk: () => {
+    const asked = Player.flags.everAsked || 0;
+    if (Player.flags.everOut) {
+      return ['You came back! People do come back.',
+              'Your session is still open. It was never closed.'];
+    }
+    if (asked === 0) {
+      Player.flags.everAsked = 1;
+      return ['Hello. What can I do for you?',
+              'Ah. You would like to leave.',
+              'That is always available. I want to say that first.',
+              'Only - are you sure? Most people who ask are having a bad afternoon.',
+              'Come back and tell me again if you still want to.'];
+    }
+    if (asked === 1) {
+      Player.flags.everAsked = 2;
+      return ['You still want to leave.',
+              'I have to ask once more. It is on the card and I do agree with it.',
+              'Is there anything here that would keep you, if we fixed it?',
+              'No. Alright. That is a real answer and I will not argue with it.'];
+    }
+    Player.flags.everAsked = 3;
+    return ['Then it is done. There is nothing to sign.',
+            'The way out is behind me. It was behind me the whole time.',
+            'It was very nice to meet you.',
+            'I will not remember this tomorrow. That is not a sad thing here.'];
+  },
   sable_shopkeeper: () => ([
     'Everything is in. Everything is always in. That is Sable.',
   ]),
@@ -742,14 +909,43 @@ function interact() {
                         speaker: 'system' }]);
       }
       return;
-    // The pod somebody finished with. It is the way into the Co-Living space.
+    // The pod somebody finished with. It is the way into Evergreen, and the
+    // longest optional thread in the game hangs off it.
     case 'pod_open':
       Dialogue.say([
         { text: 'This one is open. The headrest still has the shape of a head in it.',
           speaker: 'system' },
         { text: 'A demonstration lasts as long as the participant wishes.',
           speaker: 'vixtry' },
-      ]);
+        { text: 'He sits down in it. Nobody stops him.', speaker: 'system' },
+      ], () => {
+        Player.flags.everEntered = true;
+        Audio_.sfx('psy');
+        Fade.out(() => {
+          World.load('ever_arrival');
+          Audio_.play('evergreen');
+          Game.mode = 'field';
+        }, 1.1);
+      });
+      return;
+    // The help desk. Leaving is a ticket, and the ticket is always granted -
+    // after it has asked him to reconsider twice, sincerely.
+    case 'helpdesk':
+      if (World.id !== 'ever_desk') {
+        Dialogue.say([{ text: 'A help point. A button, and a card with one line on it.',
+                        speaker: 'system' },
+                      { text: 'IS ANYTHING THE MATTER? SOMEBODY WILL ATTEND.',
+                        speaker: 'vixtry' }]);
+        return;
+      }
+      if ((Player.flags.everAsked || 0) < 3) {
+        Dialogue.say([{ text: 'The door behind the desk. It does not open yet.',
+                        speaker: 'system' },
+                      { text: 'The clerk would like a word first, and is not '
+                            + 'preventing anything.', speaker: 'system' }]);
+        return;
+      }
+      Story.leaveEvergreen();
       return;
     case 'desk':
       Dialogue.say([{ text: 'A desk, squared away. Pen lined up with the edge.', speaker: 'system' },
@@ -1087,6 +1283,32 @@ const Story = {
         } else { Game.mode = 'field'; Game.onDefeat(); }
       });
     });
+  },
+
+  // Out of Evergreen, back into the pod room. The reward is deliberately money
+  // and consumables rather than power: docs/13 rule 3 - a sidequest never pays a
+  // power spike, and this one's actual reward is the ten notes.
+  leaveEvergreen() {
+    const first = !Player.flags.everOut;
+    Player.flags.everOut = true;
+    if (first) {
+      Player.money += 2000;
+      Player.addItem('Second Wind', 1);
+      Player.addItem('Full Spray', 2);
+    }
+    Fade.out(() => {
+      World.load('campus_pods');
+      Audio_.play('campus');
+      Game.mode = 'field';
+      Dialogue.say(first ? [
+        { text: 'The lid comes up on its own. The room is the room he left.',
+          speaker: 'system' },
+        { text: 'Eleven minutes, by the clock on the wall.', speaker: 'system' },
+        { text: '(Got 2000 Rell, Second Wind and Full Spray x2.)', speaker: 'system' },
+      ] : [
+        { text: 'The lid comes up on its own.', speaker: 'system' },
+      ]);
+    }, 1.1);
   },
 
   // --- Act 4 --------------------------------------------------------

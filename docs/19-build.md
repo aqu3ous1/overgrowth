@@ -1,6 +1,6 @@
 # 19 — The Playable Build
 
-**0.6.0 — Acts 0 through 4, playable, on a desktop or a phone.** Title screen through
+**0.7.0 — Acts 0 through 4, playable, on a desktop or a phone.** Title screen through
 **Main Boss 3**, in a browser, in one self-contained HTML file with no assets and no dependencies.
 
 ```
@@ -9,6 +9,59 @@ python3 tools/build_game.py        # game/src/*.js + data/*.json -> game/overgro
 python3 tools/playtest.py          # drives it with a keyboard, fails on any error
 python3 tools/playtest_mobile.py   # drives it with a thumb, on an emulated phone
 ```
+
+## 0.7.0 — Evergreen
+
+The twenty-first sidequest, the longest in the game, and entirely optional. Eight rooms, ten notes,
+thirteen speaking parts, and its own music. Full design in [13](13-sidequests.md#21--evergreen).
+
+There is **no giver and no marker.** The only thing pointing at it is the open demonstration pod on
+the campus, with the shape of a head still in the headrest. Sitting in it teleports the player into a
+Vixtry Co-Living space.
+
+### The surface
+
+The prettiest place the player has been since Okobo, and deliberately more saturated than Okobo ever
+was: bunting, a fountain that runs, twelve households, a school, an orchard, and residents who are
+delighted he came. **Nothing in Evergreen is hostile, and nothing in it stops him.** Its theme is the
+only track in the game with no seventh anywhere in it — plain major triads over a plain major bass,
+which is exactly what makes it unsettling next to Okobo's Amaj7.
+
+### The core
+
+All of it is in the dialogue, and none of it is cruel:
+
+- Every resident is **warm, responsive, and never asks him a single question.** That is the family
+  archetype from [03](03-characters.md) worn by strangers, and no line points at it. The playtest
+  asserts it — the two rhetorical questions in the whole area are allowlisted by name.
+- Wanting to leave is a **support ticket**, and tickets get resolved. The gardener wondered about
+  something once, put in a ticket, somebody came out and had a look, and he does not wonder about it
+  now. He says this cheerfully.
+- It has been **Tuesday for nine years.**
+- The orchard is the **Sunken Orchard, dry, with the good tree standing in it** — and the note tied to
+  its branch is the Act 1 note, same handwriting, unweathered.
+- At the boundary, residents watch construction that has not moved since a date nine years old, and
+  are content about it.
+- Behind the boundary, the ledger: **812 sessions open, 0 closed at resident request, 41 requests
+  received.** Household 4114, one session open, nine years and one month, `DO NOT CLOSE`.
+
+**Household 4114's kitchen** is the room the quest exists for, and the strict rule on it is that
+nothing is confirmed. A woman who is very pleased he came, a shopping list for four entirely crossed
+off, nothing in the kitchen, four chairs with three pushed in — and a sentence about it being a
+Tuesday so her boy is at school. She is not named, nobody names her, and the game never returns to
+it. The father's question stays open ([02](02-story.md)) and no line in Evergreen touches it.
+
+### Leaving
+
+The way out is a **help desk**, and the clerk never refuses. He asks the boy to reconsider twice,
+sincerely, because most people who ask are having a bad afternoon and he would rather ask twice than
+lose someone over one. Then he opens the door and says he will not remember this tomorrow, and that
+this is not a sad thing here.
+
+Eleven minutes have passed on the campus clock. The quest is re-enterable, because nothing in this
+game is failable.
+
+**1343 checks, 57 matchups in target, both playtests clean.**
 
 ## 0.6.0 — Act 4
 

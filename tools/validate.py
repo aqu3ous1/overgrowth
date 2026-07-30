@@ -617,7 +617,12 @@ check(
 )
 
 quests = world["sidequests"]
-check(len(quests) == 20, f"Expected 20 sidequests, found {len(quests)}")
+# Twenty designed in the first draft, plus Evergreen, which was added later and
+# is flagged `longest` so this reads as an intentional twenty-first rather than
+# a miscount.
+check(len(quests) == 21, f"Expected 21 sidequests, found {len(quests)}")
+check(sum(1 for q in quests if q.get("longest")) == 1,
+      "exactly one sidequest should be marked the longest in the game")
 ondo = [q for q in quests if q["area"] == "Ondo"]
 check(len(ondo) == 8, f"Expected 8 sidequests in Ondo, found {len(ondo)}")
 check(
@@ -635,14 +640,18 @@ for q in quests:
 # Act 3 grew in 0.5.0 - the market row, the overpass, the service level under
 # the rail, the mural corridor, 4C and the laundry all carry one - so the
 # allocation grew with it rather than the new rooms being left blank.
-NOTE_TOTAL = 38
+NOTE_TOTAL = 48
 check(
     sum(world["lore_notes_per_area"].values()) == NOTE_TOTAL,
     f"There must be {NOTE_TOTAL} lore notes in total, "
     f"not {sum(world['lore_notes_per_area'].values())}",
 )
+# Notes hang off the ten major areas, plus Evergreen, which is a sidequest with
+# rooms rather than an eleventh area on the map.
+SUB_AREAS = {"Evergreen (Co-Living)"}
 for a in world["lore_notes_per_area"]:
-    check(a in area_names, f"Lore notes assigned to unknown area {a!r}")
+    check(a in area_names or a in SUB_AREAS,
+          f"Lore notes assigned to unknown area {a!r}")
 
 check(
     abs(sum(world["income_share"].values()) - 1.0) < 1e-9,

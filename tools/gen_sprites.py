@@ -342,6 +342,16 @@ PEOPLE = {
     "vix_eng":      dict(hair="thin", glasses=True),
     "vix_manager":  dict(hair="short", coat=True),
     "vix_janitor":  dict(hair="thin", apron=True, stoop=True),
+    # Evergreen. Nobody here is stooped either, and nobody is wearing a coat -
+    # it does not get cold. They are dressed the way people in a brochure are
+    # dressed, and their palettes are the most saturated in the game.
+    "ever_host":    dict(hair="short"),
+    "ever_woman":   dict(hair="long"),
+    "ever_man":     dict(hat="brim", hair="short"),
+    "ever_child":   dict(child=True, hair="wild"),
+    "ever_teacher": dict(hair="bun", glasses=True),
+    "ever_edge":    dict(hair="thin"),
+    "ever_clerk":   dict(hair="bun", apron=True),
 }
 
 
@@ -1082,6 +1092,13 @@ PALETTES.update({
     "vix_desk":     person_pal("#b9a58e", "#dfe4ea", "#8e8478", "#3a3a44", "#4a8ad0", "#2f3442"),
     "vix_eng":      person_pal("#7fb6c6", "#e8eaf0", "#c8c0b0", "#3a3a44", "#4a8ad0", "#2f3442"),
     "vix_manager":  person_pal("#c2a086", "#2f3442", "#4a3524", "#3a3a44", "#f0f2f7", "#22242c"),
+    "ever_host":    person_pal("#e0a878", "#4ac06a", "#3a2a1c", "#3a3a44", "#fff2b0", "#3a8a4a"),
+    "ever_woman":   person_pal("#e8b48a", "#f0708a", "#5a3a24", "#3a3a44", "#fff2b0", "#c04a6a"),
+    "ever_man":     person_pal("#d8a878", "#4a9ae0", "#3f2a1a", "#e8d060", "#fff2b0", "#3a6ac0"),
+    "ever_child":   person_pal("#f0c49a", "#f0c040", "#7a4a24", "#4ac06a"),
+    "ever_teacher": person_pal("#e0a878", "#a06ad0", "#4a3324", "#3a3a44", "#fff2b0", "#7a4ac0"),
+    "ever_edge":    person_pal("#e8b48a", "#e8e4d8", "#8e8478", "#3a3a44", "#fff2b0", "#c8c4b8"),
+    "ever_clerk":   person_pal("#d8a878", "#4ac0b0", "#3a2a1c", "#3a3a44", "#ffffff", "#3a8a8a"),
     "vix_janitor":  person_pal("#a8a094", "#c9c4bc", "#8e8478", "#3a3a44", "#e4e0d8", "#43413a"),
     "bell_7b":      person_pal("#b9a58e", "#5a5a6e", "#8a8478"),
 })

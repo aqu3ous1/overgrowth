@@ -166,6 +166,57 @@ last column of that row undefined. That is invisible in the source and shows up 
 can walk through, so it is a check now — along with one that every room appears on exactly one leg
 of the map's route, since a room the map does not know about is a room the warp device cannot name.
 
+### Cities that look like cities
+
+A building in this renderer is a block of wall tiles: the bottom row is the
+shopfront you walk up to and everything above is roof. Every structure in the game
+was therefore **one storey tall by construction** — correct for Okobo, wrong for a
+capital and a metropolis.
+
+Rooms marked `tall` now read their blocks as buildings with floors: bottom row is
+the shopfront, the top row is the roofline, and every row between is a storey of
+windows. Height comes from the map, so a nine-row block is a seven-floor tower and
+the skyline is laid out rather than drawn. Ondo and Sable City grew taller — Sable
+by four rows, Ondo by three — so towers now run off the top of the frame and the
+street reads as a canyon between them.
+
+Windows are lit at about 45%, some with a silhouette in them. Each floor up is lit
+a little more than the one below, because the street is in shadow and the top of
+the building is not, and that gradient is most of what sells height in a flat
+projection.
+
+### The bug underneath that
+
+The lit windows did not light. `hash2`, the deterministic noise every procedural
+texture in the game is built on, **could not return a value of 0.5 or higher for
+any input at all**:
+
+```
+mean 0.2502   >0.5: 0.0%
+deciles  19.9 20.0 20.1 20.1 19.9 0.0 0.0 0.0 0.0 0.0
+```
+
+`h * 1274126177` overflowed into a double, the following `>>` truncated it, and the
+top bit was always zero. So every `hash2(...) > 0.5x` test in the codebase was dead
+— rust streaks on the works, shingle highlights, roof furniture, lit windows. All
+authored, all exported, none ever drawn. It multiplies through `Math.imul` now:
+mean 0.4996, deciles within 0.2%.
+
+This is the same shape as everything else in this release. The detail existed; the
+thing that would have drawn it didn't work.
+
+### Coordinates, again
+
+Growing the two cities invalidated every hardcoded tile in `playtest.py` at once,
+and produced eighteen failures that read like game bugs — *"ondo_baker said
+nothing"*, *"the dry fountain errand paid nothing"* — when the test was simply
+standing in the wrong place.
+
+It finds things by name now. `talk_to` looks an NPC up in the room's own table and
+stands beside it; `enter` finds the door leading to a named room; the note sweep
+locates each note by the note it holds. Moving a person, a door, or the whole city
+they are in no longer silently points a check at an empty tile.
+
 **1228 checks, 57 matchups in target, both playtests clean.**
 
 ## 0.4.0 — Act 3, critical hits, and buildings that look like buildings

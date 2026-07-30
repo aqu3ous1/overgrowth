@@ -237,6 +237,71 @@ def idle(page, ms=6000):
     return ok and page.evaluate("() => Game.mode === 'field'")
 
 
+def face_entity(page, room, kind, key):
+    """Stand one tile below the named entity and look up at it.
+
+    Found by name in the room's own tables, so moving a person - or the whole
+    city they stand in - does not silently point this at an empty tile.
+    """
+    spot = page.evaluate("""([room, kind, key]) => {
+      const r = ROOMS[room];
+      const list = kind === 'npc' ? (r.npcs || []) : (r.objects || []);
+      const e = list.find(o => (o.key || o.note || o.t) === key || o.note === key);
+      return e ? [e.x, e.y] : null;
+    }""", [room, kind, key])
+    if not spot:
+        return None
+    tx, ty = spot
+    for dx, dy, face in ((0, 1, "up"), (0, -1, "down"), (1, 0, "left"), (-1, 0, "right")):
+        ok = page.evaluate("""([room, x, y]) => {
+          if (World.id !== room) World.load(room);
+          return !World.solidAt(x*16+8, y*16+8);
+        }""", [room, tx + dx, ty + dy])
+        if ok:
+            put(page, room, tx + dx, ty + dy, face)
+            return (tx + dx, ty + dy, face)
+    return None
+
+
+def talk_to(page, room, key):
+    """Face an NPC and press Z. True if it said something."""
+    if not face_entity(page, room, "npc", key):
+        return False
+    idle(page)
+    press(page, "z")
+    page.wait_for_timeout(300)
+    return bool(page.evaluate("() => Dialogue.active"))
+
+
+def enter(page, room, dest):
+    """Walk from `room` through the door that leads to `dest`."""
+    spot = page.evaluate("""([room, dest]) => {
+      const r = ROOMS[room];
+      const x = (r.exits || []).find(e => e.to === dest);
+      if (!x) return null;
+      // Stand just outside the exit rectangle, on whichever side is walkable,
+      // then the caller walks into it.
+      const w = x.w || 1, h = x.h || 1;
+      const cands = [
+        [x.x + ((w - 1) >> 1), x.y + h, 'up', 'ArrowUp'],
+        [x.x + ((w - 1) >> 1), x.y - 1, 'down', 'ArrowDown'],
+        [x.x + w, x.y + ((h - 1) >> 1), 'left', 'ArrowLeft'],
+        [x.x - 1, x.y + ((h - 1) >> 1), 'right', 'ArrowRight'],
+      ];
+      if (World.id !== room) World.load(room);
+      for (const c of cands) {
+        if (c[0] < 0 || c[1] < 0 || c[0] >= World.w || c[1] >= World.h) continue;
+        if (!World.solidAt(c[0]*16+8, c[1]*16+8)) return c;
+      }
+      return null;
+    }""", [room, dest])
+    if not spot:
+        return False
+    tx, ty, face, key = spot
+    put(page, room, tx, ty, face)
+    return walk(page, key, 600, dest)
+
+
 def state(page):
     return page.evaluate("() => ({mode: Game.mode, room: World.id, lvl: Player.level, "
                          "hp: Player.hp, name: Player.name, money: Player.money})")
@@ -373,14 +438,10 @@ def main():
         shot("11-okobo")
 
         # every NPC must say something
-        for key, tx, ty, face in [("okobo_woman", 5, 9, "up"), ("okobo_man", 12, 6, "up"),
-                                  ("okobo_child", 16, 11, "up"), ("okobo_elder", 20, 8, "up")]:
-            put(page, "okobo", tx, ty, face)
-            idle(page)
-            press(page, "z")
-            page.wait_for_timeout(280)
-            if not page.evaluate("() => Dialogue.active"):
+        for key in ("okobo_woman", "okobo_man", "okobo_child", "okobo_elder"):
+            if not talk_to(page, "okobo", key):
                 errors.append(f"{key} said nothing")
+            advance(page)
             advance(page)
         shot("12-dialogue")
 
@@ -567,19 +628,15 @@ def main():
         shot("21-ondo")
 
         # every Ondo NPC must speak
-        for key, tx, ty, face in [("ondo_clerk", 8, 7, "up"), ("ondo_baker", 20, 10, "up"),
-                                  ("ondo_bench", 12, 14, "up"), ("ondo_courier", 25, 7, "up")]:
-            idle(page)
-            put(page, "ondo", tx, ty, face)
-            press(page, "z")
-            page.wait_for_timeout(280)
-            if not page.evaluate("() => Dialogue.active"):
+        for key in ("ondo_clerk", "ondo_baker", "ondo_bench", "ondo_courier"):
+            if not talk_to(page, "ondo", key):
                 errors.append(f"{key} said nothing")
+            advance(page)
             advance(page)
 
         # the billboard is the first Vixtry sighting and must speak in its own voice
         idle(page)
-        put(page, "ondo", 22, 7, "up")
+        face_entity(page, "ondo", "object", "billboard")
         press(page, "z")
         page.wait_for_timeout(280)
         speaker = page.evaluate("() => Dialogue.page && Dialogue.page.speaker")
@@ -590,17 +647,16 @@ def main():
 
         # the dry fountain errand pays out
         before = page.evaluate("() => Player.money")
-        idle(page); put(page, "ondo", 15, 8, "up"); press(page, "z"); advance(page)
+        idle(page); face_entity(page, "ondo", "object", "fountain")
+        press(page, "z"); advance(page)
         if page.evaluate("() => Player.money") <= before:
             errors.append("the dry fountain errand paid nothing")
 
         # the boarding-house man, seen once
-        for room, tx, ty in [("boarding_house", 23, 5), ("records_room", 8, 13)]:
-            idle(page); put(page, "ondo", tx, ty, "up")
-            hold(page, "ArrowUp", 700)
-            if not until(page, f"World.id === '{room}'", 4000):
+        for room in ("boarding_house", "records_room"):
+            idle(page)
+            if not enter(page, "ondo", room):
                 errors.append(f"could not enter {room}")
-            put(page, "ondo", 4, 8)
         idle(page); put(page, "boarding_house", 3, 4, "up"); press(page, "z"); advance(page)
         if not page.evaluate("() => !!Player.flags.boarderSeen"):
             errors.append("the boarding-house man never speaks")
@@ -628,8 +684,8 @@ def main():
             errors.append("the records collectible cannot be picked up")
 
         # into the winter and the works
-        idle(page); put(page, "ondo", 27, 13, "down")
-        walk(page, "ArrowDown", 900, "winter_road")
+        idle(page)
+        enter(page, "ondo", "winter_road")
         if not page.evaluate("() => World.id === 'winter_road'"):
             errors.append("Ondo does not lead to the winter road")
         shot("24-winter")
@@ -739,37 +795,35 @@ def main():
         shot("41-sable")
 
         # Everyone in Sable must speak, including the desk.
-        for key, tx, ty, face in [("sable_local", 7, 7, "up"), ("sable_kid", 20, 10, "up"),
-                                  ("sable_rail", 30, 7, "up"), ("vixtry_desk", 14, 13, "up")]:
-            idle(page); put(page, "sable", tx, ty, face)
-            press(page, "z"); page.wait_for_timeout(280)
-            if not page.evaluate("() => Dialogue.active"):
+        for key in ("sable_local", "sable_kid", "sable_rail", "vixtry_desk"):
+            if not talk_to(page, "sable", key):
                 errors.append(f"{key} said nothing")
+            advance(page)
             advance(page)
 
         # The billboard and a demo pod speak in the Vixtry voice.
-        idle(page); put(page, "sable", 17, 7, "up")
+        idle(page); face_entity(page, "sable", "object", "billboard")
         press(page, "z"); page.wait_for_timeout(280)
         shot("42-sable-billboard")
         advance(page)
-        idle(page); put(page, "sable", 26, 7, "up")
+        idle(page); face_entity(page, "sable", "object", "pod")
         press(page, "z"); page.wait_for_timeout(600)
         advance(page)
 
         # The transit hub, and the line about his father, which nobody flags.
-        idle(page); put(page, "sable", 24, 5, "up")
-        walk(page, "ArrowUp", 500, "sable_transit")
+        idle(page)
+        enter(page, "sable", "sable_transit")
         if not page.evaluate("() => World.id === 'sable_transit'"):
             errors.append("the transit hub cannot be entered")
-        idle(page); put(page, "sable_transit", 4, 5, "up")
+        idle(page); face_entity(page, "sable_transit", "npc", "vixtry_recruiter")
         press(page, "z"); advance(page)
         if not page.evaluate("() => !!Player.flags.fatherLine"):
             errors.append("the recruiter never delivers the line about the father")
         shot("43-transit")
 
         # The industrial district and Mini-Boss 2.
-        idle(page); put(page, "sable", 10, 14, "up")
-        walk(page, "ArrowUp", 600, "sable_works")
+        idle(page)
+        enter(page, "sable", "sable_works")
         if not page.evaluate("() => World.id === 'sable_works'"):
             errors.append("the works cannot be entered from Sable City")
         idle(page); put(page, "sable_works", 10, 7, "down")
@@ -813,16 +867,19 @@ def main():
             idle(page); put(page, "bellhouse_1", 10, 6)
 
         # Act 3's notes, and the Custodian who finally says something.
-        notes = [("border", 12, 7, "border_order"),
-                 ("sable_road", 5, 8, "transit_complaint"),
-                 ("sable", 9, 11, "vixtry_flyer"),
-                 ("sable_transit", 11, 5, "demo_terms"),
-                 ("bellhouse_ext", 16, 8, "rent_notice"),
-                 ("bellhouse_1", 7, 7, "artists_statement"),
-                 ("bellhouse_2", 12, 7, "maintenance_log"),
-                 ("bellhouse_3", 15, 8, "left_with_super")]
-        for room, tx, ty, note in notes:
-            idle(page); put(page, room, tx, ty, "up")
+        notes = [("border", "border_order"),
+                 ("sable_road", "transit_complaint"),
+                 ("sable", "vixtry_flyer"),
+                 ("sable_transit", "demo_terms"),
+                 ("bellhouse_ext", "rent_notice"),
+                 ("bellhouse_1", "artists_statement"),
+                 ("bellhouse_2", "maintenance_log"),
+                 ("bellhouse_3", "left_with_super")]
+        for room, note in notes:
+            idle(page)
+            if not face_entity(page, room, "object", note):
+                errors.append(f"lore note {note} is not placed in {room}")
+                continue
             press(page, "z"); page.wait_for_timeout(250)
             if not page.evaluate("() => Dialogue.active"):
                 errors.append(f"lore note {note} is unreachable")
@@ -858,7 +915,7 @@ def main():
         # Bellhouse's first floor. None of it is on the way to anything, which is
         # the only reason it needs walking here.
         for room, tx, ty, face, key, dest in (
-            ("sable", 1, 14, "left", "ArrowLeft", "sable_market"),
+            ("sable", 1, 18, "left", "ArrowLeft", "sable_market"),
             ("sable_market", 23, 5, "right", "ArrowRight", "sable_under"),
             ("sable_under", 21, 3, "right", "ArrowRight", "sable_overpass"),
             ("sable_overpass", 1, 2, "left", "ArrowLeft", "sable_transit"),

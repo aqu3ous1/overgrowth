@@ -601,13 +601,12 @@ const Battle = {
       Player.pp = Math.min(Player.maxPp, Player.pp + DATA.regen.PP + extra);
       Player.sp = Math.min(Player.maxSp, Player.sp + DATA.regen.SP + extra);
     }
-    // Steady Breathing. Silent when it does nothing, so a full-HP turn does not
-    // spend a message box saying so.
+    // Steady Breathing. Entirely silent - the HP bar moving is the whole
+    // message, and a box every single turn for five HP is a box you learn to
+    // mash through, which slows down the turns that do have something to say.
     const mend = Player.passive('hp_regen');
     if (mend && Player.hp > 0 && Player.hp < Player.maxHp) {
-      const got = Math.min(mend, Player.maxHp - Player.hp);
-      Player.hp += got;
-      this.push(`Steady breathing. ${got} HP back.`);
+      Player.hp = Math.min(Player.maxHp, Player.hp + mend);
     }
     if (this.homesick) {
       const chip = Math.max(1, Math.round(Player.maxHp * this.fx('chip', 'player').fraction));

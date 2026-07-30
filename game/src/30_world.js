@@ -358,6 +358,60 @@ function paintPanel(x, y, tx, ty, dim) {
 }
 const ROOFS = { brick: paintShingle, stone: paintSlate, concrete: paintPanel };
 
+// The floor slab and the roofline coping, per wall material - the same stone or
+// concrete the building is made of, seen edge-on.
+const STOREY_BAND = { concrete: '#727680', stone: '#9a9285', brick: '#8e6b5c' };
+const CORNICE = { concrete: '#8d919a', stone: '#a89f90', brick: '#b3aa9c' };
+
+// --- storeys ---------------------------------------------------------------
+// A building here is a block of wall tiles: the bottom row is the shopfront you
+// walk up to and everything above it is roof, which means every structure in the
+// game was one storey tall by construction. That is right for Okobo and wrong
+// for a capital.
+//
+// Rooms marked `tall: true` read their blocks differently: bottom row is still
+// the shopfront, the topmost row becomes the roofline, and every row between is
+// a floor of windows. Height then comes from the map - a four-row block is two
+// storeys, a seven-row block is five - so the city can be laid out rather than
+// drawn.
+function paintStorey(x, y, tx, ty, dim, floor) {
+  // Two windows per tile, not one. At sixteen pixels a single window per tile
+  // reads as a house; a city has to read as many small rooms stacked.
+  for (let i = 0; i < 2; i++) {
+    if (hash2(tx * 7 + i * 3, ty * 11 + 5) < 0.10) continue;   // a bay bricked up
+    const wx = x + 2 + i * 7;
+    const lit = hash2(tx * 13 + i * 5, ty * 3 + 1) > 0.54;
+    rect(wx, y + 3, 5, 9, shade('#191b21', dim));
+    rect(wx + 1, y + 4, 3, 7, lit ? '#d6c184' : shade('#39424c', dim));
+    rect(wx + 1, y + 4, 3, 2, lit ? '#f2e3ae' : shade('#4b5661', dim));
+    // A lit window occasionally has someone in it, which is one pixel and does
+    // more for the feeling of a populated city than any amount of wall texture.
+    if (lit && hash2(tx * 3 + i, ty * 17) > 0.78) rect(wx + 2, y + 7, 1, 3, '#3a2f28');
+  }
+  // The floor slab between storeys, which is what stops a stack of windows
+  // reading as one very tall window.
+  rect(x, y + TS - 2, TS, 1, shade('#23252b', dim));
+  rect(x, y + TS - 1, TS, 1, shade(floor, dim - 8));
+}
+
+// The roofline: a coping band along the bottom of the top row, so the building
+// visibly stops rather than fading into the sky.
+function paintCornice(x, y, tx, ty, dim, coping) {
+  rect(x, y + TS - 5, TS, 1, shade('#1c1e24', dim));
+  rect(x, y + TS - 4, TS, 3, shade(coping, dim + 10));
+  rect(x, y + TS - 1, TS, 1, shade('#212329', dim - 6));
+  // Roof furniture, sparsely: a vent housing or an aerial. Cities are cluttered
+  // on top and nobody ever draws it.
+  const h = hash2(tx * 23, ty * 41);
+  if (h > 0.80) {
+    rect(x + 4, y + 2, 7, 6, shade('#4a4e56', dim));
+    rect(x + 4, y + 2, 7, 2, shade('#5e636c', dim + 6));
+  } else if (h > 0.68) {
+    rect(x + 8, y + 1, 1, 8, shade('#6a6f78', dim));
+    rect(x + 5, y + 3, 7, 1, shade('#6a6f78', dim));
+  }
+}
+
 function paintVoid(x, y) { rect(x, y, TS, TS, '#000000'); }
 function paintDirt(x, y, tx, ty, dim) {
   rect(x, y, TS, TS, shade('#5a4a36', dim));
@@ -765,16 +819,20 @@ const ROOMS = {
             { name: "Someone's Bicycle", n: 1 }, { name: 'Roadside Shrine', n: 1 }],
     exits: [
       { x: 0, y: 4, w: 1, h: 2, to: 'clearing', at: [13, 3] },
-      { x: 23, y: 4, w: 1, h: 2, to: 'ondo', at: [2, 8] },
+      { x: 23, y: 4, w: 1, h: 2, to: 'ondo', at: [2, 11] },
     ],
     start: [2, 5],
   },
 
   ondo: {
+    tall: true,   // blocks are storeys, not roofs — see paintStorey
     floor: 'pavement', wall: 'stone', light: 0.16, music: 'ondo', grain: 0.035, bright: true,
     map: [
       '##############################',
-      '#............................#',
+      '#..#######..........#######..#',
+      '#..#######..........#######..#',
+      '#..#######..######..#######..#',
+      '#..#######..######..#######..#',
       '#..#######..######..#######..#',
       '#..#######..######..#######..#',
       '#..###D###..###D##..###D###..#',
@@ -782,7 +840,7 @@ const ROOMS = {
       '#............................#',
       'P............................#',
       'P............................#',
-      '#............................#',
+      '#....######............###...#',
       '#....######............###...#',
       '#....######............###...#',
       '#....###D#............###D...#',
@@ -792,30 +850,30 @@ const ROOMS = {
       '##############################',
     ],
     decor: [
-      { x: 10, y: 6, t: 'bunting' }, { x: 18, y: 6, t: 'bunting' },
-      { x: 4, y: 11, t: 'plant' }, { x: 27, y: 8, t: 'plant' },
-      { x: 17, y: 14, t: 'crates' },
+      { x: 10, y: 9, t: 'bunting' }, { x: 18, y: 9, t: 'bunting' },
+      { x: 4, y: 14, t: 'plant' }, { x: 27, y: 11, t: 'plant' },
+      { x: 17, y: 17, t: 'crates' },
     ],
     objects: [
-      { x: 15, y: 7, t: 'fountain', label: 'fountain' },
-      { x: 22, y: 6, t: 'billboard', label: 'billboard' },
+      { x: 15, y: 10, t: 'fountain', label: 'fountain' },
+      { x: 22, y: 9, t: 'billboard', label: 'billboard' },
     ],
     npcs: [
-      { art: 'ond_clerk', x: 8, y: 6, key: 'ondo_clerk' },
-      { art: 'ond_baker', x: 20, y: 9, key: 'ondo_baker' },
-      { art: 'ond_bench', x: 12, y: 13, key: 'ondo_bench' },
-      { art: 'ond_courier', x: 25, y: 6, key: 'ondo_courier' },
+      { art: 'ond_clerk', x: 8, y: 9, key: 'ondo_clerk' },
+      { art: 'ond_baker', x: 20, y: 12, key: 'ondo_baker' },
+      { art: 'ond_bench', x: 12, y: 16, key: 'ondo_bench' },
+      { art: 'ond_courier', x: 25, y: 9, key: 'ondo_courier' },
     ],
     exits: [
-      { x: 6, y: 4, to: 'ondo_shop', at: [4, 4], sfx: 'door' },
-      { x: 15, y: 4, to: 'ondo_inn', at: [4, 4], sfx: 'door' },
-      { x: 23, y: 4, to: 'boarding_house', at: [4, 6], sfx: 'door' },
-      { x: 8, y: 12, to: 'records_room', at: [4, 7], sfx: 'door' },
-      { x: 25, y: 12, to: 'ondo_grocer', at: [4, 4], sfx: 'door' },
-      { x: 0, y: 7, w: 1, h: 2, to: 'road_ondo', at: [21, 5] },
-      { x: 27, y: 15, w: 2, h: 1, to: 'winter_road', at: [2, 5] },
+      { x: 6, y: 7, to: 'ondo_shop', at: [4, 4], sfx: 'door' },
+      { x: 15, y: 7, to: 'ondo_inn', at: [4, 4], sfx: 'door' },
+      { x: 23, y: 7, to: 'boarding_house', at: [4, 6], sfx: 'door' },
+      { x: 8, y: 15, to: 'records_room', at: [4, 7], sfx: 'door' },
+      { x: 25, y: 15, to: 'ondo_grocer', at: [4, 4], sfx: 'door' },
+      { x: 0, y: 10, w: 1, h: 2, to: 'road_ondo', at: [21, 5] },
+      { x: 27, y: 18, w: 2, h: 1, to: 'winter_road', at: [2, 5] },
     ],
-    start: [4, 8],
+    start: [4, 11],
   },
 
   ondo_shop: {
@@ -837,7 +895,7 @@ const ROOMS = {
       { x: 7, y: 4, t: 'rug' }, { x: 10, y: 1, t: 'clock' },
     ],
     npcs: [{ art: 'ond_shop', x: 7, y: 2, key: 'ondo_shopkeeper', shop: 'ondo' }],
-    exits: [{ x: 7, y: 6, to: 'ondo', at: [6, 5] }],
+    exits: [{ x: 7, y: 6, to: 'ondo', at: [6, 8] }],
     start: [7, 5],
   },
 
@@ -861,7 +919,7 @@ const ROOMS = {
       { x: 4, y: 1, t: 'bunting' },
     ],
     npcs: [{ art: 'ond_grocer', x: 6, y: 2, key: 'ondo_grocer', shop: 'grocer' }],
-    exits: [{ x: 6, y: 6, to: 'ondo', at: [25, 13] }],
+    exits: [{ x: 6, y: 6, to: 'ondo', at: [25, 16] }],
     start: [6, 5],
   },
 
@@ -885,7 +943,7 @@ const ROOMS = {
     ],
     objects: [{ x: 2, y: 4, t: 'bed', label: 'bed', save: true }],
     npcs: [{ art: 'ond_inn', x: 7, y: 2, key: 'ondo_innkeeper' }],
-    exits: [{ x: 7, y: 6, to: 'ondo', at: [15, 5] }],
+    exits: [{ x: 7, y: 6, to: 'ondo', at: [15, 8] }],
     start: [7, 5],
   },
 
@@ -916,7 +974,7 @@ const ROOMS = {
       { art: 'tenant_three', x: 2, y: 5, key: 'tenant_three' },
       { art: 'tenant_five', x: 9, y: 3, key: 'tenant_five' },
     ],
-    exits: [{ x: 5, y: 6, to: 'ondo', at: [23, 5] }],
+    exits: [{ x: 5, y: 6, to: 'ondo', at: [23, 8] }],
     start: [5, 5],
   },
 
@@ -944,7 +1002,7 @@ const ROOMS = {
       { x: 2, y: 3, t: 'note', note: 'work_order' },
     ],
     npcs: [{ art: 'records', x: 9, y: 1, key: 'records_clerk' }],
-    exits: [{ x: 5, y: 7, to: 'ondo', at: [8, 13] }],
+    exits: [{ x: 5, y: 7, to: 'ondo', at: [8, 16] }],
     start: [5, 6],
   },
 
@@ -970,7 +1028,7 @@ const ROOMS = {
     ],
     spawn: [{ name: 'Frostbitten Glove', n: 2 }, { name: 'Coil', n: 1 }],
     exits: [
-      { x: 0, y: 4, w: 1, h: 2, to: 'ondo', at: [26, 14] },
+      { x: 0, y: 4, w: 1, h: 2, to: 'ondo', at: [26, 17] },
       { x: 21, y: 4, w: 1, h: 2, to: 'kestrel_yard', at: [2, 8] },
     ],
     start: [2, 5],
@@ -1212,11 +1270,12 @@ const ROOMS = {
 
   // The first thing in the game that is louder than he is.
   sable_road: {
+    tall: true,   // blocks are storeys, not roofs — see paintStorey
     floor: 'pavement', wall: 'concrete', light: 0.12, music: 'sable', grain: 0.05,
     bright: true, tint: ['#7aa8ff', 0.06],
     map: [
       '#########################',
-      '#.......................#',
+      '#..#######......######..#',
       '#..#######......######..#',
       '#..#######......######..#',
       '#..######D......#####D..#',
@@ -1236,26 +1295,31 @@ const ROOMS = {
     spawn: [{ name: 'Surplus Crate', n: 1 }, { name: 'Long Coat', n: 2 }],
     exits: [
       { x: 0, y: 5, w: 1, h: 2, to: 'border', at: [22, 6] },
-      { x: 24, y: 5, w: 1, h: 2, to: 'sable', at: [2, 9] },
+      { x: 24, y: 5, w: 1, h: 2, to: 'sable', at: [2, 13] },
     ],
     start: [2, 6],
   },
 
   sable: {
+    tall: true,   // blocks are storeys, not roofs — see paintStorey
     floor: 'pavement', wall: 'concrete', light: 0.02, music: 'sable', grain: 0.045,
     bright: true, tint: ['#ff6ad0', 0.08],
     map: [
       '##################################',
-      '#................................#',
+      '#..######..........######........#',
+      '#..######..........######........#',
+      '#..######..######..######........#',
+      '#..######..######..######........#',
+      '#..######..######..######..####..#',
+      '#..######..######..######..####..#',
       '#..######..######..######..####..#',
       '#..######..######..######..####..#',
       '#..#####D..#####D..#####D..###D..#',
       '#................................#',
-      '#................................#',
       'P................................#',
       'P................................#',
       '#................................#',
-      '#................................#',
+      '#....######........######........#',
       '#....######........######........#',
       '#....######........######........#',
       '#....#####D........#####D........#',
@@ -1264,36 +1328,36 @@ const ROOMS = {
       '##################################',
     ],
     decor: [
-      { x: 5, y: 5, t: 'neon_sign' }, { x: 13, y: 5, t: 'neon_sign' },
-      { x: 21, y: 5, t: 'neon_sign' }, { x: 28, y: 5, t: 'neon_sign' },
-      { x: 7, y: 14, t: 'neon_sign' }, { x: 21, y: 14, t: 'neon_sign' },
-      { x: 12, y: 9, t: 'bunting' }, { x: 24, y: 9, t: 'bunting' },
-      { x: 4, y: 9, t: 'crates' }, { x: 29, y: 10, t: 'barrel' },
-      { x: 17, y: 10, t: 'plant' },
+      { x: 5, y: 9, t: 'neon_sign' }, { x: 13, y: 9, t: 'neon_sign' },
+      { x: 21, y: 9, t: 'neon_sign' }, { x: 28, y: 9, t: 'neon_sign' },
+      { x: 7, y: 18, t: 'neon_sign' }, { x: 21, y: 18, t: 'neon_sign' },
+      { x: 12, y: 13, t: 'bunting' }, { x: 24, y: 13, t: 'bunting' },
+      { x: 4, y: 13, t: 'crates' }, { x: 29, y: 14, t: 'barrel' },
+      { x: 17, y: 14, t: 'plant' },
     ],
     objects: [
-      { x: 17, y: 6, t: 'billboard', label: 'billboard' },
-      { x: 26, y: 6, t: 'pod', label: 'demo pod' },
-      { x: 9, y: 10, t: 'note', note: 'vixtry_flyer' },
+      { x: 17, y: 10, t: 'billboard', label: 'billboard' },
+      { x: 26, y: 10, t: 'pod', label: 'demo pod' },
+      { x: 9, y: 13, t: 'note', note: 'vixtry_flyer' },
     ],
     npcs: [
-      { art: 'sab_local', x: 7, y: 6, key: 'sable_local' },
-      { art: 'sab_kid', x: 20, y: 9, key: 'sable_kid' },
-      { art: 'sab_rail', x: 30, y: 6, key: 'sable_rail' },
-      { art: 'vix_rep', x: 14, y: 12, key: 'vixtry_desk' },
+      { art: 'sab_local', x: 7, y: 10, key: 'sable_local' },
+      { art: 'sab_kid', x: 20, y: 13, key: 'sable_kid' },
+      { art: 'sab_rail', x: 30, y: 10, key: 'sable_rail' },
+      { art: 'vix_rep', x: 14, y: 16, key: 'vixtry_desk' },
     ],
     exits: [
-      { x: 0, y: 7, w: 1, h: 2, to: 'sable_road', at: [22, 6] },
-      { x: 0, y: 14, w: 1, h: 2, to: 'sable_market', at: [2, 5] },
-      { x: 8, y: 4, to: 'sable_shop', at: [7, 5], sfx: 'door' },
-      { x: 16, y: 4, to: 'sable_inn', at: [7, 5], sfx: 'door' },
-      { x: 24, y: 4, to: 'sable_transit', at: [8, 7], sfx: 'door' },
-      { x: 30, y: 4, to: 'sable_flat', at: [6, 5], sfx: 'door' },
-      { x: 10, y: 13, w: 1, h: 1, to: 'sable_works', at: [2, 7], sfx: 'door' },
-      { x: 24, y: 13, w: 1, h: 1, to: 'sable_arcade', at: [7, 6], sfx: 'door' },
-      { x: 30, y: 15, w: 2, h: 1, to: 'bellhouse_ext', at: [11, 8] },
+      { x: 0, y: 11, w: 1, h: 2, to: 'sable_road', at: [22, 6] },
+      { x: 0, y: 18, w: 1, h: 2, to: 'sable_market', at: [2, 5] },
+      { x: 8, y: 9, to: 'sable_shop', at: [7, 5], sfx: 'door' },
+      { x: 16, y: 9, to: 'sable_inn', at: [7, 5], sfx: 'door' },
+      { x: 24, y: 9, to: 'sable_transit', at: [8, 7], sfx: 'door' },
+      { x: 30, y: 9, to: 'sable_flat', at: [6, 5], sfx: 'door' },
+      { x: 10, y: 17, w: 1, h: 1, to: 'sable_works', at: [2, 7], sfx: 'door' },
+      { x: 24, y: 17, w: 1, h: 1, to: 'sable_arcade', at: [7, 6], sfx: 'door' },
+      { x: 30, y: 19, w: 2, h: 1, to: 'bellhouse_ext', at: [11, 8] },
     ],
-    start: [2, 9],
+    start: [2, 13],
   },
 
   sable_shop: {
@@ -1315,7 +1379,7 @@ const ROOMS = {
       { x: 7, y: 4, t: 'rug' }, { x: 10, y: 1, t: 'clock' },
     ],
     npcs: [{ art: 'sab_shop', x: 7, y: 2, key: 'sable_shopkeeper', shop: 'sable' }],
-    exits: [{ x: 7, y: 6, to: 'sable', at: [8, 5], sfx: 'door' }],
+    exits: [{ x: 7, y: 6, to: 'sable', at: [8, 10], sfx: 'door' }],
     start: [7, 5],
   },
 
@@ -1339,7 +1403,7 @@ const ROOMS = {
     ],
     objects: [{ x: 2, y: 4, t: 'bed', label: 'bed', save: true }],
     npcs: [{ art: 'sab_inn', x: 7, y: 2, key: 'sable_innkeeper' }],
-    exits: [{ x: 7, y: 6, to: 'sable', at: [16, 5], sfx: 'door' }],
+    exits: [{ x: 7, y: 6, to: 'sable', at: [16, 10], sfx: 'door' }],
     start: [7, 5],
   },
 
@@ -1372,7 +1436,7 @@ const ROOMS = {
       { art: 'sab_wait', x: 8, y: 5, key: 'sable_waiting' },
     ],
     exits: [
-      { x: 8, y: 8, to: 'sable', at: [24, 5], sfx: 'door' },
+      { x: 8, y: 8, to: 'sable', at: [24, 10], sfx: 'door' },
       { x: 4, y: 0, to: 'sable_overpass', at: [2, 3], sfx: 'door' },
     ],
     start: [8, 7],
@@ -1397,7 +1461,7 @@ const ROOMS = {
       { x: 11, y: 1, t: 'clock' },
     ],
     npcs: [{ art: 'sab_flat', x: 6, y: 2, key: 'sable_tenant' }],
-    exits: [{ x: 6, y: 6, to: 'sable', at: [30, 5], sfx: 'door' }],
+    exits: [{ x: 6, y: 6, to: 'sable', at: [30, 10], sfx: 'door' }],
     start: [6, 5],
   },
 
@@ -1431,7 +1495,7 @@ const ROOMS = {
       { x: 7, y: 5, t: 'pod_mother', label: 'demo pod' },
     ],
     npcs: [{ art: 'vix_rep', x: 12, y: 3, key: 'arcade_attendant' }],
-    exits: [{ x: 7, y: 7, to: 'sable', at: [24, 14], sfx: 'door' }],
+    exits: [{ x: 7, y: 7, to: 'sable', at: [24, 18], sfx: 'door' }],
     start: [7, 6],
   },
 
@@ -1474,7 +1538,7 @@ const ROOMS = {
       { art: 'sab_wait', x: 20, y: 6, key: 'market_leaving' },
     ],
     exits: [
-      { x: 0, y: 5, w: 1, h: 2, to: 'sable', at: [2, 15] },
+      { x: 0, y: 5, w: 1, h: 2, to: 'sable', at: [2, 19] },
       { x: 24, y: 5, to: 'sable_under', at: [1, 4], sfx: 'door' },
     ],
     start: [2, 5],
@@ -1571,7 +1635,7 @@ const ROOMS = {
     spawn: [{ name: 'Surplus Crate', n: 1 }, { name: 'Commuter', n: 1 },
             { name: 'Long Coat', n: 1 }],
     exits: [
-      { x: 0, y: 7, to: 'sable', at: [10, 14], sfx: 'door' },
+      { x: 0, y: 7, to: 'sable', at: [10, 18], sfx: 'door' },
       { x: 9, y: 10, w: 3, h: 1, to: 'sable_floor', at: [10, 2] },
     ],
     start: [2, 7],
@@ -1619,7 +1683,7 @@ const ROOMS = {
     decor: [{ x: 4, y: 8, t: 'plant' }, { x: 18, y: 8, t: 'crates' }],
     objects: [{ x: 16, y: 7, t: 'note', note: 'rent_notice' }],
     exits: [
-      { x: 0, y: 9, w: 2, h: 1, to: 'sable', at: [29, 14] },
+      { x: 0, y: 9, w: 2, h: 1, to: 'sable', at: [29, 18] },
       { x: 11, y: 5, w: 2, h: 1, to: 'bellhouse_1', at: [10, 8], sfx: 'door' },
     ],
     start: [11, 8],
@@ -1966,9 +2030,23 @@ const World = {
     const r = this.room;
     if (INTERIOR_WALLS.has(r.wall)) return 'inside';
     if (tx === 0 || ty === 0 || tx === this.w - 1 || ty === this.h - 1) return 'border';
-    if (this.isWall(tx, ty + 1)) return 'roof';
-    if (this.isWall(tx, ty - 1)) return 'face';
+    const below = this.isWall(tx, ty + 1), above = this.isWall(tx, ty - 1);
+    // In a tall room the rows between the shopfront and the roofline are floors.
+    if (r.tall && below && above) return 'storey';
+    if (r.tall && below) return 'cap';
+    if (below) return 'roof';
+    if (above) return 'face';
     return 'border';
+  },
+
+  // How many wall rows sit under this one, so a storey knows which floor it is.
+  // Used only to lift the light a little per floor: the top of a building
+  // catches more sky than the street does, and that gradient is most of what
+  // sells height in a flat projection.
+  floorsUnder(tx, ty) {
+    let n = 0;
+    for (let y = ty + 1; y < this.h && this.isWall(tx, y); y++) n++;
+    return n;
   },
 
   // The front of a building: a window on alternate bays, and never beside the
@@ -2099,9 +2177,19 @@ const World = {
           // Interior rooms are all wall; outdoor blocks are roof except along
           // the front, and the map's own border is neither.
           const part = this.wallPart(tx, ty);
+          // Each floor up is lit a little more: the street is in shadow and the
+          // top of the building is not. Capped so a tower does not go white.
+          const lift = part === 'storey' || part === 'cap'
+            ? Math.min(16, this.floorsUnder(tx, ty) * 3) : 0;
           if (part === 'roof') (ROOFS[r.wall] || paintShingle)(px, py, tx, ty, dim);
-          else wallFn(px, py, tx, ty, dim);
+          else wallFn(px, py, tx, ty, dim + lift);
           if (part === 'face') this.facade(tx, ty, px, py, dim);
+          if (part === 'storey') {
+            paintStorey(px, py, tx, ty, dim + lift, STOREY_BAND[r.wall] || '#8e6b5c');
+          }
+          if (part === 'cap') {
+            paintCornice(px, py, tx, ty, dim + lift, CORNICE[r.wall] || '#b3aa9c');
+          }
           this.trim(tx, ty, px, py, dim, part);
           continue;
         }

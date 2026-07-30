@@ -143,10 +143,19 @@ function ring(x, y, r, c, w = 1) {
 }
 
 // Deterministic per-pixel noise, so texture never shimmers between frames.
+//
+// Multiplied through Math.imul, and shifted with >>> rather than >>. The plain
+// `*` version this started as overflowed into a double, so the following shift
+// truncated it and the result was uniform on [0, 0.5) - it could not return a
+// value of 0.5 or above for any input at all. Every `hash2(...) > 0.5x` test in
+// the game was therefore dead, and a lot of authored texture detail - rust
+// streaks on the works, lit windows, shingle highlights - had never once been
+// drawn. Mean is 0.4996 across a 400x400 grid now, deciles within 0.2%.
 function hash2(x, y) {
-  let h = (x * 374761393 + y * 668265263) ^ 0x5bf03635;
-  h = (h ^ (h >> 13)) * 1274126177;
-  return ((h ^ (h >> 16)) >>> 0) / 4294967296;
+  let h = (Math.imul(x, 374761393) + Math.imul(y, 668265263)) | 0;
+  h ^= 0x5bf03635;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
 
 function shade(hex, amt) {

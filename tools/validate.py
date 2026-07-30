@@ -640,7 +640,7 @@ for q in quests:
 # Act 3 grew in 0.5.0 - the market row, the overpass, the service level under
 # the rail, the mural corridor, 4C and the laundry all carry one - so the
 # allocation grew with it rather than the new rooms being left blank.
-NOTE_TOTAL = 48
+NOTE_TOTAL = 54
 check(
     sum(world["lore_notes_per_area"].values()) == NOTE_TOTAL,
     f"There must be {NOTE_TOTAL} lore notes in total, "
@@ -1046,7 +1046,13 @@ for _name, _body in _rooms.items():
 # cannot be walked to. Two are reached by a cutscene rather than by a door: the
 # bedroom is where the game starts, and the void is where sleeping puts him.
 CUTSCENE_ROOMS = {"bedroom", "void"}
-_linked = {d for b in _rooms.values() for d in _exits_of(b)} | CUTSCENE_ROOMS
+# ...and one is reached by a door the story code pushes onto a room at runtime:
+# the secret Gallery, which only exists once the player is carrying all ten
+# collectibles. Those count as exits, so the sweep reads the story source too.
+_code_exits = set(re.findall(r"to: '([a-z_0-9]+)'", _game_src))
+_code_exits |= set(re.findall(r"World\.load\('([a-z_0-9]+)'\)", _game_src))
+_linked = ({d for b in _rooms.values() for d in _exits_of(b)}
+           | CUTSCENE_ROOMS | _code_exits)
 for _name in _rooms:
     check(_name in _linked, f"no exit or cutscene anywhere leads to {_name}")
 for _r in CUTSCENE_ROOMS:

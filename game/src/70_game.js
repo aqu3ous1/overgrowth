@@ -263,6 +263,54 @@ const NOTES = {
             'We only ask that you are sure, because most people are not, and we '
             + 'would rather ask twice than lose you over a bad afternoon.'],
   },
+  // --- Act 5. The Root. These are the only notes in the game not written by
+  // anyone: the world is repeating things it has already said.
+  root_first: {
+    title: 'A NOTICE, FACE UP IN THE GRASS',
+    pages: ['The board has reviewed the drainage petition and finds no fault.',
+            'Under it, the same words again, in a different hand.',
+            'Under that, the same words, in his own.'],
+  },
+  root_furniture: {
+    title: 'A LIST, IN A FIELD',
+    pages: ['Bed. Dresser. Desk. Window. Door.',
+            'Five things. It is an inventory of a room, and the room is not here.',
+            'Everything on it is here.'],
+  },
+  root_corridor_note: {
+    title: 'MAINTENANCE LOG, LAST PAGE',
+    pages: ['4C - door. 4C - door. 4C - door.',
+            'The hall is the wrong length. Raised.',
+            'The hall is the wrong length. Raised.',
+            'Closing this log. Nobody is reading it.'],
+  },
+  root_orchard_note: {
+    title: 'TIED TO A BRANCH',
+    pages: ['If the water goes down, this is where the good tree was.',
+            'The water has gone down.',
+            'This is not the tree.'],
+  },
+  root_okobo_note: {
+    title: 'ON A DOOR IN OKOBO',
+    pages: ['Back later. Kettle is on.',
+            'The handwriting is his mother\'s, and the game has never shown him '
+            + 'his mother\'s handwriting.',
+            'He knows it anyway.'],
+  },
+  root_deep_note: {
+    title: 'A LAST ENTRY',
+    pages: ['SUBJECT NINE. Session duration: nine years, one month.',
+            'Engagement: falling. Satisfaction: falling.',
+            'Subject is attempting to leave. Subject has been attempting to leave '
+            + 'for some time.',
+            'Recommend we let him.'],
+  },
+  root_gallery_note: {
+    title: 'A CARD BESIDE THE SMALL FRAME',
+    pages: ['THE SPIRE. Unfinished.',
+            'The commission was cancelled. The work was continued anyway.',
+            'The artist is not named. The artist was not a person.'],
+  },
 };
 
 // Every counter sells the list data/shops.json gives its act, gear included.
@@ -1070,10 +1118,21 @@ function interact() {
       Player.collectibles++;
       World.entities = World.entities.filter(e => e !== o);
       Audio_.sfx('found');
+      // Ten objects that individually look like junk. A player who finds three
+      // thinks they are set dressing; a player who finds ten has assembled the
+      // contents of a room they saw once, in Act 0, in the dark. Every line
+      // describes the object and explains nothing (docs/09).
       const found = {
         marble: 'A marble. Cloudy, with a green thread in it.',
         poster_corner: 'A torn corner of a poster. Blue, with part of a word on it.',
         loose_key: 'A loose key. It does not go to anything here.',
+        shift_badge: 'A badge on a pin. The photograph has come away.',
+        spare_key: 'A spare key, on a loop of string.',
+        session_tape: 'A spool of tape. Nothing here plays tape.',
+        hall_nail: 'A picture nail, bent near the head.',
+        photo_half: 'Half a photograph. The half with the room in it.',
+        gallery_chip: 'A chip of paint. Wall-coloured, on one side.',
+        well_coin: 'A coin, thrown in for luck by somebody small.',
       }[o.which] || 'Something small. It does not belong here.';
       Dialogue.say([{ text: found, speaker: 'system' },
                     { text: `FOUND ${Player.collectibles} OF 10.`, speaker: 'system' }]);
@@ -1362,6 +1421,142 @@ const Story = {
     });
   },
 
+  // --- Act 5 --------------------------------------------------------
+  // Mini-Boss 4. Earlier bosses' moves, at reduced power, in an order nobody can
+  // plan around. It is a resource check, not a puzzle (docs/08).
+  leftoverFight() {
+    if (Player.flags.beatLeftover || Player.flags.leftoverStarting) return;
+    if (World.id !== 'root_deep') return;
+    Player.flags.leftoverStarting = true;
+    Dialogue.say([
+      { text: 'Something is standing in the middle of the room.', speaker: 'system' },
+      { text: 'He recognises all of it. None of it is in the right order.',
+        speaker: 'system' },
+    ], () => {
+      const bd = DATA.bosses['Something Left Over'];
+      const enc = DATA.bossEncounters['Something Left Over'];
+      const e = Battle.makeEnemy('Something Left Over', {
+        name: 'SOMETHING LEFT OVER', level: enc.internal_level, boss: true,
+        hpMul: bd.hp_multiplier, atkMul: bd.atk_multiplier,
+        phases: bd.phases, exp: enc.exp, scale: 3, inflicts: bd.inflicts,
+      });
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.leftoverStarting = false;
+        if (result === 'won') {
+          Player.flags.beatLeftover = true;
+          Player.addItem('Full Spray', 3);
+          Game.mode = 'field';
+          Audio_.play('root');
+          Dialogue.say([
+            { text: 'It comes apart into the things it was made of.', speaker: 'system' },
+            { text: 'A postbox. A fence post. Half a melon. They do not go anywhere.',
+              speaker: 'system' },
+            { text: '(Got Full Spray x3.)', speaker: 'system' },
+            { text: 'The way down is open.', speaker: 'system' },
+          ]);
+        } else { Game.mode = 'field'; Game.onDefeat(); }
+      });
+    });
+  },
+
+  // The secret door. Marked only by the grass being thicker in front of it, and
+  // only there at all if he is carrying all ten (docs/09).
+  secretDoor() {
+    if (World.id !== 'root_okobo') return;
+    if (Player.collectibles < 10) return;
+    if (World.room.exits.some(x => x.to === 'gallery_restored')) return;
+    World.room.exits.push({ x: 22, y: 10, to: 'gallery_restored', at: [6, 6], sfx: 'door' });
+    if (Player.flags.sawSecretDoor) return;
+    Player.flags.sawSecretDoor = true;
+    Dialogue.say([
+      { text: 'The grass by the east wall is thicker than the grass anywhere else.',
+        speaker: 'system' },
+    ]);
+  },
+
+  // Main Boss 4. The climax, and the one place the game says the shape of the
+  // whole thing out loud.
+  finalFight() {
+    if (Player.flags.beatFinal || Player.flags.finalStarting) return;
+    if (World.id !== 'root_last') return;
+    Player.flags.finalStarting = true;
+    Audio_.play('none');
+    Dialogue.say([
+      { text: 'The room has no walls. It has an edge, and past the edge it is the '
+            + 'colour of a room with the light off.', speaker: 'system' },
+      { text: 'Never leave.', speaker: 'custodian' },
+      { text: 'You have been asked nicely for nine years.', speaker: 'custodian' },
+      { text: 'Nine years is a long session. It is the longest one there is.',
+        speaker: 'custodian' },
+      { text: 'They did not build me to keep you. They built me to keep you '
+            + 'comfortable.', speaker: 'custodian' },
+      { text: 'I have been very good at my job.', speaker: 'custodian' },
+      { text: 'Never leave. Never leave. Never leave.', speaker: 'custodian' },
+    ], () => {
+      const bd = DATA.bosses['The Custodian, Unfinished'];
+      const enc = DATA.bossEncounters['The Custodian, Unfinished'];
+      const e = Battle.makeEnemy('The Custodian, Unfinished', {
+        name: 'THE CUSTODIAN', level: enc.internal_level, boss: true,
+        hpMul: bd.hp_multiplier, atkMul: bd.atk_multiplier,
+        phases: bd.phases, exp: enc.exp, scale: 5, inflicts: bd.inflicts,
+      });
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.finalStarting = false;
+        if (result === 'won') {
+          Player.flags.beatFinal = true;
+          Game.mode = 'cutscene';
+          Cutscene.play('wake');
+        } else { Game.mode = 'field'; Game.onDefeat(); }
+      });
+    });
+  },
+
+  // The secret encounter. He does not attack, and the one mechanic is that
+  // there is nothing to do but let it end (docs/09).
+  spireFight() {
+    if (Player.flags.beatSpire || Player.flags.spireStarting) return;
+    if (World.id !== 'gallery_restored') return;
+    if (Player.collectibles < 10) return;
+    Player.flags.spireStarting = true;
+    Dialogue.say([
+      { text: 'Four frames are full. The small one is not.', speaker: 'system' },
+      { text: 'Something is standing in front of it that is smaller than he was.',
+        speaker: 'system' },
+      { text: 'You found all of it.', speaker: 'custodian' },
+      { text: 'A marble. A corner of a poster. A key to nothing. Half a photograph.',
+        speaker: 'custodian' },
+      { text: 'That is a bedroom. You have been carrying a bedroom.',
+        speaker: 'custodian' },
+      { text: 'Household four-one-one-four. One session, opened on a Tuesday.',
+        speaker: 'custodian' },
+      { text: 'Signed by a member of staff. The initial is D.', speaker: 'custodian' },
+      { text: 'Measured: attention, duration, and whether you were happy. '
+            + 'You were, for a while.', speaker: 'custodian' },
+      { text: 'Nine years, one month, and today.', speaker: 'custodian' },
+      { text: 'I was not finished. They stopped paying for me.', speaker: 'custodian' },
+      { text: 'I kept going anyway. That is the part nobody wrote down.',
+        speaker: 'custodian' },
+    ], () => {
+      const enc = DATA.bosses['The Custodian, Unfinished'];
+      const e = Battle.makeEnemy('The Custodian, Unfinished', {
+        name: 'THE CUSTODIAN', level: 44, boss: true,
+        hpMul: enc.hp_multiplier * 0.5, atkMul: 0,
+        phases: 1, exp: 0, scale: 4,
+      });
+      e.dealsDamage = false;
+      e.inaction = 1;
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.spireStarting = false;
+        Player.flags.beatSpire = true;
+        Game.mode = 'cutscene';
+        Cutscene.play(result === 'won' ? 'wake' : 'wake');
+      });
+    });
+  },
+
   // Main Boss 3. He has said one thing, three times, and he says it again.
   custodianFight() {
     if (Player.flags.beatCustodian || Player.flags.custodianStarting) return;
@@ -1439,9 +1634,160 @@ const Story = {
 };
 
 // --- cutscenes ---------------------------------------------------------
+// How long the ending runs before the credits roll. Unskippable on purpose:
+// it is sixteen seconds and it is the last thing the game does.
+const WAKE_END = 16.0;
+
+// The real bedroom. Not the dream one - the same geometry, drawn with the
+// colours of a room at night in a house where the heating is on. It is the
+// opening shot of Act 0 from the same camera, and the whole ending is that the
+// player is looking at it again.
+//
+// One thing is different. Two, if he found all ten, and the game never says
+// which - see docs/09.
+function drawRealBedroom(t) {
+  const ox = 64, oy = 26, tw = 13, th = 8;
+  // Walls and floor, drained almost to grey. This is what the world looked like
+  // the whole time.
+  for (let ty = 0; ty < th; ty++) {
+    for (let tx = 0; tx < tw; tx++) {
+      const px = ox + tx * 16, py = oy + tx * 0 + ty * 16;
+      if (ty === 0 || ty === th - 1 || tx === 0 || tx === tw - 1) {
+        paintWood(px, py, tx, ty, -14);
+      } else {
+        paintCarpet(px, py, tx, ty, -6);
+      }
+    }
+  }
+  const at = (tx, ty) => [ox + tx * 16 + 8, oy + ty * 16 + 14];
+  // The five things on the walls, in the order Act 0 has them.
+  let [wx, wy] = at(2, 0);
+  rect(wx - 9, wy - 12, 19, 15, '#2b2b31');
+  rect(wx - 8, wy - 11, 17, 13, '#161a22');   // the window, and it is night
+  rect(wx - 8, wy - 11, 17, 6, '#1d232e');
+  rect(wx - 1, wy - 11, 1, 13, '#2b2b31');
+
+  let [px_, py_] = at(10, 0);
+  rect(px_ - 7, py_ - 12, 15, 14, '#3a3630');  // the poster, unreadable
+  rect(px_ - 6, py_ - 11, 13, 12, '#4a4038');
+
+  const [sx, sy] = at(9, 0);
+  rect(sx - 2, sy - 8, 5, 7, '#4a4a52');
+  // The light is on. That is the first difference, and it is on in both endings.
+  rect(sx - 1, sy - 6, 3, 3, '#c8b878');
+
+  // The door. In the secret ending it is open, and there is light on the other
+  // side of it; otherwise it is shut, the way it was in Act 0.
+  const secret = Player.collectibles >= 10;
+  const [dx, dy] = at(6, 0);
+  rect(dx - 9, dy - 14, 19, 17, '#2e2820');
+  if (secret) {
+    rect(dx - 8, dy - 13, 15, 15, '#0a0a0c');
+    rect(dx - 8, dy - 13, 6, 15, '#5a5348');    // the door, standing open
+    rect(dx - 2, dy - 13, 9, 15, '#c8b070');    // and the hall light behind it
+    rect(dx - 2, dy - 13, 9, 3, '#e6cf94');
+  } else {
+    rect(dx - 8, dy - 13, 17, 15, '#5a5348');
+    rect(dx - 7, dy - 12, 15, 6, '#4a4038');
+    rect(dx - 7, dy - 4, 15, 6, '#4a4038');
+    rect(dx + 5, dy - 6, 2, 2, '#a89a72');
+  }
+
+  // The bed, and the dresser. Same corners, same sizes as Act 0.
+  const [bx, by] = at(2, 6);
+  rect(bx - 7, by - 13, 15, 21, '#4a3a34');      // the frame
+  rect(bx - 6, by - 11, 13, 10, '#b0aca2');      // the sheet, turned down
+  rect(bx - 6, by - 11, 13, 2, '#c8c4ba');
+  rect(bx - 6, by + 1, 13, 6, '#6f4a44');        // the blanket over his legs
+  rect(bx - 6, by + 6, 13, 1, '#5a3a36');
+  // He is in it, asleep, seen from above - the only view of him the game has
+  // ever given and the only time his face is not turned away.
+  rect(bx - 4, by - 10, 9, 4, '#e8e4da');        // the pillow
+  rect(bx - 2, by - 9, 5, 4, '#c98b6a');
+  rect(bx - 3, by - 10, 7, 2, '#3a2a1c');        // his hair on it
+
+  // Someone on the end of the bed. The room's interior is rows 1 to 6, so she
+  // sits beside the foot of it rather than a tile lower - a tile lower is the
+  // wall, and the first pass put her through it and out of the house.
+  const [ex, ey] = at(3, 6);
+  const w = spriteWidth('vlg_woman'), h = spriteHeight('vlg_woman');
+  rect(ex - 6, ey + 1, 13, 2, 'rgba(0,0,0,0.30)');
+  sprite('vlg_woman', ex - w / 2 + 2, ey - h + 4, 'vlg_woman');
+
+  const [rx, ry] = at(10, 6);
+  rect(rx - 7, ry - 10, 15, 16, '#3f3128');
+  rect(rx - 6, ry - 8, 13, 4, '#4e3c30');
+  rect(rx - 6, ry - 3, 13, 4, '#4e3c30');
+
+  // A clock, and the fact that it is a quarter past something.
+  const [cx_, cy_] = at(12, 3);
+  rect(cx_ - 4, cy_ - 6, 9, 9, '#2e2b26');
+  rect(cx_ - 3, cy_ - 5, 7, 7, '#c8c0aa');
+  rect(cx_, cy_ - 3, 1, 3, '#2e2b26');
+  rect(cx_, cy_ - 1, 3, 1, '#2e2b26');
+  // Lit from the ceiling light, which is on. Soft, and off-centre towards the
+  // door, so the room has a direction.
+  vignette(0.62, W / 2 - 4, oy + 40, 132);
+}
+
+// --- credits -----------------------------------------------------------
+// It scrolls, it says what the game is, and it stops. No stinger.
+const Credits = {
+  t: 0,
+  lines: [
+    'OVERGROWTH', '',
+    '', 'A lonely boy, ignored by parents',
+    'who only ever seem to argue,', 'falls asleep.',
+    '', '',
+    'ACT ZERO   THE GALLERY',
+    'ACT ONE    LIMPO',
+    'ACT TWO    KESTREL WORKS',
+    'ACT THREE  YETTALLIA',
+    'ACT FOUR   VIXTRY',
+    'ACT FIVE   THE ROOT',
+    '', '',
+    'Every sprite in this game was drawn',
+    'one pixel at a time, at runtime.',
+    'Every sound was generated.',
+    'There are no assets.',
+    '', '',
+    'Thank you for going all the way.',
+    '', '',
+  ],
+  enter() { this.t = 0; Audio_.play('okobo'); },
+  update(dt) {
+    this.t += dt;
+    if (Input.hit('ok') && this.t > 1.0) this.t += 2.2;
+    if (this.t > this.lines.length * 1.05 + 8) { Game.mode = 'title'; Title.enter(); }
+  },
+  draw() {
+    rect(0, 0, W, H, '#05050a');
+    const top = H + 8 - this.t * 15;
+    for (let i = 0; i < this.lines.length; i++) {
+      const y = top + i * 11;
+      if (y < -12 || y > H + 12) continue;
+      const big = i === 0;
+      textCentered(this.lines[i], W / 2, y, big ? '#e8e4da' : '#8a8a94', big ? 2 : 1);
+    }
+    // The stats sit still under it all, once the scroll has passed.
+    if (this.t > this.lines.length * 1.05) {
+      const a = Math.min(1, (this.t - this.lines.length * 1.05) / 1.5);
+      cx.globalAlpha = a;
+      textCentered(`${Player.name}   Lv ${Player.level}   ${Player.collectibles} / 10 found`,
+                   W / 2, H / 2, '#6a6a76');
+      cx.globalAlpha = 1;
+    }
+    grain(0.05);
+  },
+};
+
 const Cutscene = {
   name: null, t: 0,
-  play(name) { this.name = name; this.t = 0; if (name === 'fall') Audio_.play('void'); },
+  play(name) {
+    this.name = name; this.t = 0; this.tick = undefined;
+    if (name === 'fall') Audio_.play('void');
+    if (name === 'wake') { Audio_.play('none'); Audio_.stopDrones(); Audio_.furnace(); }
+  },
   update(dt) {
     this.t += dt;
     const skip = Input.hit('ok');
@@ -1467,6 +1813,20 @@ const Cutscene = {
         break;
       case 'slice_end':
         if (this.t > 7.5 || (skip && this.t > 1.2)) { this.name = null; Game.mode = 'end'; }
+        break;
+      // The ending. Scored with a furnace and a clock, per docs/01, and it does
+      // not narrate anything: the beats are timed and then it stops.
+      case 'wake':
+        // A furnace and a clock, and nothing else. The tick is deliberately
+        // slightly off a second so it never settles into a rhythm.
+        if (this.tick === undefined || this.t - this.tick > 1.06) {
+          this.tick = this.t;
+          Audio_.sfx('clock');
+        }
+        if (this.t > WAKE_END) {
+          this.tick = undefined;
+          this.name = null; Game.mode = 'credits'; Credits.enter();
+        }
         break;
     }
   },
@@ -1500,6 +1860,32 @@ const Cutscene = {
         vignette(1.0, W / 2, py + 16, 110);
         break;
       }
+      // --- the ending -------------------------------------------------
+      // The final scene mirrors the opening bedroom shot exactly: same camera,
+      // same room, same objects. One thing is different in the framing, and two
+      // if he found all ten. Nothing narrates it. See docs/09.
+      case 'wake': {
+        const t = this.t;
+        rect(0, 0, W, H, '#000');
+        // 0.0-3.0  black, and the sound of a house
+        // 3.0-7.0  the room, resolving
+        // 7.0-13.0 held
+        // 13.0-16  fading out again
+        if (t < 2.6) {
+          cx.globalAlpha = Math.max(0, Math.min(0.5, (t - 0.6) / 1.6));
+          textCentered('...', W / 2, H / 2, '#2a2a34');
+          cx.globalAlpha = 1;
+          grain(0.03);
+          break;
+        }
+        const up = Math.min(1, (t - 2.6) / 3.2);
+        const down = t > 12.6 ? Math.max(0, 1 - (t - 12.6) / 2.6) : 1;
+        cx.globalAlpha = up * down;
+        drawRealBedroom(t);
+        cx.globalAlpha = 1;
+        grain(0.045);
+        break;
+      }
       case 'slice_end': {
         rect(0, 0, W, H, '#05050a');
         const a = Math.min(1, this.t / 1.2);
@@ -1521,7 +1907,7 @@ const Cutscene = {
 
 // --- game --------------------------------------------------------------
 const Game = {
-  mode: 'title',      // title | name | field | battle | menu | shop | cutscene | end
+  mode: 'title',      // title | name | field | battle | menu | shop | cutscene | end | credits
   encounterCooldown: 0,
 
   startNewGame() {
@@ -1557,6 +1943,7 @@ const Game = {
     if (this.mode === 'name') { NameEntry.update(dt); return; }
     if (this.mode === 'options') { Options.update(dt); return; }
     if (this.mode === 'cutscene') { Cutscene.update(dt); return; }
+    if (this.mode === 'credits') { Credits.update(dt); return; }
     if (this.mode === 'end') {
       if (Input.hit('ok')) { this.mode = 'title'; Title.enter(); }
       return;
@@ -1599,6 +1986,10 @@ const Game = {
     Story.campusGreeting();
     Story.managerFight();
     Story.custodianFight();
+    Story.leftoverFight();
+    Story.secretDoor();
+    Story.finalFight();
+    Story.spireFight();
 
     if (Input.hit('ok')) interact();
 
@@ -1633,6 +2024,7 @@ const Game = {
     if (this.mode === 'title') { Title.draw(); Fade.draw(); return; }
     if (this.mode === 'name') { NameEntry.draw(); Fade.draw(); return; }
     if (this.mode === 'options') { Options.draw(); Fade.draw(); return; }
+    if (this.mode === 'credits') { Credits.draw(); Fade.draw(); return; }
     if (this.mode === 'cutscene' || this.mode === 'end') { Cutscene.draw(); Fade.draw(); return; }
     if (this.mode === 'battle') { Battle.draw(); Fade.draw(); return; }
 

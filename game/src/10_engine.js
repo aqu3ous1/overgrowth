@@ -350,7 +350,34 @@ const Audio_ = {
                        setTimeout(() => this.tone(f, 0.22, { gain: 0.12, type: 'triangle' }), i * 90));
                      break;
       case 'wrong':  this.tone(120, 0.35, { gain: 0.16, type: 'sawtooth' }); break;
+      // The ending's two sounds. A clock in another room, and the house.
+      case 'clock':  this.tone(2100, 0.012, { gain: 0.05, type: 'square' });
+                     this.burst(0.02, { gain: 0.03, freq: 3400, q: 2,
+                                        dest: this.sfxGain, type: 'highpass' });
+                     break;
     }
+  },
+
+  // A furnace: filtered noise under a low hum, held until something stops it.
+  // The prologue and the ending are the only two places the game is scored with
+  // a house rather than with music (docs/01).
+  furnace() {
+    if (!this.ac) return;
+    this.drone(41, 0.030, 'sine');
+    this.drone(82.4, 0.012, 'triangle');
+    const n = Math.floor(this.ac.sampleRate * 2);
+    const buf = this.ac.createBuffer(1, n, this.ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1);
+    const src = this.ac.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    const f = this.ac.createBiquadFilter();
+    f.type = 'lowpass'; f.frequency.value = 220; f.Q.value = 0.6;
+    const g = this.ac.createGain(); g.gain.value = 0.020;
+    src.connect(f); f.connect(g); g.connect(this.musicGain);
+    src.start();
+    // Registered as a drone so stopDrones() ends it with everything else.
+    this.drones.push({ o: src, g });
   },
 
   // --- music -----------------------------------------------------------
@@ -631,6 +658,26 @@ const TRACKS = {
         7, 7, 10, 12, 14, null, 12, 10, 10, 10, 12, 14, 12, null, 10, 7,
         5, 5, 8, 10, 12, null, 10, 8, 3, 3, 7, 10, 12, null, 10, 7,
         7, 7, 10, 12, 14, null, 15, 14, 12, null, 10, null, 7, null, null, null,
+      ],
+    },
+  },
+
+  // The Root. Okobo's melody, a tone flat, at half speed, with the bass line
+  // playing a different progression underneath it - the town theme still
+  // running while the thing playing it comes apart. No kit.
+  root: {
+    bpm: 58, chordEvery: 16,
+    chords: [[-1, 'min'], [-6, 'min'], [-8, 'm7b5'], [-3, 'dim']],
+    comp: '--x-------x-----', padType: 'sine', padGain: 0.020, compLen: 2.4,
+    bassLine: 'r-------3-------', bassGain: 0.056, bassLen: 3.0,
+    drones: [{ freq: 38.9, gain: 0.038, type: 'sine' }],
+    lead: {
+      type: 'triangle', gain: 0.055, detune: 14, legato: 2.4, vibrato: 16, decay: 0.8,
+      steps: [
+        -2, null, 2, 5, 7, null, 5, 2, 3, null, 7, 10, 9, null, 7, 5,
+        -2, null, 2, 5, 7, null, 10, 12, 14, null, 12, 10, 7, null, 5, null,
+        -5, null, 0, 3, 5, null, 3, 0, 2, null, 5, 9, 7, null, 5, 2,
+        -2, null, 2, 5, 7, null, 5, 2, 0, null, -2, null, null, null, null, null,
       ],
     },
   },

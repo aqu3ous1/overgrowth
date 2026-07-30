@@ -535,6 +535,7 @@ const ROOMS = {
       '#########PPP#######',
     ],
     objects: [
+      { x: 2, y: 1, t: 'collectible', which: 'gallery_chip' },
       { x: 2, y: 0, t: 'painting', shape: 'obelisk' },
       { x: 5, y: 0, t: 'painting', shape: 'sphere' },
       { x: 9, y: 0, t: 'painting', shape: 'pyramid' },
@@ -601,6 +602,7 @@ const ROOMS = {
       { x: 9, y: 8, t: 'plant' },
     ],
     objects: [
+      { x: 9, y: 9, t: 'collectible', which: 'well_coin' },
       { x: 8, y: 6, t: 'well', label: 'well' },
       { x: 18, y: 3, t: 'memorial', label: 'memorial' },
     ],
@@ -1909,6 +1911,247 @@ const ROOMS = {
   },
 
   // ===================================================================
+  // ACT 5 - THE ROOT.
+  //
+  // What the dream world looks like when it stops maintaining itself: Okobo's
+  // geometry with Kestrel's lighting, Bellhouse's corridors opening onto the
+  // Sunken Orchard, the bedroom's furniture in the middle of a field. Colour
+  // drained nearly to the real-world palette, and grass on everything.
+  //
+  // Every room in here is a room the player has already walked, wrong.
+  // ===================================================================
+  root_arrival: {
+    floor: 'grass', wall: 'brick', light: 0.55, music: 'root', grain: 0.08, dark: true,
+    map: [
+      '#####################',
+      '#...................#',
+      '#..#####...#####....#',
+      '#..#####...#####....#',
+      '#..####D...####D....#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      'D...................D',
+      '#####################',
+    ],
+    decor: [
+      { x: 4, y: 6, t: 'plant' }, { x: 16, y: 6, t: 'plant' },
+      { x: 10, y: 1, t: 'mural_wall' },
+    ],
+    objects: [
+      { x: 10, y: 6, t: 'well', label: 'the well' },
+      { x: 6, y: 7, t: 'note', note: 'root_first' },
+    ],
+    spawn: [{ name: 'Dresser', n: 1 }],
+    exits: [
+      { x: 0, y: 8, to: 'long_hall_end', at: [8, 7], sfx: 'door' },
+      { x: 20, y: 8, to: 'root_field', at: [2, 6] },
+      { x: 7, y: 4, to: 'root_corridor', at: [2, 3], sfx: 'door' },
+      { x: 15, y: 4, to: 'root_okobo', at: [2, 8], sfx: 'door' },
+    ],
+    start: [2, 8],
+  },
+
+  // The bedroom's furniture, in a field, in the order it stands in the bedroom.
+  root_field: {
+    floor: 'grass', wall: 'void', light: 0.6, music: 'root', grain: 0.08, dark: true,
+    map: [
+      '#############################',
+      '#...........................#',
+      '#...........................#',
+      '#...........................#',
+      '#...........................#',
+      'D...........................#',
+      '#...........................#',
+      '#...........................#',
+      '#.........................DD#',
+      '#############################',
+    ],
+    objects: [
+      { x: 6, y: 3, t: 'bed', label: 'a bed' },
+      { x: 12, y: 3, t: 'dresser', label: 'a dresser' },
+      { x: 18, y: 3, t: 'desk', label: 'a desk' },
+      { x: 23, y: 6, t: 'window', label: 'a window' },
+      { x: 9, y: 6, t: 'note', note: 'root_furniture' },
+    ],
+    spawn: [{ name: 'Dresser', n: 2 }, { name: 'Bedroom Door', n: 1 }],
+    exits: [
+      { x: 0, y: 5, to: 'root_arrival', at: [18, 8] },
+      { x: 26, y: 8, w: 2, h: 1, to: 'root_deep', at: [2, 6] },
+    ],
+    start: [2, 6],
+  },
+
+  // Bellhouse's corridor, opening onto the Sunken Orchard at the far end.
+  root_corridor: {
+    floor: 'carpet', wall: 'plaster', light: 0.7, music: 'root', grain: 0.07, dark: true,
+    map: [
+      '#############################',
+      '#...........................#',
+      '#...........................#',
+      'D...........................#',
+      '#...........................#',
+      '#.........................DD#',
+      '#############################',
+    ],
+    decor: [
+      { x: 6, y: 1, t: 'mural_wall' }, { x: 16, y: 1, t: 'mural_wall' },
+      { x: 11, y: 4, t: 'lamp' },
+    ],
+    objects: [
+      { x: 21, y: 2, t: 'apartment', label: 'door', unit: '4C' },
+      { x: 14, y: 4, t: 'note', note: 'root_corridor_note' },
+    ],
+    spawn: [{ name: 'Bedroom Door', n: 2 }],
+    exits: [
+      { x: 0, y: 3, to: 'root_arrival', at: [7, 5], sfx: 'door' },
+      { x: 26, y: 5, w: 2, h: 1, to: 'root_orchard', at: [2, 5] },
+    ],
+    start: [2, 3],
+  },
+
+  root_orchard: {
+    floor: 'grass', wall: 'brick', light: 0.62, music: 'root', grain: 0.08, dark: true,
+    map: [
+      '#########################',
+      '#.......................#',
+      '#..T....T....T....T.....#',
+      '#.......................#',
+      '#.......................#',
+      'D.......................#',
+      '#.......................#',
+      '#..T....T....T....T.....#',
+      '#.......................#',
+      '#.....................DD#',
+      '#########################',
+    ],
+    objects: [
+      { x: 12, y: 4, t: 'shrine', label: 'the good tree' },
+      { x: 5, y: 8, t: 'note', note: 'root_orchard_note' },
+    ],
+    spawn: [{ name: 'The Argument', n: 1 }, { name: 'Dresser', n: 1 }],
+    exits: [
+      { x: 0, y: 5, to: 'root_corridor', at: [25, 5] },
+      { x: 22, y: 9, w: 2, h: 1, to: 'root_okobo', at: [2, 12] },
+    ],
+    start: [2, 5],
+  },
+
+  // Okobo, with the grass over everything. The collectible is here, and it is
+  // in the one place the player has walked past every single time.
+  root_okobo: {
+    floor: 'grass', wall: 'brick', light: 0.5, music: 'root', grain: 0.07, dark: true,
+    map: [
+      '##########################',
+      '#........................#',
+      '#..#######....######.....#',
+      '#..#######....######.....#',
+      '#..######D....#####D.....#',
+      '#........................#',
+      '#........................#',
+      'D........................#',
+      '#........................#',
+      '#........................#',
+      '#........................#',
+      '#........................#',
+      'D.......................DD',
+      '##########################',
+    ],
+    decor: [
+      { x: 5, y: 6, t: 'plant' }, { x: 19, y: 6, t: 'plant' },
+      { x: 12, y: 10, t: 'plant' }, { x: 3, y: 10, t: 'plant' },
+      { x: 22, y: 9, t: 'plant' },
+    ],
+    objects: [
+      { x: 12, y: 7, t: 'well', label: 'the well' },
+      { x: 17, y: 10, t: 'note', note: 'root_okobo_note' },
+      { x: 12, y: 8, t: 'collectible', which: 'photo_half' },
+    ],
+    spawn: [{ name: 'The Argument', n: 1 }, { name: 'Bedroom Door', n: 1 }],
+    exits: [
+      { x: 0, y: 7, to: 'root_arrival', at: [15, 5], sfx: 'door' },
+      { x: 0, y: 12, to: 'root_orchard', at: [21, 9] },
+      { x: 24, y: 12, w: 2, h: 1, to: 'root_deep', at: [2, 6] },
+    ],
+    start: [2, 12],
+  },
+
+  root_deep: {
+    floor: 'grass', wall: 'concrete', light: 0.85, music: 'root', grain: 0.09, dark: true,
+    map: [
+      '#####################',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      'D...................#',
+      '#...................#',
+      '#.........DD........#',
+      '#####################',
+    ],
+    decor: [{ x: 10, y: 2, t: 'mural_wall' }],
+    objects: [{ x: 16, y: 4, t: 'note', note: 'root_deep_note' }],
+    exits: [
+      { x: 0, y: 6, to: 'root_field', at: [25, 8] },
+      { x: 10, y: 8, w: 2, h: 1, to: 'root_last', at: [10, 10],
+        requires: 'beatLeftover' },
+    ],
+    start: [2, 6],
+  },
+
+  // The last room. Lit like the bedroom in Act 0, because it is.
+  root_last: {
+    floor: 'grass', wall: 'void', light: 1.2, music: 'none', grain: 0.10, dark: true,
+    map: [
+      '#####################',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#.........DD........#',
+      '#####################',
+    ],
+    exits: [{ x: 10, y: 12, w: 2, h: 1, to: 'root_deep', at: [10, 7] }],
+    start: [10, 11],
+  },
+
+  // --- the secret path -------------------------------------------------
+  // One additional door, in a room the player has already cleared, marked only
+  // by the grass being thicker in front of it (docs/09).
+  gallery_restored: {
+    floor: 'grass', wall: 'brick', light: 0.28, music: 'gallery', grain: 0.04,
+    map: [
+      '###############',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '######D########',
+    ],
+    decor: [{ x: 7, y: 5, t: 'plant' }],
+    objects: [
+      { x: 2, y: 1, t: 'painting', label: 'the obelisk' },
+      { x: 5, y: 1, t: 'painting', label: 'the cube' },
+      { x: 8, y: 1, t: 'painting', label: 'the sphere' },
+      { x: 11, y: 1, t: 'painting', label: 'the pyramid' },
+      { x: 12, y: 4, t: 'painting', label: 'a small empty frame' },
+      { x: 4, y: 5, t: 'note', note: 'root_gallery_note' },
+    ],
+    exits: [{ x: 6, y: 7, to: 'root_okobo', at: [20, 10], sfx: 'door' }],
+    start: [6, 6],
+  },
+
+  // ===================================================================
   // EVERGREEN - a Vixtry Co-Living space, entered through the open demo pod on
   // the campus. Optional, and the longest thread in the game.
   //
@@ -2483,7 +2726,7 @@ const ROOMS = {
   long_hall_end: {
     floor: 'grass', wall: 'brick', light: 1.15, music: 'longhall', grain: 0.09, dark: true,
     map: [
-      '#################',
+      '########D########',
       '#...............#',
       '#...............#',
       '#...............#',
@@ -2495,7 +2738,11 @@ const ROOMS = {
       '#################',
     ],
     decor: [{ x: 8, y: 1, t: 'mural_wall' }],
-    exits: [{ x: 0, y: 7, to: 'long_hall_3', at: [33, 3], sfx: 'door' }],
+    exits: [
+      { x: 0, y: 7, to: 'long_hall_3', at: [33, 3], sfx: 'door' },
+      { x: 8, y: 0, to: 'root_arrival', at: [2, 8],
+        requires: 'beatCustodian' },
+    ],
     start: [2, 7],
   },
 
@@ -3156,4 +3403,12 @@ const ENEMY_ART = {
   'Custodial Cart':       { spr: 'cart',        pal: 'cart' },
   'Account Manager':      { spr: 'manager',     pal: 'manager' },
   'The Custodian':        { spr: 'sphere',      pal: 'sphere' },
+  // Act 5. The Root's own species are his bedroom, and the two shapes at the
+  // end of it are the same shape twice - one finished, one not.
+  'Dresser':                  { spr: 'dresser_e',    pal: 'dresser_e' },
+  'Bedroom Door':             { spr: 'bedroom_door', pal: 'bedroom_door' },
+  'The Argument':             { spr: 'argument',     pal: 'argument' },
+  'Something Left Over':      { spr: 'leftover',     pal: 'leftover' },
+  'The Custodian, Unfinished': { spr: 'pyramid',     pal: 'pyramid' },
+  'The Custodian, Unfinished (Spire)': { spr: 'spire', pal: 'spire' },
 };

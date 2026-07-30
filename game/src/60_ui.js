@@ -391,6 +391,11 @@ const ROUTE = [
   { label: 'EVERGREEN',
     rooms: ['ever_arrival', 'ever_green', 'ever_house', 'ever_school',
             'ever_orchard', 'ever_edge', 'ever_ledger', 'ever_desk'] },
+  // The Root is every earlier place at once, so it is on none of them. No
+  // square, and no way back out except forward.
+  { label: 'THE ROOT',
+    rooms: ['root_arrival', 'root_field', 'root_corridor', 'root_orchard',
+            'root_okobo', 'root_deep', 'root_last', 'gallery_restored'] },
 ];
 function routeIndexOf(roomId) {
   return ROUTE.findIndex(a => a.rooms.includes(roomId));

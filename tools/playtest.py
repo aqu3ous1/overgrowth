@@ -45,6 +45,12 @@ def press(page, key, times=1, delay=90):
 
 
 def hold(page, key, ms):
+    # A queued milestone opens a modal on the next frame after put(), which eats
+    # the movement that follows and reports as a level-geometry failure - the
+    # factory-door sweep found "one way in out of nineteen" that way, on a door
+    # with three. Every movement in this harness goes through here, so it is
+    # answered here.
+    take_milestone(page)
     page.keyboard.down(key)
     page.wait_for_timeout(ms)
     page.keyboard.up(key)
@@ -94,13 +100,22 @@ def until(page, expr, ms=4000, step=100):
     return False
 
 
-def advance(page, n=40):
-    """Press through dialogue until it actually closes."""
-    for _ in range(n):
+def advance(page, budget_ms=40000):
+    """Press through dialogue until it actually closes.
+
+    Budgeted in wall-clock rather than in presses. The Custodian's box holds for
+    2.6 seconds a line before it will take an input at all, so his eleven-line
+    speech in the Root needs about forty seconds of pressing - a forty-press
+    budget gave up a third of the way in and every check after it read as the
+    fight failing to start.
+    """
+    waited = 0
+    while waited < budget_ms:
         if not page.evaluate("() => Dialogue.active"):
             break
         page.keyboard.press("z")
-        page.wait_for_timeout(90)
+        page.wait_for_timeout(110)
+        waited += 110
     page.wait_for_timeout(80)
 
 
@@ -1214,7 +1229,8 @@ def main():
 
         # The Long Hall, three rooms of it, and the Custodian at the end.
         page.evaluate("() => { Player.level = 35; Player.exp = Player.expToReach(35);"
-                      " Player.restore(); }")
+                      " Player.restore(); Player.addItem('Full Spray', 12);"
+                      " Player.addItem('Chalk Tablet', 8); Player.addItem('Clean Rag', 6); }")
         idle(page)
         for src, dst in (("campus_office", "long_hall_1"), ("long_hall_1", "long_hall_2"),
                          ("long_hall_2", "long_hall_3"), ("long_hall_3", "long_hall_end")):
@@ -1229,15 +1245,141 @@ def main():
             shot("56-custodian")
             if page.evaluate("() => Battle.canFlee()"):
                 errors.append("the Custodian can be fled from")
-            if not fight(page, max_heals=8):
+            if not fight(page, max_heals=20):
                 errors.append("the Custodian fight never ended")
         page.wait_for_timeout(600); advance(page)
         if not page.evaluate("() => !!Player.flags.beatCustodian"):
             errors.append("the Custodian was never beaten")
         page.wait_for_timeout(900)
-        if page.evaluate("() => Game.mode") not in ("cutscene", "end"):
-            errors.append("beating the Custodian does not end the build")
+        if page.evaluate("() => Game.mode") == "end":
+            errors.append("beating the Custodian still rolls the end card")
+        if not page.evaluate("""() => (ROOMS.long_hall_end.exits || [])
+              .some(e => e.to === 'root_arrival')"""):
+            errors.append("beating the Custodian opens no way into the Root")
         shot("57-after-custodian")
+
+        # --- ACT 5: the Root, both bosses, and both endings
+        page.evaluate("() => { Player.level = 43; Player.exp = Player.expToReach(43);"
+                      " Player.restore(); Player.addItem('Full Spray', 20);"
+                      " Player.addItem('Chalk Tablet', 12); Player.addItem('Bitter Tonic', 12);"
+                      " Player.addItem('Clean Rag', 8); }")
+        idle(page)
+        if page.evaluate("""() => { World.load('long_hall_end');
+              Player.flags.beatCustodian = false;
+              return !!World.exitAt(8*16+8, 0*16+8); }"""):
+            errors.append("the Root is open before the Custodian is beaten")
+        page.evaluate("() => { Player.flags.beatCustodian = true; }")
+        idle(page)
+        if not enter(page, "long_hall_end", "root_arrival"):
+            errors.append("the Root cannot be reached from the end of the Long Hall")
+        shot("61-root")
+        for src, dst in (("root_arrival", "root_corridor"), ("root_corridor", "root_orchard"),
+                         ("root_orchard", "root_okobo"), ("root_arrival", "root_field"),
+                         ("root_field", "root_deep")):
+            idle(page)
+            if not enter(page, src, dst):
+                errors.append(f"{dst} cannot be reached from {src}")
+        shot("62-root-field")
+
+        # The way down is shut until Mini-Boss 4 is beaten.
+        if page.evaluate("""() => { World.load('root_deep');
+              return !!World.exitAt(10*16+8, 8*16+8); }"""):
+            errors.append("the way to the final room is open before Something Left Over")
+
+        idle(page); put(page, "root_deep", 10, 6, "up")
+        page.wait_for_timeout(700); advance(page)
+        if not until(page, "Battle.active && Battle.enemy.boss", 6000):
+            errors.append("root_deep does not start the Something Left Over fight")
+        else:
+            shot("63-leftover")
+            if not fight(page, max_heals=8):
+                errors.append("the Something Left Over fight never ended")
+        page.wait_for_timeout(600); advance(page)
+        if not page.evaluate("() => !!Player.flags.beatLeftover"):
+            errors.append("Something Left Over was never beaten")
+
+        for room, note in (("root_arrival", "root_first"),
+                           ("root_field", "root_furniture"),
+                           ("root_corridor", "root_corridor_note"),
+                           ("root_orchard", "root_orchard_note"),
+                           ("root_okobo", "root_okobo_note"),
+                           ("root_deep", "root_deep_note")):
+            idle(page)
+            if not face_entity(page, room, "object", note):
+                errors.append(f"Root note {note} is not placed in {room}")
+                continue
+            press(page, "z"); page.wait_for_timeout(250)
+            if not page.evaluate("() => Dialogue.active"):
+                errors.append(f"Root note {note} is unreachable")
+            advance(page)
+
+        # --- the standard ending
+        page.evaluate("() => { Player.collectibles = 0; Player.restore(); }")
+        idle(page)
+        if not enter(page, "root_deep", "root_last"):
+            errors.append("the final room cannot be reached after the mini-boss")
+        page.wait_for_timeout(700); advance(page)
+        if not until(page, "Battle.active && Battle.enemy.boss", 20000):
+            errors.append("the final room does not start the Custodian")
+        else:
+            shot("64-final")
+            if page.evaluate("() => Battle.canFlee()"):
+                errors.append("the final boss can be fled from")
+            if not fight(page, max_heals=24):
+                errors.append("the final fight never ended")
+        page.wait_for_timeout(700); advance(page)
+        if not page.evaluate("() => !!Player.flags.beatFinal"):
+            errors.append("the final boss was never beaten")
+        if not until(page, "Game.mode === 'cutscene' && Cutscene.name === 'wake'", 6000):
+            errors.append("beating the final boss does not play the ending")
+        page.wait_for_timeout(4200)
+        shot("65-ending")
+        # The ending runs for sixteen seconds and is not skippable.
+        if page.evaluate("() => Game.mode") != "cutscene":
+            errors.append("the ending cut short")
+        press(page, "z", times=4)
+        if page.evaluate("() => Game.mode") != "cutscene":
+            errors.append("the ending can be skipped; it is meant to be unskippable")
+        if not until(page, "Game.mode === 'credits'", 16000, 400):
+            errors.append("the ending never reaches the credits")
+        shot("66-credits")
+        if not until(page, "Game.mode === 'title'", 60000, 700):
+            errors.append("the credits never end")
+
+        # --- the secret ending: the door only exists with all ten
+        page.evaluate("""() => {
+          Player.collectibles = 0; Player.flags.sawSecretDoor = false;
+          Player.flags.beatSpire = false; Player.flags.spireStarting = false;
+          delete ROOMS.root_okobo.exits.splice(
+            ROOMS.root_okobo.exits.findIndex(e => e.to === 'gallery_restored'), 1);
+          World.load('root_okobo'); Game.mode = 'field';
+        }""")
+        page.wait_for_timeout(500)
+        if page.evaluate("""() => (ROOMS.root_okobo.exits || [])
+              .some(e => e.to === 'gallery_restored')"""):
+            errors.append("the secret door exists without all ten collectibles")
+        page.evaluate("() => { Player.collectibles = 10; }")
+        page.wait_for_timeout(600)
+        if not page.evaluate("""() => (ROOMS.root_okobo.exits || [])
+              .some(e => e.to === 'gallery_restored')"""):
+            errors.append("all ten collectibles did not open the secret door")
+        advance(page)
+        idle(page); put(page, "gallery_restored", 6, 6, "up")
+        shot("67-gallery-restored")
+        page.wait_for_timeout(900); advance(page)
+        if not until(page, "Battle.active", 25000):
+            errors.append("the restored Gallery does not start the secret encounter")
+        else:
+            if page.evaluate("() => Battle.enemy.dealsDamage"):
+                errors.append("the secret encounter attacks; it is meant not to")
+            if not fight(page, max_heals=2):
+                errors.append("the secret encounter never ended")
+        page.wait_for_timeout(700); advance(page)
+        if not page.evaluate("() => !!Player.flags.beatSpire"):
+            errors.append("the secret encounter never resolved")
+        if not until(page, "Game.mode === 'cutscene' && Cutscene.name === 'wake'", 6000):
+            errors.append("the secret encounter does not play the ending")
+        page.evaluate("() => { Game.mode = 'field'; Cutscene.name = null; }")
 
         # --- every transition must be survivable in both directions
         # (the 0.1.0 bug: landing on the return path bounced you straight back)
@@ -1321,8 +1463,19 @@ def main():
             errors.append(f"title menu is wrong: {opts}")
 
         # --- menus
-        page.evaluate("() => { Game.mode='field'; World.load('ondo'); }")
-        page.wait_for_timeout(300)
+        # Reset hard first. By this point the run has been through both endings,
+        # so it can arrive here mid-cutscene, mid-dialogue, or holding a queued
+        # milestone - any of which swallows the key that opens the menu, and the
+        # failures then read as the menu being broken.
+        page.evaluate("""() => {
+          Battle.active = false; Battle.onEnd = null;
+          Dialogue.active = false; Dialogue.page = null; Dialogue.queue = [];
+          Cutscene.name = null; Fade.dir = 0; Fade.a = 0;
+          Player.owed = []; Player.flags.beatFinal = false;
+          Game.mode = 'field'; World.load('ondo');
+        }""")
+        page.wait_for_timeout(400)
+        take_milestone(page, 6)
         press(page, "c")
         page.wait_for_timeout(300)
         shot("17-menu")

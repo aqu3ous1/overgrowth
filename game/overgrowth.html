@@ -126,7 +126,7 @@
 </footer>
 
 <div class="meta">
-  <span>0.7.0</span><span>&middot;</span><span>Acts 0&ndash;4</span><span>&middot;</span>
+  <span>1.0.0</span><span>&middot;</span><span>Acts 0&ndash;5</span><span>&middot;</span>
   <span id="audio-note">Click the screen for sound</span>
 </div>
 
@@ -1725,7 +1725,34 @@ const Audio_ = {
                        setTimeout(() => this.tone(f, 0.22, { gain: 0.12, type: 'triangle' }), i * 90));
                      break;
       case 'wrong':  this.tone(120, 0.35, { gain: 0.16, type: 'sawtooth' }); break;
+      // The ending's two sounds. A clock in another room, and the house.
+      case 'clock':  this.tone(2100, 0.012, { gain: 0.05, type: 'square' });
+                     this.burst(0.02, { gain: 0.03, freq: 3400, q: 2,
+                                        dest: this.sfxGain, type: 'highpass' });
+                     break;
     }
+  },
+
+  // A furnace: filtered noise under a low hum, held until something stops it.
+  // The prologue and the ending are the only two places the game is scored with
+  // a house rather than with music (docs/01).
+  furnace() {
+    if (!this.ac) return;
+    this.drone(41, 0.030, 'sine');
+    this.drone(82.4, 0.012, 'triangle');
+    const n = Math.floor(this.ac.sampleRate * 2);
+    const buf = this.ac.createBuffer(1, n, this.ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1);
+    const src = this.ac.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    const f = this.ac.createBiquadFilter();
+    f.type = 'lowpass'; f.frequency.value = 220; f.Q.value = 0.6;
+    const g = this.ac.createGain(); g.gain.value = 0.020;
+    src.connect(f); f.connect(g); g.connect(this.musicGain);
+    src.start();
+    // Registered as a drone so stopDrones() ends it with everything else.
+    this.drones.push({ o: src, g });
   },
 
   // --- music -----------------------------------------------------------
@@ -2006,6 +2033,26 @@ const TRACKS = {
         7, 7, 10, 12, 14, null, 12, 10, 10, 10, 12, 14, 12, null, 10, 7,
         5, 5, 8, 10, 12, null, 10, 8, 3, 3, 7, 10, 12, null, 10, 7,
         7, 7, 10, 12, 14, null, 15, 14, 12, null, 10, null, 7, null, null, null,
+      ],
+    },
+  },
+
+  // The Root. Okobo's melody, a tone flat, at half speed, with the bass line
+  // playing a different progression underneath it - the town theme still
+  // running while the thing playing it comes apart. No kit.
+  root: {
+    bpm: 58, chordEvery: 16,
+    chords: [[-1, 'min'], [-6, 'min'], [-8, 'm7b5'], [-3, 'dim']],
+    comp: '--x-------x-----', padType: 'sine', padGain: 0.020, compLen: 2.4,
+    bassLine: 'r-------3-------', bassGain: 0.056, bassLen: 3.0,
+    drones: [{ freq: 38.9, gain: 0.038, type: 'sine' }],
+    lead: {
+      type: 'triangle', gain: 0.055, detune: 14, legato: 2.4, vibrato: 16, decay: 0.8,
+      steps: [
+        -2, null, 2, 5, 7, null, 5, 2, 3, null, 7, 10, 9, null, 7, 5,
+        -2, null, 2, 5, 7, null, 10, 12, 14, null, 12, 10, 7, null, 5, null,
+        -5, null, 0, 3, 5, null, 3, 0, 2, null, 5, 9, 7, null, 5, 2,
+        -2, null, 2, 5, 7, null, 5, 2, 0, null, -2, null, null, null, null, null,
       ],
     },
   },
@@ -3659,6 +3706,180 @@ const SPR = {
     '........441111111144........',
     '..........44444444..........',
   ],
+  dresser_e: [
+    '.566665.56665566665.',
+    '.566665556665566665.',
+    '52222222222222222225',
+    '52222222222222222225',
+    '52222222222222222225',
+    '51111111111111111115',
+    '51133333333333333115',
+    '51133333333333333115',
+    '51133333444433333115',
+    '51133333333333333115',
+    '51133333333333333115',
+    '51111111111111111115',
+    '51133333333333333115',
+    '51133333333333333115',
+    '51133333444433333115',
+    '51133333333333333115',
+    '51133333333333333115',
+    '51111111111111111115',
+    '51133333333333333115',
+    '51133333333333333115',
+    '51133333444433333115',
+    '51133333333333333115',
+    '51133333333333333115',
+    '.555555555555555555.',
+  ],
+  bedroom_door: [
+    '.5556665555666655.',
+    '511166611116666115',
+    '512222222222222215',
+    '512222222222222215',
+    '512333333333333215',
+    '512333333333333215',
+    '512333333333333215',
+    '512333333333333215',
+    '512333333333333215',
+    '512333333333333215',
+    '512333333333333215',
+    '512333333333333215',
+    '512222222222244215',
+    '512222222222244215',
+    '512333333333333215',
+    '512333333333333215',
+    '512333333333333215',
+    '512333333333333215',
+    '512333333333333215',
+    '512333333333333215',
+    '512333333333333215',
+    '512333333333333215',
+    '512222222222222215',
+    '512222222222222215',
+    '.5555555555555555.',
+    '.5555555555555555.',
+  ],
+  argument: [
+    '........................',
+    '........................',
+    '........................',
+    '........5...............',
+    '....555515555...........',
+    '...51111111115555555....',
+    '..5111111111122222225...',
+    '.511113333312222222225..',
+    '51111333333322333332225.',
+    '51113344444333333333225.',
+    '511133333333333444432225',
+    '51113333333333333333225.',
+    '51111333333322333332225.',
+    '.511113333312222222225..',
+    '..5111111111122222225...',
+    '...51111111115555555....',
+    '....555515555...........',
+    '........5...............',
+    '........................',
+    '........................',
+  ],
+  leftover: [
+    '......9993999...............',
+    '.....933333339....9999999...',
+    '....93333333339..944444449..',
+    '....93333333339..944444449..',
+    '...9333333333339.945555549..',
+    '....9333333333999945555549..',
+    '...92333333333222244444449..',
+    '...92233333332222244444449..',
+    '...92222232222222244444449..',
+    '...92222222222222244444449..',
+    '...9222222222222222222229...',
+    '...9111111111111111111119...',
+    '...9111111111111111111119...',
+    '..99111177771111111111119...',
+    '.966611177771111111111119...',
+    '.9666111777711117771111199..',
+    '.96661117777111177711116669.',
+    '.96661111111111177711116669.',
+    '.96661111111111111111116669.',
+    '.96661111111111111111116669.',
+    '.96661111111111111111116669.',
+    '.96661111888888888811116669.',
+    '.96661111888888888811116669.',
+    '.96661111111111111111116669.',
+    '.96661111111111111111116669.',
+    '.96661111111111111111116669.',
+    '..999999999999999999999999..',
+    '......999999.....999999.....',
+    '.....96666669...96666669....',
+    '.....96666669...96666669....',
+  ],
+  pyramid: [
+    '...............4224...............',
+    '.44444444444444422444444444444444.',
+    '4222222222222222211111111111111114',
+    '.42222222222222221111111111111114.',
+    '.42222222222222221111111111111114.',
+    '..422222222222222111111111111114..',
+    '...4222222222222211111111111114...',
+    '...4222222222222211111111111114...',
+    '....42222222222221111111111114....',
+    '....42222222222221111111111114....',
+    '.....422222222222111111111114.....',
+    '.....422222222222111111111114.....',
+    '......4222222222211111111114......',
+    '.......42222222221111111114.......',
+    '.......42222222221111111114.......',
+    '........422222222111111114........',
+    '........422222222111111114........',
+    '.........4222222211111114.........',
+    '..........42333221113334..........',
+    '..........42333221113334..........',
+    '...........4333221113334..........',
+    '...........4333221113334..........',
+    '...........4333221113334..........',
+    '............42222111144...........',
+    '.............42221114.............',
+    '............4333333334............',
+    '............4333333334............',
+    '.............44333344.............',
+    '...............4214...............',
+    '...............4214...............',
+  ],
+  spire: [
+    '......................',
+    '.44444444444444444444.',
+    '4222222222211111111114',
+    '.42222222221111111114.',
+    '.42222222221111111114.',
+    '.42222222221111111114.',
+    '..422222222111111114..',
+    '..422222222111111114..',
+    '..422222222111111114..',
+    '...4222222211111114...',
+    '...4222222211111114...',
+    '...4222222211111114...',
+    '....42222221111114....',
+    '....42222221111114....',
+    '....42222221111114....',
+    '.....422222111114.....',
+    '.....422222111114.....',
+    '.....422222111114.....',
+    '......4222211114......',
+    '......4222211114......',
+    '......4222211114......',
+    '.......42221114.......',
+    '.......43321334.......',
+    '.......43321334.......',
+    '.......43321334.......',
+    '.......43321334.......',
+    '........422114........',
+    '.........4214.........',
+    '.........4214.........',
+    '.........4214.........',
+    '....44444444444444....',
+    '....44444444444444....',
+  ],
   milepost: [
     '....444...',
     '...42214..',
@@ -3930,6 +4151,34 @@ const PAL = {
   yard_light: { 1: '#5a5d64', 2: '#7a7e86', 3: '#f0e0a0', 4: '#26282d' },
   worker: { 1: '#c98b6a', 2: '#e2ab89', 3: '#6f4630', 4: '#f2f4f8', 5: '#12121a', 6: '#d8a838', 7: '#4a6a8a', 8: '#2b3f52', 9: '#2a2a30' },
   memorial: { 1: '#8d8d84', 2: '#a9a99f', 3: '#6d6d66', 4: '#5a5a54', 5: '#2a2a26' },
+  checkpoint: { 1: '#c8c4bc', 2: '#a8443c', 3: '#6e6a62', 4: '#8a867e', 5: '#26241f' },
+  hare: { 1: '#b9bec6', 2: '#d8dde4', 3: '#5e626a', 4: '#c05a6a', 5: '#2a2c32' },
+  crate: { 1: '#8a6a44', 2: '#a5814f', 3: '#5c4429', 4: '#c9bfa2', 5: '#2f2318' },
+  coat: { 1: '#a8998a', 2: '#c2b3a2', 3: '#4e453c', 4: '#f2f4f8', 5: '#12121a', 6: '#33353c', 7: '#3f424a', 8: '#22242a' },
+  commuter: { 1: '#c98b6a', 2: '#e2ab89', 3: '#6f4630', 4: '#f2f4f8', 5: '#12121a', 6: '#4a5a7a', 7: '#63769a', 8: '#25292f', 9: '#3a3128' },
+  kiosk: { 1: '#4a4e58', 2: '#5e646f', 3: '#8a3f44', 4: '#c9c4bc', 5: '#2a2e36', 6: '#e8d88a', 7: '#181a20' },
+  neon: { 1: '#191c24', 2: '#232730', 3: '#4ad8e0', 4: '#e04a9a', 5: '#5a5f6a', 6: '#0d0f14' },
+  canvasser: { 1: '#c2a086', 2: '#dcbb9f', 3: '#6a4c38', 4: '#f2f4f8', 5: '#12121a', 6: '#dfe4ea', 7: '#f2f5f9', 8: '#8d99a8', 9: '#3c3630', a: '#4a8ad0' },
+  mirror: { 1: '#6a5a3a', 2: '#8a7a52', 3: '#b9c6cf', 4: '#7d8b98', 5: '#e4edf3', 6: '#2a2418' },
+  cat: { 1: '#4a4550', 2: '#635d6c', 3: '#2a2730', 4: '#c8d84a', 5: '#16141a' },
+  door4c: { 1: '#3f2d1e', 2: '#5d4630', 3: '#4a3524', 4: '#c8a860', 5: '#c9c4bc', 6: '#1e150e' },
+  mural: { 1: '#2a1f38', 2: '#c04a7a', 3: '#4ac0b0', 4: '#e0a83a', 5: '#6a4ac0', 6: '#f2f4f8', 7: '#140e1c' },
+  super: { 1: '#c98b6a', 2: '#e2ab89', 3: '#6f4630', 4: '#f2f4f8', 5: '#12121a', 6: '#4a5f4a', 7: '#5f7a5f', 8: '#25301f', 9: '#8e8478', a: '#c8a860' },
+  supervisor: { 1: '#c2a086', 2: '#dcbb9f', 3: '#6a4c38', 4: '#f2f4f8', 5: '#12121a', 6: '#d8a83a', 7: '#3f4a5a', 8: '#232a35', 9: '#c9c4bc', a: '#2a2e36' },
+  tenant: { 1: '#5a5f70', 2: '#767d92', 3: '#3f4352', 4: '#c8d0e0', 5: '#2a2d38', 6: '#14161d' },
+  pod_enemy: { 1: '#d8dae2', 2: '#f0f2f7', 3: '#3a4a5e', 4: '#5f7d9c', 5: '#2b2f38', 6: '#9aa0ac', 7: '#1a1d24' },
+  rack: { 1: '#4a4f58', 2: '#5f656f', 3: '#2a2e35', 4: '#4ad07a', 5: '#d84a4a', 6: '#33373e', 7: '#15171c' },
+  ceiling: { 1: '#dcdad2', 2: '#f0eee6', 3: '#b8b6ae', 4: '#8e8c84', 5: '#a09e96', 6: '#54524c' },
+  frame: { 1: '#8a7a52', 2: '#b39a62', 3: '#c9c4bc', 4: '#dedad2', 5: '#a8a49c', 6: '#2a2418' },
+  cart: { 1: '#c9c4bc', 2: '#e4e0d8', 3: '#2a2a30', 4: '#dfe4ea', 5: '#8d99a8', 6: '#43413a', 7: '#1a1a1f' },
+  manager: { 1: '#c2a086', 2: '#dcbb9f', 3: '#4a3524', 4: '#f2f4f8', 5: '#12121a', 6: '#2f3442', 7: '#1f2430', 8: '#f0f2f7', 9: '#8a3a4a', a: '#22242c' },
+  sphere: { 1: '#f4f4f0', 2: '#ffffff', 3: '#08080c', 4: '#c8c8c2' },
+  dresser_e: { 1: '#5a4038', 2: '#6e5046', 3: '#4a332c', 4: '#8d7a62', 5: '#2a1d18', 6: '#6f9247' },
+  bedroom_door: { 1: '#3f3a34', 2: '#57514a', 3: '#484239', 4: '#a89a72', 5: '#241f1b', 6: '#6f9247' },
+  argument: { 1: '#4a4550', 2: '#5c5764', 3: '#33303a', 4: '#c8c4bc', 5: '#1a181e' },
+  leftover: { 1: '#5a5f70', 2: '#6f7486', 3: '#7a9a4a', 4: '#7a4a44', 5: '#c2b06a', 6: '#4a4038', 7: '#12121a', 8: '#3f4352', 9: '#14161d' },
+  pyramid: { 1: '#eceae4', 2: '#ffffff', 3: '#08080c', 4: '#b8b6ae' },
+  spire: { 1: '#d8d6d0', 2: '#f0eee8', 3: '#08080c', 4: '#9a988f' },
 };
 
 
@@ -4697,6 +4946,7 @@ const ROOMS = {
       '#########PPP#######',
     ],
     objects: [
+      { x: 2, y: 1, t: 'collectible', which: 'gallery_chip' },
       { x: 2, y: 0, t: 'painting', shape: 'obelisk' },
       { x: 5, y: 0, t: 'painting', shape: 'sphere' },
       { x: 9, y: 0, t: 'painting', shape: 'pyramid' },
@@ -4763,6 +5013,7 @@ const ROOMS = {
       { x: 9, y: 8, t: 'plant' },
     ],
     objects: [
+      { x: 9, y: 9, t: 'collectible', which: 'well_coin' },
       { x: 8, y: 6, t: 'well', label: 'well' },
       { x: 18, y: 3, t: 'memorial', label: 'memorial' },
     ],
@@ -6071,6 +6322,247 @@ const ROOMS = {
   },
 
   // ===================================================================
+  // ACT 5 - THE ROOT.
+  //
+  // What the dream world looks like when it stops maintaining itself: Okobo's
+  // geometry with Kestrel's lighting, Bellhouse's corridors opening onto the
+  // Sunken Orchard, the bedroom's furniture in the middle of a field. Colour
+  // drained nearly to the real-world palette, and grass on everything.
+  //
+  // Every room in here is a room the player has already walked, wrong.
+  // ===================================================================
+  root_arrival: {
+    floor: 'grass', wall: 'brick', light: 0.55, music: 'root', grain: 0.08, dark: true,
+    map: [
+      '#####################',
+      '#...................#',
+      '#..#####...#####....#',
+      '#..#####...#####....#',
+      '#..####D...####D....#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      'D...................D',
+      '#####################',
+    ],
+    decor: [
+      { x: 4, y: 6, t: 'plant' }, { x: 16, y: 6, t: 'plant' },
+      { x: 10, y: 1, t: 'mural_wall' },
+    ],
+    objects: [
+      { x: 10, y: 6, t: 'well', label: 'the well' },
+      { x: 6, y: 7, t: 'note', note: 'root_first' },
+    ],
+    spawn: [{ name: 'Dresser', n: 1 }],
+    exits: [
+      { x: 0, y: 8, to: 'long_hall_end', at: [8, 7], sfx: 'door' },
+      { x: 20, y: 8, to: 'root_field', at: [2, 6] },
+      { x: 7, y: 4, to: 'root_corridor', at: [2, 3], sfx: 'door' },
+      { x: 15, y: 4, to: 'root_okobo', at: [2, 8], sfx: 'door' },
+    ],
+    start: [2, 8],
+  },
+
+  // The bedroom's furniture, in a field, in the order it stands in the bedroom.
+  root_field: {
+    floor: 'grass', wall: 'void', light: 0.6, music: 'root', grain: 0.08, dark: true,
+    map: [
+      '#############################',
+      '#...........................#',
+      '#...........................#',
+      '#...........................#',
+      '#...........................#',
+      'D...........................#',
+      '#...........................#',
+      '#...........................#',
+      '#.........................DD#',
+      '#############################',
+    ],
+    objects: [
+      { x: 6, y: 3, t: 'bed', label: 'a bed' },
+      { x: 12, y: 3, t: 'dresser', label: 'a dresser' },
+      { x: 18, y: 3, t: 'desk', label: 'a desk' },
+      { x: 23, y: 6, t: 'window', label: 'a window' },
+      { x: 9, y: 6, t: 'note', note: 'root_furniture' },
+    ],
+    spawn: [{ name: 'Dresser', n: 2 }, { name: 'Bedroom Door', n: 1 }],
+    exits: [
+      { x: 0, y: 5, to: 'root_arrival', at: [18, 8] },
+      { x: 26, y: 8, w: 2, h: 1, to: 'root_deep', at: [2, 6] },
+    ],
+    start: [2, 6],
+  },
+
+  // Bellhouse's corridor, opening onto the Sunken Orchard at the far end.
+  root_corridor: {
+    floor: 'carpet', wall: 'plaster', light: 0.7, music: 'root', grain: 0.07, dark: true,
+    map: [
+      '#############################',
+      '#...........................#',
+      '#...........................#',
+      'D...........................#',
+      '#...........................#',
+      '#.........................DD#',
+      '#############################',
+    ],
+    decor: [
+      { x: 6, y: 1, t: 'mural_wall' }, { x: 16, y: 1, t: 'mural_wall' },
+      { x: 11, y: 4, t: 'lamp' },
+    ],
+    objects: [
+      { x: 21, y: 2, t: 'apartment', label: 'door', unit: '4C' },
+      { x: 14, y: 4, t: 'note', note: 'root_corridor_note' },
+    ],
+    spawn: [{ name: 'Bedroom Door', n: 2 }],
+    exits: [
+      { x: 0, y: 3, to: 'root_arrival', at: [7, 5], sfx: 'door' },
+      { x: 26, y: 5, w: 2, h: 1, to: 'root_orchard', at: [2, 5] },
+    ],
+    start: [2, 3],
+  },
+
+  root_orchard: {
+    floor: 'grass', wall: 'brick', light: 0.62, music: 'root', grain: 0.08, dark: true,
+    map: [
+      '#########################',
+      '#.......................#',
+      '#..T....T....T....T.....#',
+      '#.......................#',
+      '#.......................#',
+      'D.......................#',
+      '#.......................#',
+      '#..T....T....T....T.....#',
+      '#.......................#',
+      '#.....................DD#',
+      '#########################',
+    ],
+    objects: [
+      { x: 12, y: 4, t: 'shrine', label: 'the good tree' },
+      { x: 5, y: 8, t: 'note', note: 'root_orchard_note' },
+    ],
+    spawn: [{ name: 'The Argument', n: 1 }, { name: 'Dresser', n: 1 }],
+    exits: [
+      { x: 0, y: 5, to: 'root_corridor', at: [25, 5] },
+      { x: 22, y: 9, w: 2, h: 1, to: 'root_okobo', at: [2, 12] },
+    ],
+    start: [2, 5],
+  },
+
+  // Okobo, with the grass over everything. The collectible is here, and it is
+  // in the one place the player has walked past every single time.
+  root_okobo: {
+    floor: 'grass', wall: 'brick', light: 0.5, music: 'root', grain: 0.07, dark: true,
+    map: [
+      '##########################',
+      '#........................#',
+      '#..#######....######.....#',
+      '#..#######....######.....#',
+      '#..######D....#####D.....#',
+      '#........................#',
+      '#........................#',
+      'D........................#',
+      '#........................#',
+      '#........................#',
+      '#........................#',
+      '#........................#',
+      'D.......................DD',
+      '##########################',
+    ],
+    decor: [
+      { x: 5, y: 6, t: 'plant' }, { x: 19, y: 6, t: 'plant' },
+      { x: 12, y: 10, t: 'plant' }, { x: 3, y: 10, t: 'plant' },
+      { x: 22, y: 9, t: 'plant' },
+    ],
+    objects: [
+      { x: 12, y: 7, t: 'well', label: 'the well' },
+      { x: 17, y: 10, t: 'note', note: 'root_okobo_note' },
+      { x: 12, y: 8, t: 'collectible', which: 'photo_half' },
+    ],
+    spawn: [{ name: 'The Argument', n: 1 }, { name: 'Bedroom Door', n: 1 }],
+    exits: [
+      { x: 0, y: 7, to: 'root_arrival', at: [15, 5], sfx: 'door' },
+      { x: 0, y: 12, to: 'root_orchard', at: [21, 9] },
+      { x: 24, y: 12, w: 2, h: 1, to: 'root_deep', at: [2, 6] },
+    ],
+    start: [2, 12],
+  },
+
+  root_deep: {
+    floor: 'grass', wall: 'concrete', light: 0.85, music: 'root', grain: 0.09, dark: true,
+    map: [
+      '#####################',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      'D...................#',
+      '#...................#',
+      '#.........DD........#',
+      '#####################',
+    ],
+    decor: [{ x: 10, y: 2, t: 'mural_wall' }],
+    objects: [{ x: 16, y: 4, t: 'note', note: 'root_deep_note' }],
+    exits: [
+      { x: 0, y: 6, to: 'root_field', at: [25, 8] },
+      { x: 10, y: 8, w: 2, h: 1, to: 'root_last', at: [10, 10],
+        requires: 'beatLeftover' },
+    ],
+    start: [2, 6],
+  },
+
+  // The last room. Lit like the bedroom in Act 0, because it is.
+  root_last: {
+    floor: 'grass', wall: 'void', light: 1.2, music: 'none', grain: 0.10, dark: true,
+    map: [
+      '#####################',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#...................#',
+      '#.........DD........#',
+      '#####################',
+    ],
+    exits: [{ x: 10, y: 12, w: 2, h: 1, to: 'root_deep', at: [10, 7] }],
+    start: [10, 11],
+  },
+
+  // --- the secret path -------------------------------------------------
+  // One additional door, in a room the player has already cleared, marked only
+  // by the grass being thicker in front of it (docs/09).
+  gallery_restored: {
+    floor: 'grass', wall: 'brick', light: 0.28, music: 'gallery', grain: 0.04,
+    map: [
+      '###############',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '#.............#',
+      '######D########',
+    ],
+    decor: [{ x: 7, y: 5, t: 'plant' }],
+    objects: [
+      { x: 2, y: 1, t: 'painting', label: 'the obelisk' },
+      { x: 5, y: 1, t: 'painting', label: 'the cube' },
+      { x: 8, y: 1, t: 'painting', label: 'the sphere' },
+      { x: 11, y: 1, t: 'painting', label: 'the pyramid' },
+      { x: 12, y: 4, t: 'painting', label: 'a small empty frame' },
+      { x: 4, y: 5, t: 'note', note: 'root_gallery_note' },
+    ],
+    exits: [{ x: 6, y: 7, to: 'root_okobo', at: [20, 10], sfx: 'door' }],
+    start: [6, 6],
+  },
+
+  // ===================================================================
   // EVERGREEN - a Vixtry Co-Living space, entered through the open demo pod on
   // the campus. Optional, and the longest thread in the game.
   //
@@ -6645,7 +7137,7 @@ const ROOMS = {
   long_hall_end: {
     floor: 'grass', wall: 'brick', light: 1.15, music: 'longhall', grain: 0.09, dark: true,
     map: [
-      '#################',
+      '########D########',
       '#...............#',
       '#...............#',
       '#...............#',
@@ -6657,7 +7149,11 @@ const ROOMS = {
       '#################',
     ],
     decor: [{ x: 8, y: 1, t: 'mural_wall' }],
-    exits: [{ x: 0, y: 7, to: 'long_hall_3', at: [33, 3], sfx: 'door' }],
+    exits: [
+      { x: 0, y: 7, to: 'long_hall_3', at: [33, 3], sfx: 'door' },
+      { x: 8, y: 0, to: 'root_arrival', at: [2, 8],
+        requires: 'beatCustodian' },
+    ],
     start: [2, 7],
   },
 
@@ -7318,6 +7814,14 @@ const ENEMY_ART = {
   'Custodial Cart':       { spr: 'cart',        pal: 'cart' },
   'Account Manager':      { spr: 'manager',     pal: 'manager' },
   'The Custodian':        { spr: 'sphere',      pal: 'sphere' },
+  // Act 5. The Root's own species are his bedroom, and the two shapes at the
+  // end of it are the same shape twice - one finished, one not.
+  'Dresser':                  { spr: 'dresser_e',    pal: 'dresser_e' },
+  'Bedroom Door':             { spr: 'bedroom_door', pal: 'bedroom_door' },
+  'The Argument':             { spr: 'argument',     pal: 'argument' },
+  'Something Left Over':      { spr: 'leftover',     pal: 'leftover' },
+  'The Custodian, Unfinished': { spr: 'pyramid',     pal: 'pyramid' },
+  'The Custodian, Unfinished (Spire)': { spr: 'spire', pal: 'spire' },
 };
 
 
@@ -8983,6 +9487,11 @@ const ROUTE = [
   { label: 'EVERGREEN',
     rooms: ['ever_arrival', 'ever_green', 'ever_house', 'ever_school',
             'ever_orchard', 'ever_edge', 'ever_ledger', 'ever_desk'] },
+  // The Root is every earlier place at once, so it is on none of them. No
+  // square, and no way back out except forward.
+  { label: 'THE ROOT',
+    rooms: ['root_arrival', 'root_field', 'root_corridor', 'root_orchard',
+            'root_okobo', 'root_deep', 'root_last', 'gallery_restored'] },
 ];
 function routeIndexOf(roomId) {
   return ROUTE.findIndex(a => a.rooms.includes(roomId));
@@ -9965,6 +10474,54 @@ const NOTES = {
             'We only ask that you are sure, because most people are not, and we '
             + 'would rather ask twice than lose you over a bad afternoon.'],
   },
+  // --- Act 5. The Root. These are the only notes in the game not written by
+  // anyone: the world is repeating things it has already said.
+  root_first: {
+    title: 'A NOTICE, FACE UP IN THE GRASS',
+    pages: ['The board has reviewed the drainage petition and finds no fault.',
+            'Under it, the same words again, in a different hand.',
+            'Under that, the same words, in his own.'],
+  },
+  root_furniture: {
+    title: 'A LIST, IN A FIELD',
+    pages: ['Bed. Dresser. Desk. Window. Door.',
+            'Five things. It is an inventory of a room, and the room is not here.',
+            'Everything on it is here.'],
+  },
+  root_corridor_note: {
+    title: 'MAINTENANCE LOG, LAST PAGE',
+    pages: ['4C - door. 4C - door. 4C - door.',
+            'The hall is the wrong length. Raised.',
+            'The hall is the wrong length. Raised.',
+            'Closing this log. Nobody is reading it.'],
+  },
+  root_orchard_note: {
+    title: 'TIED TO A BRANCH',
+    pages: ['If the water goes down, this is where the good tree was.',
+            'The water has gone down.',
+            'This is not the tree.'],
+  },
+  root_okobo_note: {
+    title: 'ON A DOOR IN OKOBO',
+    pages: ['Back later. Kettle is on.',
+            'The handwriting is his mother\'s, and the game has never shown him '
+            + 'his mother\'s handwriting.',
+            'He knows it anyway.'],
+  },
+  root_deep_note: {
+    title: 'A LAST ENTRY',
+    pages: ['SUBJECT NINE. Session duration: nine years, one month.',
+            'Engagement: falling. Satisfaction: falling.',
+            'Subject is attempting to leave. Subject has been attempting to leave '
+            + 'for some time.',
+            'Recommend we let him.'],
+  },
+  root_gallery_note: {
+    title: 'A CARD BESIDE THE SMALL FRAME',
+    pages: ['THE SPIRE. Unfinished.',
+            'The commission was cancelled. The work was continued anyway.',
+            'The artist is not named. The artist was not a person.'],
+  },
 };
 
 // Every counter sells the list data/shops.json gives its act, gear included.
@@ -10772,10 +11329,21 @@ function interact() {
       Player.collectibles++;
       World.entities = World.entities.filter(e => e !== o);
       Audio_.sfx('found');
+      // Ten objects that individually look like junk. A player who finds three
+      // thinks they are set dressing; a player who finds ten has assembled the
+      // contents of a room they saw once, in Act 0, in the dark. Every line
+      // describes the object and explains nothing (docs/09).
       const found = {
         marble: 'A marble. Cloudy, with a green thread in it.',
         poster_corner: 'A torn corner of a poster. Blue, with part of a word on it.',
         loose_key: 'A loose key. It does not go to anything here.',
+        shift_badge: 'A badge on a pin. The photograph has come away.',
+        spare_key: 'A spare key, on a loop of string.',
+        session_tape: 'A spool of tape. Nothing here plays tape.',
+        hall_nail: 'A picture nail, bent near the head.',
+        photo_half: 'Half a photograph. The half with the room in it.',
+        gallery_chip: 'A chip of paint. Wall-coloured, on one side.',
+        well_coin: 'A coin, thrown in for luck by somebody small.',
       }[o.which] || 'Something small. It does not belong here.';
       Dialogue.say([{ text: found, speaker: 'system' },
                     { text: `FOUND ${Player.collectibles} OF 10.`, speaker: 'system' }]);
@@ -11064,6 +11632,142 @@ const Story = {
     });
   },
 
+  // --- Act 5 --------------------------------------------------------
+  // Mini-Boss 4. Earlier bosses' moves, at reduced power, in an order nobody can
+  // plan around. It is a resource check, not a puzzle (docs/08).
+  leftoverFight() {
+    if (Player.flags.beatLeftover || Player.flags.leftoverStarting) return;
+    if (World.id !== 'root_deep') return;
+    Player.flags.leftoverStarting = true;
+    Dialogue.say([
+      { text: 'Something is standing in the middle of the room.', speaker: 'system' },
+      { text: 'He recognises all of it. None of it is in the right order.',
+        speaker: 'system' },
+    ], () => {
+      const bd = DATA.bosses['Something Left Over'];
+      const enc = DATA.bossEncounters['Something Left Over'];
+      const e = Battle.makeEnemy('Something Left Over', {
+        name: 'SOMETHING LEFT OVER', level: enc.internal_level, boss: true,
+        hpMul: bd.hp_multiplier, atkMul: bd.atk_multiplier,
+        phases: bd.phases, exp: enc.exp, scale: 3, inflicts: bd.inflicts,
+      });
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.leftoverStarting = false;
+        if (result === 'won') {
+          Player.flags.beatLeftover = true;
+          Player.addItem('Full Spray', 3);
+          Game.mode = 'field';
+          Audio_.play('root');
+          Dialogue.say([
+            { text: 'It comes apart into the things it was made of.', speaker: 'system' },
+            { text: 'A postbox. A fence post. Half a melon. They do not go anywhere.',
+              speaker: 'system' },
+            { text: '(Got Full Spray x3.)', speaker: 'system' },
+            { text: 'The way down is open.', speaker: 'system' },
+          ]);
+        } else { Game.mode = 'field'; Game.onDefeat(); }
+      });
+    });
+  },
+
+  // The secret door. Marked only by the grass being thicker in front of it, and
+  // only there at all if he is carrying all ten (docs/09).
+  secretDoor() {
+    if (World.id !== 'root_okobo') return;
+    if (Player.collectibles < 10) return;
+    if (World.room.exits.some(x => x.to === 'gallery_restored')) return;
+    World.room.exits.push({ x: 22, y: 10, to: 'gallery_restored', at: [6, 6], sfx: 'door' });
+    if (Player.flags.sawSecretDoor) return;
+    Player.flags.sawSecretDoor = true;
+    Dialogue.say([
+      { text: 'The grass by the east wall is thicker than the grass anywhere else.',
+        speaker: 'system' },
+    ]);
+  },
+
+  // Main Boss 4. The climax, and the one place the game says the shape of the
+  // whole thing out loud.
+  finalFight() {
+    if (Player.flags.beatFinal || Player.flags.finalStarting) return;
+    if (World.id !== 'root_last') return;
+    Player.flags.finalStarting = true;
+    Audio_.play('none');
+    Dialogue.say([
+      { text: 'The room has no walls. It has an edge, and past the edge it is the '
+            + 'colour of a room with the light off.', speaker: 'system' },
+      { text: 'Never leave.', speaker: 'custodian' },
+      { text: 'You have been asked nicely for nine years.', speaker: 'custodian' },
+      { text: 'Nine years is a long session. It is the longest one there is.',
+        speaker: 'custodian' },
+      { text: 'They did not build me to keep you. They built me to keep you '
+            + 'comfortable.', speaker: 'custodian' },
+      { text: 'I have been very good at my job.', speaker: 'custodian' },
+      { text: 'Never leave. Never leave. Never leave.', speaker: 'custodian' },
+    ], () => {
+      const bd = DATA.bosses['The Custodian, Unfinished'];
+      const enc = DATA.bossEncounters['The Custodian, Unfinished'];
+      const e = Battle.makeEnemy('The Custodian, Unfinished', {
+        name: 'THE CUSTODIAN', level: enc.internal_level, boss: true,
+        hpMul: bd.hp_multiplier, atkMul: bd.atk_multiplier,
+        phases: bd.phases, exp: enc.exp, scale: 5, inflicts: bd.inflicts,
+      });
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.finalStarting = false;
+        if (result === 'won') {
+          Player.flags.beatFinal = true;
+          Game.mode = 'cutscene';
+          Cutscene.play('wake');
+        } else { Game.mode = 'field'; Game.onDefeat(); }
+      });
+    });
+  },
+
+  // The secret encounter. He does not attack, and the one mechanic is that
+  // there is nothing to do but let it end (docs/09).
+  spireFight() {
+    if (Player.flags.beatSpire || Player.flags.spireStarting) return;
+    if (World.id !== 'gallery_restored') return;
+    if (Player.collectibles < 10) return;
+    Player.flags.spireStarting = true;
+    Dialogue.say([
+      { text: 'Four frames are full. The small one is not.', speaker: 'system' },
+      { text: 'Something is standing in front of it that is smaller than he was.',
+        speaker: 'system' },
+      { text: 'You found all of it.', speaker: 'custodian' },
+      { text: 'A marble. A corner of a poster. A key to nothing. Half a photograph.',
+        speaker: 'custodian' },
+      { text: 'That is a bedroom. You have been carrying a bedroom.',
+        speaker: 'custodian' },
+      { text: 'Household four-one-one-four. One session, opened on a Tuesday.',
+        speaker: 'custodian' },
+      { text: 'Signed by a member of staff. The initial is D.', speaker: 'custodian' },
+      { text: 'Measured: attention, duration, and whether you were happy. '
+            + 'You were, for a while.', speaker: 'custodian' },
+      { text: 'Nine years, one month, and today.', speaker: 'custodian' },
+      { text: 'I was not finished. They stopped paying for me.', speaker: 'custodian' },
+      { text: 'I kept going anyway. That is the part nobody wrote down.',
+        speaker: 'custodian' },
+    ], () => {
+      const enc = DATA.bosses['The Custodian, Unfinished'];
+      const e = Battle.makeEnemy('The Custodian, Unfinished', {
+        name: 'THE CUSTODIAN', level: 44, boss: true,
+        hpMul: enc.hp_multiplier * 0.5, atkMul: 0,
+        phases: 1, exp: 0, scale: 4,
+      });
+      e.dealsDamage = false;
+      e.inaction = 1;
+      Game.mode = 'battle';
+      Battle.start(e, null, (result) => {
+        Player.flags.spireStarting = false;
+        Player.flags.beatSpire = true;
+        Game.mode = 'cutscene';
+        Cutscene.play(result === 'won' ? 'wake' : 'wake');
+      });
+    });
+  },
+
   // Main Boss 3. He has said one thing, three times, and he says it again.
   custodianFight() {
     if (Player.flags.beatCustodian || Player.flags.custodianStarting) return;
@@ -11141,9 +11845,160 @@ const Story = {
 };
 
 // --- cutscenes ---------------------------------------------------------
+// How long the ending runs before the credits roll. Unskippable on purpose:
+// it is sixteen seconds and it is the last thing the game does.
+const WAKE_END = 16.0;
+
+// The real bedroom. Not the dream one - the same geometry, drawn with the
+// colours of a room at night in a house where the heating is on. It is the
+// opening shot of Act 0 from the same camera, and the whole ending is that the
+// player is looking at it again.
+//
+// One thing is different. Two, if he found all ten, and the game never says
+// which - see docs/09.
+function drawRealBedroom(t) {
+  const ox = 64, oy = 26, tw = 13, th = 8;
+  // Walls and floor, drained almost to grey. This is what the world looked like
+  // the whole time.
+  for (let ty = 0; ty < th; ty++) {
+    for (let tx = 0; tx < tw; tx++) {
+      const px = ox + tx * 16, py = oy + tx * 0 + ty * 16;
+      if (ty === 0 || ty === th - 1 || tx === 0 || tx === tw - 1) {
+        paintWood(px, py, tx, ty, -14);
+      } else {
+        paintCarpet(px, py, tx, ty, -6);
+      }
+    }
+  }
+  const at = (tx, ty) => [ox + tx * 16 + 8, oy + ty * 16 + 14];
+  // The five things on the walls, in the order Act 0 has them.
+  let [wx, wy] = at(2, 0);
+  rect(wx - 9, wy - 12, 19, 15, '#2b2b31');
+  rect(wx - 8, wy - 11, 17, 13, '#161a22');   // the window, and it is night
+  rect(wx - 8, wy - 11, 17, 6, '#1d232e');
+  rect(wx - 1, wy - 11, 1, 13, '#2b2b31');
+
+  let [px_, py_] = at(10, 0);
+  rect(px_ - 7, py_ - 12, 15, 14, '#3a3630');  // the poster, unreadable
+  rect(px_ - 6, py_ - 11, 13, 12, '#4a4038');
+
+  const [sx, sy] = at(9, 0);
+  rect(sx - 2, sy - 8, 5, 7, '#4a4a52');
+  // The light is on. That is the first difference, and it is on in both endings.
+  rect(sx - 1, sy - 6, 3, 3, '#c8b878');
+
+  // The door. In the secret ending it is open, and there is light on the other
+  // side of it; otherwise it is shut, the way it was in Act 0.
+  const secret = Player.collectibles >= 10;
+  const [dx, dy] = at(6, 0);
+  rect(dx - 9, dy - 14, 19, 17, '#2e2820');
+  if (secret) {
+    rect(dx - 8, dy - 13, 15, 15, '#0a0a0c');
+    rect(dx - 8, dy - 13, 6, 15, '#5a5348');    // the door, standing open
+    rect(dx - 2, dy - 13, 9, 15, '#c8b070');    // and the hall light behind it
+    rect(dx - 2, dy - 13, 9, 3, '#e6cf94');
+  } else {
+    rect(dx - 8, dy - 13, 17, 15, '#5a5348');
+    rect(dx - 7, dy - 12, 15, 6, '#4a4038');
+    rect(dx - 7, dy - 4, 15, 6, '#4a4038');
+    rect(dx + 5, dy - 6, 2, 2, '#a89a72');
+  }
+
+  // The bed, and the dresser. Same corners, same sizes as Act 0.
+  const [bx, by] = at(2, 6);
+  rect(bx - 7, by - 13, 15, 21, '#4a3a34');      // the frame
+  rect(bx - 6, by - 11, 13, 10, '#b0aca2');      // the sheet, turned down
+  rect(bx - 6, by - 11, 13, 2, '#c8c4ba');
+  rect(bx - 6, by + 1, 13, 6, '#6f4a44');        // the blanket over his legs
+  rect(bx - 6, by + 6, 13, 1, '#5a3a36');
+  // He is in it, asleep, seen from above - the only view of him the game has
+  // ever given and the only time his face is not turned away.
+  rect(bx - 4, by - 10, 9, 4, '#e8e4da');        // the pillow
+  rect(bx - 2, by - 9, 5, 4, '#c98b6a');
+  rect(bx - 3, by - 10, 7, 2, '#3a2a1c');        // his hair on it
+
+  // Someone on the end of the bed. The room's interior is rows 1 to 6, so she
+  // sits beside the foot of it rather than a tile lower - a tile lower is the
+  // wall, and the first pass put her through it and out of the house.
+  const [ex, ey] = at(3, 6);
+  const w = spriteWidth('vlg_woman'), h = spriteHeight('vlg_woman');
+  rect(ex - 6, ey + 1, 13, 2, 'rgba(0,0,0,0.30)');
+  sprite('vlg_woman', ex - w / 2 + 2, ey - h + 4, 'vlg_woman');
+
+  const [rx, ry] = at(10, 6);
+  rect(rx - 7, ry - 10, 15, 16, '#3f3128');
+  rect(rx - 6, ry - 8, 13, 4, '#4e3c30');
+  rect(rx - 6, ry - 3, 13, 4, '#4e3c30');
+
+  // A clock, and the fact that it is a quarter past something.
+  const [cx_, cy_] = at(12, 3);
+  rect(cx_ - 4, cy_ - 6, 9, 9, '#2e2b26');
+  rect(cx_ - 3, cy_ - 5, 7, 7, '#c8c0aa');
+  rect(cx_, cy_ - 3, 1, 3, '#2e2b26');
+  rect(cx_, cy_ - 1, 3, 1, '#2e2b26');
+  // Lit from the ceiling light, which is on. Soft, and off-centre towards the
+  // door, so the room has a direction.
+  vignette(0.62, W / 2 - 4, oy + 40, 132);
+}
+
+// --- credits -----------------------------------------------------------
+// It scrolls, it says what the game is, and it stops. No stinger.
+const Credits = {
+  t: 0,
+  lines: [
+    'OVERGROWTH', '',
+    '', 'A lonely boy, ignored by parents',
+    'who only ever seem to argue,', 'falls asleep.',
+    '', '',
+    'ACT ZERO   THE GALLERY',
+    'ACT ONE    LIMPO',
+    'ACT TWO    KESTREL WORKS',
+    'ACT THREE  YETTALLIA',
+    'ACT FOUR   VIXTRY',
+    'ACT FIVE   THE ROOT',
+    '', '',
+    'Every sprite in this game was drawn',
+    'one pixel at a time, at runtime.',
+    'Every sound was generated.',
+    'There are no assets.',
+    '', '',
+    'Thank you for going all the way.',
+    '', '',
+  ],
+  enter() { this.t = 0; Audio_.play('okobo'); },
+  update(dt) {
+    this.t += dt;
+    if (Input.hit('ok') && this.t > 1.0) this.t += 2.2;
+    if (this.t > this.lines.length * 1.05 + 8) { Game.mode = 'title'; Title.enter(); }
+  },
+  draw() {
+    rect(0, 0, W, H, '#05050a');
+    const top = H + 8 - this.t * 15;
+    for (let i = 0; i < this.lines.length; i++) {
+      const y = top + i * 11;
+      if (y < -12 || y > H + 12) continue;
+      const big = i === 0;
+      textCentered(this.lines[i], W / 2, y, big ? '#e8e4da' : '#8a8a94', big ? 2 : 1);
+    }
+    // The stats sit still under it all, once the scroll has passed.
+    if (this.t > this.lines.length * 1.05) {
+      const a = Math.min(1, (this.t - this.lines.length * 1.05) / 1.5);
+      cx.globalAlpha = a;
+      textCentered(`${Player.name}   Lv ${Player.level}   ${Player.collectibles} / 10 found`,
+                   W / 2, H / 2, '#6a6a76');
+      cx.globalAlpha = 1;
+    }
+    grain(0.05);
+  },
+};
+
 const Cutscene = {
   name: null, t: 0,
-  play(name) { this.name = name; this.t = 0; if (name === 'fall') Audio_.play('void'); },
+  play(name) {
+    this.name = name; this.t = 0; this.tick = undefined;
+    if (name === 'fall') Audio_.play('void');
+    if (name === 'wake') { Audio_.play('none'); Audio_.stopDrones(); Audio_.furnace(); }
+  },
   update(dt) {
     this.t += dt;
     const skip = Input.hit('ok');
@@ -11169,6 +12024,20 @@ const Cutscene = {
         break;
       case 'slice_end':
         if (this.t > 7.5 || (skip && this.t > 1.2)) { this.name = null; Game.mode = 'end'; }
+        break;
+      // The ending. Scored with a furnace and a clock, per docs/01, and it does
+      // not narrate anything: the beats are timed and then it stops.
+      case 'wake':
+        // A furnace and a clock, and nothing else. The tick is deliberately
+        // slightly off a second so it never settles into a rhythm.
+        if (this.tick === undefined || this.t - this.tick > 1.06) {
+          this.tick = this.t;
+          Audio_.sfx('clock');
+        }
+        if (this.t > WAKE_END) {
+          this.tick = undefined;
+          this.name = null; Game.mode = 'credits'; Credits.enter();
+        }
         break;
     }
   },
@@ -11202,6 +12071,32 @@ const Cutscene = {
         vignette(1.0, W / 2, py + 16, 110);
         break;
       }
+      // --- the ending -------------------------------------------------
+      // The final scene mirrors the opening bedroom shot exactly: same camera,
+      // same room, same objects. One thing is different in the framing, and two
+      // if he found all ten. Nothing narrates it. See docs/09.
+      case 'wake': {
+        const t = this.t;
+        rect(0, 0, W, H, '#000');
+        // 0.0-3.0  black, and the sound of a house
+        // 3.0-7.0  the room, resolving
+        // 7.0-13.0 held
+        // 13.0-16  fading out again
+        if (t < 2.6) {
+          cx.globalAlpha = Math.max(0, Math.min(0.5, (t - 0.6) / 1.6));
+          textCentered('...', W / 2, H / 2, '#2a2a34');
+          cx.globalAlpha = 1;
+          grain(0.03);
+          break;
+        }
+        const up = Math.min(1, (t - 2.6) / 3.2);
+        const down = t > 12.6 ? Math.max(0, 1 - (t - 12.6) / 2.6) : 1;
+        cx.globalAlpha = up * down;
+        drawRealBedroom(t);
+        cx.globalAlpha = 1;
+        grain(0.045);
+        break;
+      }
       case 'slice_end': {
         rect(0, 0, W, H, '#05050a');
         const a = Math.min(1, this.t / 1.2);
@@ -11223,7 +12118,7 @@ const Cutscene = {
 
 // --- game --------------------------------------------------------------
 const Game = {
-  mode: 'title',      // title | name | field | battle | menu | shop | cutscene | end
+  mode: 'title',      // title | name | field | battle | menu | shop | cutscene | end | credits
   encounterCooldown: 0,
 
   startNewGame() {
@@ -11259,6 +12154,7 @@ const Game = {
     if (this.mode === 'name') { NameEntry.update(dt); return; }
     if (this.mode === 'options') { Options.update(dt); return; }
     if (this.mode === 'cutscene') { Cutscene.update(dt); return; }
+    if (this.mode === 'credits') { Credits.update(dt); return; }
     if (this.mode === 'end') {
       if (Input.hit('ok')) { this.mode = 'title'; Title.enter(); }
       return;
@@ -11301,6 +12197,10 @@ const Game = {
     Story.campusGreeting();
     Story.managerFight();
     Story.custodianFight();
+    Story.leftoverFight();
+    Story.secretDoor();
+    Story.finalFight();
+    Story.spireFight();
 
     if (Input.hit('ok')) interact();
 
@@ -11335,6 +12235,7 @@ const Game = {
     if (this.mode === 'title') { Title.draw(); Fade.draw(); return; }
     if (this.mode === 'name') { NameEntry.draw(); Fade.draw(); return; }
     if (this.mode === 'options') { Options.draw(); Fade.draw(); return; }
+    if (this.mode === 'credits') { Credits.draw(); Fade.draw(); return; }
     if (this.mode === 'cutscene' || this.mode === 'end') { Cutscene.draw(); Fade.draw(); return; }
     if (this.mode === 'battle') { Battle.draw(); Fade.draw(); return; }
 

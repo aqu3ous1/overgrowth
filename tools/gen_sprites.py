@@ -986,6 +986,117 @@ def make_sphere():
     s.outline("4")
     return s.rows()
 
+
+def make_dresser_enemy():
+    """The Root. His own bedroom furniture, standing in a field."""
+    s = Spr(20, 24)
+    s.rect(1, 2, 18, 21, "1")
+    s.rect(1, 2, 18, 3, "2")
+    for row in range(3):
+        y = 6 + row * 6
+        s.rect(3, y, 14, 5, "3")
+        s.rect(8, y + 2, 4, 1, "4")
+    s.rect(1, 23, 18, 1, "5")
+    s.rect(2, 0, 4, 2, "6")            # grass, growing out of the top of it
+    s.rect(9, 0, 3, 2, "6")
+    s.rect(14, 0, 4, 2, "6")
+    s.outline("5")
+    return s.rows()
+
+
+def make_bedroom_door():
+    """A door, standing on its own, with nothing on either side."""
+    s = Spr(18, 26)
+    s.rect(1, 1, 16, 24, "1")
+    s.rect(2, 2, 14, 22, "2")
+    s.rect(3, 4, 12, 8, "3")
+    s.rect(3, 14, 12, 8, "3")
+    s.rect(13, 12, 2, 2, "4")          # the handle
+    s.rect(1, 24, 16, 2, "5")
+    s.rect(4, 0, 3, 2, "6")            # and grass again
+    s.rect(11, 0, 4, 2, "6")
+    s.outline("5")
+    return s.rows()
+
+
+def make_argument():
+    """Band 10. It does not attack. It is two voices in another room."""
+    s = Spr(24, 20)
+    # No body, only sound: two overlapping wave fronts, one louder.
+    for i, (cx_, r, c) in enumerate(((8.0, 7.5, "1"), (16.0, 6.0, "2"))):
+        s.ellipse(cx_, 10.0, r, r * 0.8, c)
+    s.ellipse(8.0, 10.0, 4.5, 3.4, "3")
+    s.ellipse(16.0, 10.0, 3.4, 2.6, "3")
+    s.rect(6, 9, 5, 1, "4")
+    s.rect(15, 10, 4, 1, "4")
+    s.outline("5")
+    return s.rows()
+
+
+def make_leftover():
+    """Mini-Boss 4. Earlier enemies, assembled wrong, by something in a hurry."""
+    s = Spr(28, 30)
+    s.rect(4, 6, 20, 20, "1")          # a body borrowed from the cube
+    s.rect(4, 6, 20, 5, "2")
+    s.ellipse(9.0, 4.0, 5.0, 4.0, "3")   # a melon, where a head is not
+    s.rect(18, 2, 7, 8, "4")           # a postbox shoulder
+    s.rect(19, 4, 5, 2, "5")
+    s.rect(2, 14, 3, 12, "6")          # a fence post for a leg
+    s.rect(23, 16, 3, 10, "6")
+    s.rect(8, 13, 4, 4, "7")           # two eyes that do not match
+    s.rect(16, 15, 3, 3, "7")
+    s.rect(9, 21, 10, 2, "8")
+    s.rect(6, 28, 6, 2, "6")
+    s.rect(17, 28, 6, 2, "6")
+    s.outline("9")
+    return s.rows()
+
+
+def make_pyramid():
+    """Main Boss 4. Hierarchy: everything supporting a single point at the top.
+
+    Flat white like the sphere, because he is the same thing finished.
+    """
+    s = Spr(34, 30)
+    for row in range(28):
+        y = 29 - row
+        half = max(1, int((row + 1) * 0.58))
+        s.rect(17 - half, y, half * 2, 1, "1")
+    # The lit left face, and the shadow on the right.
+    for row in range(28):
+        y = 29 - row
+        half = max(1, int((row + 1) * 0.58))
+        s.rect(17 - half, y, half, 1, "2")
+    for ex, ey in ((12, 18), (20, 18)):
+        s.rect(ex, ey, 3, 5, "3")
+    s.rect(13, 25, 8, 2, "3")
+    s.rect(15, 27, 4, 1, "3")
+    s.rect(16, 0, 2, 2, "2")           # the point
+    s.outline("4")
+    return s.rows()
+
+
+def make_spire():
+    """The secret encounter. The same shape, narrower and taller, unfinished.
+
+    Smaller than his first form, not larger. He does not attack.
+    """
+    s = Spr(22, 32)
+    for row in range(30):
+        y = 31 - row
+        half = max(1, int((row + 1) * 0.34))
+        s.rect(11 - half, y, half * 2, 1, "1")
+    for row in range(30):
+        y = 31 - row
+        half = max(1, int((row + 1) * 0.34))
+        s.rect(11 - half, y, half, 1, "2")
+    for ex, ey in ((8, 22), (12, 22)):
+        s.rect(ex, ey, 2, 4, "3")
+    # No mouth. It is the only one of the four without one.
+    s.rect(4, 30, 14, 2, "4")          # and it is not finished at the base
+    s.outline("4")
+    return s.rows()
+
 for _face in ("down", "up", "side"):
     for _step in (0, 1, 2):
         SPRITES[f"player_{_face}" + ("" if _step == 0 else f"_{_step}")] = \
@@ -1126,6 +1237,12 @@ SPRITES["frame"] = make_frame()
 SPRITES["cart"] = make_cart()
 SPRITES["manager"] = make_manager()
 SPRITES["sphere"] = make_sphere()
+SPRITES["dresser_e"] = make_dresser_enemy()
+SPRITES["bedroom_door"] = make_bedroom_door()
+SPRITES["argument"] = make_argument()
+SPRITES["leftover"] = make_leftover()
+SPRITES["pyramid"] = make_pyramid()
+SPRITES["spire"] = make_spire()
 
 SPRITES["milepost"] = make_milepost()
 SPRITES["ration_tin"] = make_ration_tin()
@@ -1181,15 +1298,23 @@ def main():
     out.append("")
     OUT.write_text("\n".join(out) + "\n")
 
+    # Every sprite that something asks for by name needs a palette of that name,
+    # or it silently renders in the player's colours. Twenty-eight of them did
+    # exactly that until the main() call was moved below the last table.
+    missing = sorted(n for n in SPRITES if n not in PALETTES)
+    shared = {"player_down", "player_up", "player_side"}
+    missing = [n for n in missing
+               if not any(n.startswith(p) for p in ("player_",)) and n not in shared]
+    if missing:
+        print(f"FAIL: {len(missing)} sprites have no palette of their own: {missing}")
+        raise SystemExit(1)
+
     total = sum(len(r) * len(r[0]) for r in SPRITES.values())
     print(f"wrote {OUT.relative_to(ROOT)}: {len(SPRITES)} sprites, "
           f"{len(PALETTES)} palettes, {total} pixels")
     for name, rows in SPRITES.items():
         print(f"  {name:14} {len(rows[0])}x{len(rows)}")
 
-
-if __name__ == "__main__":
-    main()
 
 PALETTES.update({
     "checkpoint": {1: "#c8c4bc", 2: "#a8443c", 3: "#6e6a62", 4: "#8a867e",
@@ -1242,4 +1367,24 @@ PALETTES.update({
                    5: "#12121a", 6: "#2f3442", 7: "#1f2430", 8: "#f0f2f7",
                    9: "#8a3a4a", "a": "#22242c"},
     "sphere":     {1: "#f4f4f0", 2: "#ffffff", 3: "#08080c", 4: "#c8c8c2"},
+    # Act 5. The Root's palette is the closest in the game to the real world:
+    # everything here is a step further towards grey, with green on top of it.
+    "dresser_e":  {1: "#5a4038", 2: "#6e5046", 3: "#4a332c", 4: "#8d7a62",
+                   5: "#2a1d18", 6: "#6f9247"},
+    "bedroom_door": {1: "#3f3a34", 2: "#57514a", 3: "#484239", 4: "#a89a72",
+                     5: "#241f1b", 6: "#6f9247"},
+    "argument":   {1: "#4a4550", 2: "#5c5764", 3: "#33303a", 4: "#c8c4bc",
+                   5: "#1a181e"},
+    "leftover":   {1: "#5a5f70", 2: "#6f7486", 3: "#7a9a4a", 4: "#7a4a44",
+                   5: "#c2b06a", 6: "#4a4038", 7: "#12121a", 8: "#3f4352",
+                   9: "#14161d"},
+    "pyramid":    {1: "#eceae4", 2: "#ffffff", 3: "#08080c", 4: "#b8b6ae"},
+    "spire":      {1: "#d8d6d0", 2: "#f0eee8", 3: "#08080c", 4: "#9a988f"},
 })
+
+
+# Every table has to be populated before main() writes the file. Keeping this
+# call at the very bottom is what guarantees that; it used to sit above the last
+# PALETTES.update, and everything in that block never reached the build.
+if __name__ == "__main__":
+    main()

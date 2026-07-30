@@ -210,3 +210,53 @@ He was changed by an ordeal that was as real to him as anything, regardless of w
 The game does not argue this point. It just ends.
 
 See [09](09-collectibles-and-endings.md) for the secret ending.
+
+### What the Root is built out of
+
+Every room in the Root is a room the player has already walked, wrong. That is the whole design
+brief and it is also the whole point: the world is not inventing anything any more, because whatever
+was inventing it has stopped.
+
+| Room | What it is |
+|---|---|
+| Arrival | Okobo's geometry with Kestrel's lighting. The well is in it. |
+| The field | The bedroom's five objects, standing in grass, in the order Act 0 has them. |
+| The corridor | Bellhouse's hallway, opening onto the Sunken Orchard at the far end. |
+| The orchard | The orchard, drained, with a tree in it that is not the good tree. |
+| Okobo | Okobo, with grass over everything, and a note in his mother's handwriting. |
+| The deep | Mini-Boss 4. |
+| The last room | No walls. Lit like the bedroom in Act 0, because it is the bedroom in Act 0. |
+
+The notes here are the only ones in the game written by nobody: the world is repeating things it has
+already said, in handwriting it has no business having. `root_okobo_note` is the load-bearing one —
+*"the handwriting is his mother's, and the game has never shown him his mother's handwriting. He
+knows it anyway."*
+
+### What the Custodian says before the last fight
+
+This is the one place in the game where the shape of the whole thing is stated out loud, and it is
+stated by the antagonist, briefly, without ceremony:
+
+> *You have been asked nicely for nine years.*
+> *They did not build me to keep you. They built me to keep you comfortable.*
+> *I have been very good at my job.*
+
+That is the reveal and it is five lines long. It does **not** say who signed, what was measured, or
+how long precisely — those are the secret ending's, and only if the player earned them
+([09](09-collectibles-and-endings.md)). It does not mention the father at all.
+
+### The ending
+
+A sixteen-second cutscene, unskippable, scored with a furnace and a clock and nothing else.
+
+Black. Then the bedroom resolves out of it — the same camera as the opening shot of Act 0, the same
+five objects, drawn in the colours of a real room at night. It holds for six seconds and fades.
+
+**One thing is different**: someone is sitting on the end of the bed. Nothing narrates it, nobody is
+named, and the game never returns to it. Then the credits.
+
+With all ten collectibles, **two** things are different: the door is standing open, and there is
+light in the hall behind it.
+
+He was changed by an ordeal that was as real to him as anything, regardless of where it took place.
+The game does not argue this point. It just ends.

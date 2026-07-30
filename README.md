@@ -36,18 +36,20 @@ one long walk out.
 | [16 — Combat Math](docs/16-combat-math.md) | Enemy stat derivation, damage formula, measured difficulty |
 | [17 — Economy](docs/17-economy.md) | Shops, prices, and the per-act ledger |
 | [18 — Vertical Slice](docs/18-vertical-slice.md) | What to build first, and how to know it worked |
-| [19 — The Playable Build](docs/19-build.md) | What 0.7.0 contains, and where it deviates |
+| [19 — The Playable Build](docs/19-build.md) | What 1.0.0 contains, and where it deviates |
 | [Decisions](docs/open-questions.md) | Every design call made, with reasoning and reversal cost |
 
 ## Play it
 
-**0.7.0 is playable — Acts 0 through 4, on a desktop or a phone.** `game/overgrowth.html` runs from
-the bedroom to **the Custodian** at the end of the Long Hall: the Gallery, Okobo, the Sunken Orchard,
-Ondo, Kestrel Works, the border, Sable City, Bellhouse Commons, the Vixtry campus and the Long Hall —
-six bosses, seventy-one rooms, equipment, fast travel, an illustrated world map, save anywhere, and
-touch controls, in one self-contained file with no assets and no dependencies. Plus **Evergreen**,
-the longest sidequest in the game, which nothing points at. Every sprite is drawn pixel by pixel at runtime, every tile texture is
-procedural, the font is a 5x7 bitmap defined inline, and all the audio is WebAudio synthesis.
+**1.0.0 — the whole game.** `game/overgrowth.html` runs from the bedroom to the ending and the
+credits: the Gallery, Okobo, the Sunken Orchard, Ondo, Kestrel Works, the border, Sable City,
+Bellhouse Commons, the Vixtry campus, the Long Hall and the Root — eight bosses, seventy-nine rooms,
+equipment, fast travel, an illustrated world map, save anywhere, touch controls, ten collectibles and
+two endings, in one self-contained file with no assets and no dependencies. Every sprite is drawn
+pixel by pixel at runtime, every tile texture is procedural, the font is a 5x7 bitmap defined inline,
+and all the audio is WebAudio synthesis.
+
+Plus **Evergreen**, the longest sidequest in the game, which nothing points at.
 
 ```
 python3 tools/gen_sprites.py       # shape primitives -> the pixel art
@@ -72,7 +74,7 @@ progression curve, move lists, enemy roster, boss table, items and equipment, wo
 Four checkers keep the design honest, each checking a claim the documents make.
 
 ```
-python3 tools/validate.py       # 1345 checks: do the data, docs and build agree?
+python3 tools/validate.py       # 1399 checks: do the data, docs and build agree?
 python3 tools/simulate.py       # 57 matchups x 2000 trials: do fights feel right?
 python3 tools/economy.py        # per-act ledger: can the player afford them?
 python3 tools/curve.py          # levelling walk: does the player reach the levels
@@ -90,7 +92,7 @@ learned, that every boss shows `??` and no regular enemy does, that the Root is 
 band the player outclasses, that every act from 2 to 4 offers a trade-off item in both equipment
 slots, that the family's names are never rendered anywhere, that the scope table in
 [00](docs/00-overview.md) still matches the rosters, and that no doc links to a file that isn't
-there — 1345 checks in total, including that the checked-in build is not stale.
+there — 1399 checks in total, including that the checked-in build is not stale.
 
 **Run both after changing any number.** The validator caught four real inconsistencies on its first
 run, including two arithmetic errors in the EXP table and a boss the player could have fled from.
@@ -161,10 +163,9 @@ Sunken Orchard *sad* rather than *scary*.
 
 ## Status
 
-The design bible is complete through the endgame. **The build runs Acts 0 through 4** — roughly the
-first nine hours, ending on Main Boss 3 — and only The Root is documented but not yet built. Every
-system the docs describe is now implemented: equipment, stat stages, statuses, drops, milestone
-passives, and fast travel.
+The design bible is complete, and **the build is the whole of it** — Acts 0 through 5, both endings,
+and the credits. Every system the docs describe is implemented: equipment, stat stages, statuses,
+drops, milestone passives, fast travel, ten collectibles and a secret ending.
 
 Numbers in the systems docs (damage values, PP/SP costs, level curve, prices, enemy levels) are
 **first-pass and meant to be tuned**, not final. They're written down so balance discussions have

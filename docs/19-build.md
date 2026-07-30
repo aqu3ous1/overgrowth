@@ -1,7 +1,7 @@
 # 19 — The Playable Build
 
-**0.7.0 — Acts 0 through 4, playable, on a desktop or a phone.** Title screen through
-**Main Boss 3**, in a browser, in one self-contained HTML file with no assets and no dependencies.
+**1.0.0 — the whole game, playable, on a desktop or a phone.** Title screen through the ending and
+the credits, in a browser, in one self-contained HTML file with no assets and no dependencies.
 
 ```
 python3 tools/gen_sprites.py       # shape primitives -> game/src/15_sprites.js
@@ -9,6 +9,92 @@ python3 tools/build_game.py        # game/src/*.js + data/*.json -> game/overgro
 python3 tools/playtest.py          # drives it with a keyboard, fails on any error
 python3 tools/playtest_mobile.py   # drives it with a thumb, on an emulated phone
 ```
+
+## 1.0.0 — Act 5, and the ending
+
+The Root, both bosses, both endings, and the credits. The design bible is now fully built.
+
+### The Root
+
+Seven rooms, and every one of them is a room the player has already walked, wrong — Okobo's geometry
+with Kestrel's lighting, Bellhouse's corridor opening onto the Sunken Orchard, and the bedroom's five
+objects standing in a field in the order Act 0 has them. Colour drained nearly to the real palette,
+grass on everything, and its theme is Okobo's melody a tone flat at half speed with a different
+progression underneath it: the town theme still running while the thing playing it comes apart.
+
+The notes here are the only ones in the game written by nobody. The world is repeating things it has
+already said, and `root_okobo_note` is the one that lands — a note in his mother's handwriting, which
+the game has never shown him.
+
+**Mini-Boss 4** gates the last room. **Main Boss 4** is in it, and it is the one place the game says
+the shape of the whole thing out loud — five lines, from the antagonist, without ceremony:
+
+> *You have been asked nicely for nine years.*
+> *They did not build me to keep you. They built me to keep you comfortable.*
+> *I have been very good at my job.*
+
+It does not say who signed, what was measured, or how long precisely. Those belong to the secret
+ending, and only if the player earned them. **It does not mention the father at all** — that question
+stays open in both endings, which is the hard rule from [02](02-story.md).
+
+### The ending
+
+A sixteen-second cutscene, **unskippable**, scored with a furnace and a clock and nothing else — the
+only two sounds [01](01-art-and-audio.md) allows the prologue and the ending to have.
+
+Black, and a held beat. Then the bedroom resolves out of it: the same camera as the opening shot of
+Act 0, the same five objects, drawn in the colours of a real room at night rather than a dream one.
+It holds for six seconds and fades.
+
+**One thing is different.** Someone is sitting on the end of the bed. Nothing narrates it, nobody is
+named, and the game never returns to it.
+
+Then credits — a scroll, the five acts, and a note that every sprite in the game was drawn one pixel
+at a time at runtime. No stinger.
+
+### The secret ending
+
+All ten collectibles are placeable and placed for the first time. Three were missing: the Gallery's
+(behind a painting, and the Gallery is only revisitable once the warp device is online), Okobo's
+(down the well, walked past in the first ten minutes), and the Root's.
+
+Carrying all ten pushes one extra door onto a room the player has already cleared, marked only by the
+grass being thicker in front of it. Through it: the Gallery restored, four frames full and the small
+one empty, and a shape smaller than the one he just beat. **It does not attack.**
+
+What it gives is detail, not resolution: the ten objects named as what they are, household 4114, the
+session opened on a Tuesday, the initial `D.` on the staff signature — the one letter
+[03](03-characters.md) permits — and nine years, one month, and today. And then the thing nobody
+wrote down, which is that it was never finished, they stopped paying for it, and it kept going.
+
+The ending is the same bedroom. This time **two** things are different.
+
+### Twenty-eight palettes that were never in the game
+
+`gen_sprites.py` called `main()` above its last `PALETTES.update()` block, so the file was written
+before those palettes existed. Twenty-eight of them — the Tenant, the Line Supervisor, every Act 3
+and Act 4 enemy, both new bosses — fell back to `PAL.player` and had been rendering **in the
+player's own colours** since Act 3 shipped.
+
+Moving the call to the bottom of the file took the build from 65 palettes to 93. There is a check now
+that every sprite has a palette of its own, and it was verified by putting the call back where it was
+and watching it name all twenty-eight.
+
+### Three harness bugs, all of them the same bug
+
+Each one made the game look broken when the test was the thing that was wrong:
+
+- `advance()` was budgeted in **presses**, not seconds. The Custodian's box holds 2.6 seconds a line
+  before it accepts input, so his eleven-line speech needs about forty seconds of pressing; a
+  forty-press budget gave up a third of the way in, and every check after it reported the fight
+  failing to start.
+- `hold()` walked into a **milestone prompt** that had opened on the frame after `put()`. The
+  factory-door sweep reported *"findable from only 1 tile"* on a door with three working tiles.
+  Movement answers the prompt now.
+- The note sweep **loaded a boss's room**, which is what starts that boss's fight. It did this to the
+  Account Manager and then again to Something Left Over. Both fights now happen before the sweep.
+
+**1399 checks, 57 matchups in target, both playtests clean.**
 
 ## 0.7.0 — Evergreen
 
